@@ -1,8 +1,9 @@
 app = "sage-backend"
 primary_region = "iad" # Pick nearest region: iad = Virginia (good for East Coast)
 
+# Use our Dockerfile for the build
 [build]
-  image = "python:3.11-slim"
+  dockerfile = "Dockerfile"
 
 [env]
   PORT = "8080"
