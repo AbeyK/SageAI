@@ -7,147 +7,141 @@
 
 import UIKit
 
-
 public class WaterFaceView: UIView {
-    private let containerLayer = CALayer()
-    private let circleLayer = CAShapeLayer()
+    
+    private let waveLayer = CAShapeLayer()
+    private let gradientLayer = CAGradientLayer()
+    private var displayLink: CADisplayLink?
+    private var startTime: CFTimeInterval = 0
+    
+    private let faceLayer = CAShapeLayer()
     private let leftEyeLayer = CAShapeLayer()
     private let rightEyeLayer = CAShapeLayer()
-    private let smileLayer = CAShapeLayer()
-    private let waterAnimationLayer = CAShapeLayer()
+    private let mouthLayer = CAShapeLayer()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setup()
+        setupLayers()
+        startWaveAnimation()
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        setup()
+        setupLayers()
+        startWaveAnimation()
     }
     
-    private func setup() {
-        // Container layer for clipping
-        containerLayer.masksToBounds = true
-        layer.addSublayer(containerLayer)
+    private func setupLayers() {
+        // Set up gradient
+        gradientLayer.colors = [
+            UIColor(red: 0.4, green: 0.8, blue: 1.0, alpha: 0.8).cgColor,
+            UIColor(red: 0.2, green: 0.6, blue: 0.9, alpha: 0.6).cgColor
+        ]
+        gradientLayer.locations = [0.0, 1.0]
         
-        // Main circle
-        circleLayer.fillColor = UIColor(red: 0.4, green: 0.6, blue: 1.0, alpha: 1.0).cgColor
-        containerLayer.addSublayer(circleLayer)
+        // Set up wave
+        waveLayer.fillColor = UIColor.clear.cgColor
+        waveLayer.strokeColor = UIColor.white.cgColor
+        waveLayer.lineWidth = 2.0
         
-        // Water animation layer
-        waterAnimationLayer.fillColor = UIColor(red: 0.5, green: 0.7, blue: 1.0, alpha: 0.3).cgColor
-        containerLayer.addSublayer(waterAnimationLayer)
+        // Set up face components
+        faceLayer.fillColor = UIColor.clear.cgColor
+        faceLayer.strokeColor = UIColor.white.cgColor
+        faceLayer.lineWidth = 2.0
         
-        // Eyes and smile on top of water
-        leftEyeLayer.fillColor = UIColor.black.cgColor
-        rightEyeLayer.fillColor = UIColor.black.cgColor
-        smileLayer.fillColor = nil
-        smileLayer.strokeColor = UIColor.black.cgColor
-        smileLayer.lineWidth = 3
+        leftEyeLayer.fillColor = UIColor.white.cgColor
+        leftEyeLayer.strokeColor = UIColor.white.cgColor
         
+        rightEyeLayer.fillColor = UIColor.white.cgColor
+        rightEyeLayer.strokeColor = UIColor.white.cgColor
+        
+        mouthLayer.fillColor = UIColor.clear.cgColor
+        mouthLayer.strokeColor = UIColor.white.cgColor
+        mouthLayer.lineWidth = 2.0
+        
+        layer.addSublayer(gradientLayer)
+        layer.addSublayer(waveLayer)
+        layer.addSublayer(faceLayer)
         layer.addSublayer(leftEyeLayer)
         layer.addSublayer(rightEyeLayer)
-        layer.addSublayer(smileLayer)
+        layer.addSublayer(mouthLayer)
+        
+        layer.cornerRadius = bounds.width / 2
+        clipsToBounds = true
     }
     
     public override func layoutSubviews() {
         super.layoutSubviews()
         
-        let size = min(bounds.width, bounds.height)
-        let center = CGPoint(x: bounds.midX, y: bounds.midY)
+        gradientLayer.frame = bounds
         
-        // Update container frame and mask
-        containerLayer.frame = bounds
-        let maskLayer = CAShapeLayer()
-        let circlePath = UIBezierPath(arcCenter: center,
-                                    radius: size/2,
-                                    startAngle: 0,
-                                    endAngle: 2 * .pi,
-                                    clockwise: true)
-        maskLayer.path = circlePath.cgPath
-        containerLayer.mask = maskLayer
+        // Draw face
+        let facePath = UIBezierPath(ovalIn: bounds)
+        faceLayer.path = facePath.cgPath
         
-        // Main circle
-        circleLayer.frame = bounds
-        circleLayer.path = circlePath.cgPath
+        // Draw eyes
+        let eyeSize = CGSize(width: bounds.width * 0.15, height: bounds.width * 0.15)
+        let eyeY = bounds.height * 0.35
         
-        // Eyes
-        let eyeSize: CGFloat = size * 0.08
-        let eyeY = center.y - size * 0.05
-        let eyeSpacing = size * 0.15
+        let leftEyeRect = CGRect(
+            x: bounds.width * 0.25,
+            y: eyeY,
+            width: eyeSize.width,
+            height: eyeSize.height
+        )
+        let rightEyeRect = CGRect(
+            x: bounds.width * 0.6,
+            y: eyeY,
+            width: eyeSize.width,
+            height: eyeSize.height
+        )
         
-        let leftEyePath = UIBezierPath(ovalIn: CGRect(x: center.x - eyeSpacing - eyeSize/2,
-                                                     y: eyeY - eyeSize/2,
-                                                     width: eyeSize,
-                                                     height: eyeSize))
-        leftEyeLayer.path = leftEyePath.cgPath
+        leftEyeLayer.path = UIBezierPath(ovalIn: leftEyeRect).cgPath
+        rightEyeLayer.path = UIBezierPath(ovalIn: rightEyeRect).cgPath
         
-        let rightEyePath = UIBezierPath(ovalIn: CGRect(x: center.x + eyeSpacing - eyeSize/2,
-                                                      y: eyeY - eyeSize/2,
-                                                      width: eyeSize,
-                                                      height: eyeSize))
-        rightEyeLayer.path = rightEyePath.cgPath
-        
-        // Smile
-        let smilePath = UIBezierPath()
-        let smileWidth = size * 0.3
-        let smileHeight = size * 0.15
-        let smileY = center.y + size * 0.1
-        
-        smilePath.move(to: CGPoint(x: center.x - smileWidth/2, y: smileY))
-        smilePath.addQuadCurve(to: CGPoint(x: center.x + smileWidth/2, y: smileY),
-                              controlPoint: CGPoint(x: center.x, y: smileY + smileHeight))
-        smileLayer.path = smilePath.cgPath
-        
-        // Start water animation
-        startWaterAnimation()
+        // Draw mouth
+        let mouthPath = UIBezierPath()
+        let mouthY = bounds.height * 0.6
+        mouthPath.move(to: CGPoint(x: bounds.width * 0.3, y: mouthY))
+        mouthPath.addQuadCurve(
+            to: CGPoint(x: bounds.width * 0.7, y: mouthY),
+            controlPoint: CGPoint(x: bounds.width * 0.5, y: mouthY + bounds.height * 0.1)
+        )
+        mouthLayer.path = mouthPath.cgPath
     }
     
-    private func startWaterAnimation() {
-        waterAnimationLayer.removeAllAnimations()
+    private func startWaveAnimation() {
+        startTime = CACurrentMediaTime()
+        displayLink = CADisplayLink(target: self, selector: #selector(updateWave))
+        displayLink?.add(to: .main, forMode: .common)
+    }
+    
+    @objc private func updateWave() {
+        let currentTime = CACurrentMediaTime()
+        let elapsedTime = currentTime - startTime
         
-        let size = min(bounds.width, bounds.height)
-        let center = CGPoint(x: bounds.midX, y: bounds.midY)
+        let path = UIBezierPath()
+        let width = bounds.width
+        let height = bounds.height
+        let midHeight = height * 0.7
         
-        // Create wave paths
-        let createWavePath = { (phase: CGFloat) -> CGPath in
-            let path = UIBezierPath()
-            let width = size
-            let height = size
+        path.move(to: CGPoint(x: 0, y: height))
+        
+        for x in stride(from: 0, through: width, by: 1) {
+            let relativeX = x / width
+            let normalizedX = relativeX * .pi * 2
             
-            path.move(to: CGPoint(x: 0, y: height))
-            
-            // Draw the wave
-            let wavelength = width / 2
-            let amplitude = height * 0.05
-            let midHeight = height * 0.6 // Position the waves at 60% from the top
-            
-            var x: CGFloat = 0
-            while x <= width {
-                let y = midHeight + amplitude * sin((x / wavelength) * 2 * .pi + phase)
-                path.addLine(to: CGPoint(x: x, y: y))
-                x += 1
-            }
-            
-            // Complete the path
-            path.addLine(to: CGPoint(x: width, y: height))
-            path.addLine(to: CGPoint(x: 0, y: height))
-            path.close()
-            
-            return path.cgPath
+            let y = midHeight + sin(normalizedX + elapsedTime * 2) * 10
+            path.addLine(to: CGPoint(x: x, y: y))
         }
         
-        // Create animation
-        let animation = CABasicAnimation(keyPath: "path")
-        animation.fromValue = createWavePath(0)
-        animation.toValue = createWavePath(.pi * 2)
-        animation.duration = 2
-        animation.timingFunction = CAMediaTimingFunction(name: .linear)
-        animation.repeatCount = .infinity
+        path.addLine(to: CGPoint(x: width, y: height))
+        path.close()
         
-        waterAnimationLayer.frame = bounds
-        waterAnimationLayer.path = createWavePath(0)
-        waterAnimationLayer.add(animation, forKey: "waterAnimation")
+        waveLayer.path = path.cgPath
     }
-}
+    
+    deinit {
+        displayLink?.invalidate()
+    }
+} 
