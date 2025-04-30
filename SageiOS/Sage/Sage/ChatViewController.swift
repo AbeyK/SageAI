@@ -14,6 +14,14 @@ class ChatViewController: UIViewController {
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
+
+    private let settingsButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "gearshape.fill"), for: .normal)
+        button.tintColor = .white
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
     
     private let chatTableView: UITableView = {
         let tableView = UITableView()
@@ -65,9 +73,16 @@ class ChatViewController: UIViewController {
         view.addSubview(faceView)
         view.addSubview(chatTableView)
         view.addSubview(muteButton)
+        view.addSubview(settingsButton)
         
         // Set up constraints
         NSLayoutConstraint.activate([
+            // Settings button constraints
+            settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            settingsButton.widthAnchor.constraint(equalToConstant: 30),
+            settingsButton.heightAnchor.constraint(equalToConstant: 30),
+
             // Face view constraints
             faceView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
             faceView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -88,7 +103,11 @@ class ChatViewController: UIViewController {
         ])
         
         // Add button action
+        settingsButton.addTarget(self, action: #selector(settingsButtonTapped), for: .touchUpInside)
         muteButton.addTarget(self, action: #selector(muteButtonTapped), for: .touchUpInside)
+
+        // Start occasional rotation
+        // startRotatingSettingsButton()
     }
     
     private func setupTableView() {
@@ -104,12 +123,28 @@ class ChatViewController: UIViewController {
         isMuted.toggle()
         muteButton.backgroundColor = isMuted ? .red : .gray
     }
+
+    @objc private func settingsButtonTapped() {
+        let settingsVC = SettingsViewController()
+        settingsVC.modalPresentationStyle = .formSheet
+        settingsVC.delegate = self
+        present(settingsVC, animated: true)
+    }
+
     
     func addMessage(_ message: String) {
         messages.append(message)
         let indexPath = IndexPath(row: messages.count - 1, section: 0)
         chatTableView.insertRows(at: [indexPath], with: .automatic)
         chatTableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
+    }
+
+    private func startRotatingSettingsButton() {
+        Timer.scheduledTimer(withTimeInterval: 8.0, repeats: true) { _ in
+            UIView.animate(withDuration: 1.0) {
+                self.settingsButton.transform = self.settingsButton.transform.rotated(by: CGFloat.pi)
+            }
+        }
     }
 }
 
@@ -168,3 +203,9 @@ class ChatMessageCell: UITableViewCell {
         messageLabel.text = message
     }
 } 
+
+extension ChatViewController: ChatViewControllerDelegate {
+    func didTapSignOut() {
+        dismiss(animated: true)
+    }
+}
