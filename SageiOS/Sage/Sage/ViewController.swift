@@ -78,7 +78,7 @@ class ViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-    
+
     private let signupLabel: UILabel = {
         let label = UILabel()
         label.text = "Don't have an account? Sign Up"
@@ -124,7 +124,6 @@ class ViewController: UIViewController {
         
         // Set up constraints
         NSLayoutConstraint.activate([
-            // Face view constraints
             faceView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 60),
             faceView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             faceView.widthAnchor.constraint(equalToConstant: 120),
@@ -162,27 +161,18 @@ class ViewController: UIViewController {
         ])
         
         // Add button actions
-        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
         forgotPasswordButton.addTarget(self, action: #selector(forgotPasswordTapped), for: .touchUpInside)
-        
-        // Add tap gesture to signup label
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(signupTapped))
-        signupLabel.isUserInteractionEnabled = true
-        signupLabel.addGestureRecognizer(tapGesture)
+        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
     }
     
     @objc private func loginButtonTapped() {
-        // Handle login button tap
-        print("Login button tapped")
+        let chatViewController = ChatViewController()
+        chatViewController.modalPresentationStyle = .fullScreen
+        present(chatViewController, animated: true)
     }
     
     @objc private func forgotPasswordTapped() {
         // Handle forgot password tap
         print("Forgot password tapped")
-    }
-    
-    @objc private func signupTapped() {
-        // Handle signup tap
-        print("Sign up tapped")
     }
 }
