@@ -24,9 +24,12 @@ class ChatViewController: UIViewController {
     
     private let chatTableView: UITableView = {
         let tableView = UITableView()
-        tableView.backgroundColor = UIColor(white: 0.1, alpha: 0.3)
         tableView.separatorStyle = .none
+        tableView.backgroundColor = UIColor(white: 0.5, alpha: 0.3) // semi-transparent gray
+        tableView.layer.cornerRadius = 16
+        tableView.clipsToBounds = true
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.register(ChatMessageCell.self, forCellReuseIdentifier: ChatMessageCell.identifier)
         return tableView
     }()
     
@@ -66,6 +69,7 @@ class ChatViewController: UIViewController {
     
     private func setupUI() {
         // Set up gradient background
+        
         view.layer.insertSublayer(gradientLayer, at: 0)
         
         // Add subviews
@@ -163,45 +167,6 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
         return UITableView.automaticDimension
     }
 }
-
-// MARK: - ChatMessageCell
-class ChatMessageCell: UITableViewCell {
-    private let messageLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.numberOfLines = 0
-        label.font = .systemFont(ofSize: 16)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        setupUI()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    private func setupUI() {
-        backgroundColor = .clear
-        contentView.backgroundColor = .clear
-        
-        contentView.addSubview(messageLabel)
-        
-        NSLayoutConstraint.activate([
-            messageLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            messageLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            messageLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            messageLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
-        ])
-    }
-    
-    func configure(with message: String) {
-        messageLabel.text = message
-    }
-} 
 
 extension ChatViewController: ChatViewControllerDelegate {
     func didTapSignOut() {
