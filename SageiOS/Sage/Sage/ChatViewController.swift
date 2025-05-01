@@ -8,7 +8,6 @@
 import UIKit
 
 class ChatViewController: UIViewController {
-    
     private let faceView: WaterFaceView = {
         let view = WaterFaceView()
         view.translatesAutoresizingMaskIntoConstraints = false

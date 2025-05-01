@@ -34,10 +34,12 @@ public class WaterFaceView: UIView {
     private func setupLayers() {
         // Set up gradient
         gradientLayer.colors = [
-            UIColor(red: 0.4, green: 0.8, blue: 1.0, alpha: 0.8).cgColor,
-            UIColor(red: 0.2, green: 0.6, blue: 0.9, alpha: 0.6).cgColor
+            UIColor(red: 0.4, green: 0.8, blue: 1.0, alpha: 1.0).cgColor,
+            UIColor(red: 0.2, green: 0.6, blue: 0.9, alpha: 1.0).cgColor
         ]
         gradientLayer.locations = [0.0, 1.0]
+        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
+        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
         
         // Set up wave
         waveLayer.fillColor = UIColor.clear.cgColor
@@ -46,18 +48,18 @@ public class WaterFaceView: UIView {
         
         // Set up face components
         faceLayer.fillColor = UIColor.clear.cgColor
-        faceLayer.strokeColor = UIColor.white.cgColor
-        faceLayer.lineWidth = 2.0
+        faceLayer.strokeColor = UIColor.clear.cgColor
+        faceLayer.lineWidth = 0.0
         
-        leftEyeLayer.fillColor = UIColor.white.cgColor
-        leftEyeLayer.strokeColor = UIColor.white.cgColor
+        leftEyeLayer.fillColor = UIColor.black.cgColor
+        leftEyeLayer.strokeColor = UIColor.black.cgColor
         
-        rightEyeLayer.fillColor = UIColor.white.cgColor
-        rightEyeLayer.strokeColor = UIColor.white.cgColor
+        rightEyeLayer.fillColor = UIColor.black.cgColor
+        rightEyeLayer.strokeColor = UIColor.black.cgColor
         
         mouthLayer.fillColor = UIColor.clear.cgColor
-        mouthLayer.strokeColor = UIColor.white.cgColor
-        mouthLayer.lineWidth = 2.0
+        mouthLayer.strokeColor = UIColor.black.cgColor
+        mouthLayer.lineWidth = 4.0
         
         layer.addSublayer(gradientLayer)
         layer.addSublayer(waveLayer)
@@ -65,6 +67,9 @@ public class WaterFaceView: UIView {
         layer.addSublayer(leftEyeLayer)
         layer.addSublayer(rightEyeLayer)
         layer.addSublayer(mouthLayer)
+        
+        // Apply mask to wave layer
+        waveLayer.mask = faceLayer
         
         layer.cornerRadius = bounds.width / 2
         clipsToBounds = true
@@ -74,17 +79,21 @@ public class WaterFaceView: UIView {
         super.layoutSubviews()
         
         gradientLayer.frame = bounds
-        
+
         // Draw face
         let facePath = UIBezierPath(ovalIn: bounds)
         faceLayer.path = facePath.cgPath
-        
+
+        // Ensure the view is circular
+        layer.cornerRadius = bounds.width / 2
+        clipsToBounds = true
+
         // Draw eyes
-        let eyeSize = CGSize(width: bounds.width * 0.15, height: bounds.width * 0.15)
+        let eyeSize = CGSize(width: bounds.width * 0.08, height: bounds.width * 0.12)
         let eyeY = bounds.height * 0.35
-        
+
         let leftEyeRect = CGRect(
-            x: bounds.width * 0.25,
+            x: bounds.width * 0.3,
             y: eyeY,
             width: eyeSize.width,
             height: eyeSize.height
@@ -95,17 +104,17 @@ public class WaterFaceView: UIView {
             width: eyeSize.width,
             height: eyeSize.height
         )
-        
+
         leftEyeLayer.path = UIBezierPath(ovalIn: leftEyeRect).cgPath
         rightEyeLayer.path = UIBezierPath(ovalIn: rightEyeRect).cgPath
-        
+
         // Draw mouth
         let mouthPath = UIBezierPath()
-        let mouthY = bounds.height * 0.6
+        let mouthY = bounds.height * 0.7
         mouthPath.move(to: CGPoint(x: bounds.width * 0.3, y: mouthY))
         mouthPath.addQuadCurve(
             to: CGPoint(x: bounds.width * 0.7, y: mouthY),
-            controlPoint: CGPoint(x: bounds.width * 0.5, y: mouthY + bounds.height * 0.1)
+            controlPoint: CGPoint(x: bounds.width * 0.5, y: mouthY + bounds.height * 0.15)
         )
         mouthLayer.path = mouthPath.cgPath
     }
