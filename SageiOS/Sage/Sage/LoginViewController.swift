@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class LoginViewController: UIViewController {
     
     private let faceView: WaterFaceView = {
         let view = WaterFaceView()
