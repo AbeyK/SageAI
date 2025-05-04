@@ -22,7 +22,6 @@ public class SpeechManager {
     private func handleTranscriptUpdate(_ newTranscript: String) {
         if newTranscript != lastTranscript {
             lastTranscript = newTranscript
-            print("testing -> SpeechManager 🔁 Transcript changed. Resetting silence timer.")
             startSilenceTimer()
         }
     }
@@ -31,7 +30,9 @@ public class SpeechManager {
         silenceTimer?.invalidate()
         silenceTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
             print("testing -> SpeechManager 🛑 No transcript change in 2 seconds. Stopping recognition.")
-            self?.recognizer.stopRecognition()
+            if let recognizer = self?.recognizer, recognizer.isRunning() {
+                recognizer.stopRecognition()
+            }
         }
     }
 }
