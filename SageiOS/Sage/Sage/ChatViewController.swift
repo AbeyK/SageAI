@@ -60,6 +60,14 @@ class ChatViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupTableView()
+        
+        let speechRecognizer = SpeechRecognizer() // Your custom class from earlier
+        
+        do {
+            try speechRecognizer.startRecognition()
+        } catch {
+            print("testing -> Failed to start recognition: \(error)")
+        }
     }
     
     override func viewDidLayoutSubviews() {
