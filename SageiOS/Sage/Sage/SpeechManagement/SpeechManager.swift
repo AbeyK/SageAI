@@ -1,17 +1,21 @@
 import Foundation
 
-public class SpeechManager {
+public class SpeechManager: SpeechRecognizerDelegate {
     private let recognizer = SpeechRecognizer()
     private var lastTranscript: String = ""
     private var silenceTimer: Timer?
+    private var delegate: SpeechManagerDelegate?
 
-    public init() {
-        recognizer.onTranscriptUpdate = { newTranscript in
-            self.handleTranscriptUpdate(newTranscript)
-        }
+    public init(delegate: SpeechManagerDelegate? = nil) {
+        self.delegate = delegate
     }
 
     public func startSpeechRecognition() {
+        recognizer.delegate = self
+        recognizer.onTranscriptUpdate = { newTranscript in
+            self.handleTranscriptUpdate(newTranscript)
+        }
+        
         do {
             try recognizer.startRecognition()
         } catch {
@@ -35,4 +39,11 @@ public class SpeechManager {
             }
         }
     }
+
+    public func speechRecognizerRecognitionStopped(_ transcript: String) {
+        if (transcript != "") {
+            self.delegate?.speechManagerTranscriptCompleted(transcript)
+        }
+    }
+
 }

@@ -6,7 +6,9 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
+    private var finalTranscript: String = ""
 
+    public weak var delegate: SpeechRecognizerDelegate?
     public var onTranscriptUpdate: ((String) -> Void)?
 
     func startRecognition() throws {
@@ -42,7 +44,14 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
         // Start recognition task
         recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { result, error in
             if let result = result {
+                
                 let transcript = result.bestTranscription.formattedString
+                
+                if transcript == "" {
+                    return
+                }
+                
+                self.finalTranscript = transcript
                 print("testing -> speechRecognizer Transcription: \(transcript)")
 
                 self.onTranscriptUpdate?(transcript)
@@ -66,6 +75,9 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
         recognitionRequest?.endAudio()
         recognitionTask?.cancel()
         recognitionTask = nil
+        if (finalTranscript != "") {
+            self.delegate?.speechRecognizerRecognitionStopped(finalTranscript)
+        }
     }
     
     // Public functions

@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ChatViewController: UIViewController {
+class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let faceView: WaterFaceView = {
         let view = WaterFaceView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -25,7 +25,7 @@ class ChatViewController: UIViewController {
     private let chatTableView: UITableView = {
         let tableView = UITableView()
         tableView.separatorStyle = .none
-        tableView.backgroundColor = UIColor(white: 0.5, alpha: 0.3) // semi-transparent gray
+        tableView.backgroundColor = UIColor(white: 0.5, alpha: 0.3) // semi-transparent grey
         tableView.layer.cornerRadius = 16
         tableView.clipsToBounds = true
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -61,8 +61,8 @@ class ChatViewController: UIViewController {
         setupUI()
         setupTableView()
         
-        let manager = SpeechManager()
-        manager.startSpeechRecognition()
+        let conversationManager = ConversationManager(apiKey: "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", delegate: self)
+        conversationManager.startConversation()
     }
     
     override func viewDidLayoutSubviews() {
@@ -72,7 +72,6 @@ class ChatViewController: UIViewController {
     
     private func setupUI() {
         // Set up gradient background
-        
         view.layer.insertSublayer(gradientLayer, at: 0)
         
         // Add subviews
@@ -120,9 +119,6 @@ class ChatViewController: UIViewController {
         chatTableView.delegate = self
         chatTableView.dataSource = self
         chatTableView.register(ChatMessageCell.self, forCellReuseIdentifier: "ChatMessageCell")
-        
-        // Add some sample messages
-        addMessage("Hello! How can I help you today?")
     }
     
     @objc private func muteButtonTapped() {
@@ -150,6 +146,12 @@ class ChatViewController: UIViewController {
             UIView.animate(withDuration: 1.0) {
                 self.settingsButton.transform = self.settingsButton.transform.rotated(by: CGFloat.pi)
             }
+        }
+    }
+
+    func conversationManagerAddingMessage(_ transcript: String) {
+        DispatchQueue.main.async {
+            self.addMessage(transcript)
         }
     }
 }
