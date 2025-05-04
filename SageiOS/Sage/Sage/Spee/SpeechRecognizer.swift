@@ -1,11 +1,13 @@
 import Speech
 import AVFoundation
 
-public class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
+class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
     private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
+
+    public var onTranscriptUpdate: ((String) -> Void)?
 
     func startRecognition() throws {
         // Ensure previous tasks are canceled
@@ -43,11 +45,11 @@ public class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
                 let transcript = result.bestTranscription.formattedString
                 print("testing -> Transcription: \(transcript)")
 
-                // Check if the recognition is final
-                if result.isFinal {
+                self.onTranscriptUpdate?(transcript)
+
+                if result.isFinal { // Check if the recognition is final
                     print("testing -> User has finished speaking.")
                     self.stopRecognition()
-                    // Proceed with processing the final transcript
                 }
             }
 
@@ -59,9 +61,17 @@ public class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
     }
 
     func stopRecognition() {
+        print("testing -> stopRecognition")
         audioEngine.stop()
         recognitionRequest?.endAudio()
         recognitionTask?.cancel()
         recognitionTask = nil
+    }
+    
+    
+    // Public functions
+    
+    public func status() -> Bool {
+        return audioEngine.isRunning
     }
 }
