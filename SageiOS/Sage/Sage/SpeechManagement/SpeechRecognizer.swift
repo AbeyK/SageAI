@@ -47,7 +47,7 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
                 
                 let transcript = result.bestTranscription.formattedString
                 
-                if transcript == "" {
+                if transcript == "" || transcript == self.finalTranscript {
                     return
                 }
                 
