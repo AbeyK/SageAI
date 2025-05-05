@@ -34,8 +34,10 @@ public class ConversationManager: SpeechManagerDelegate {
     }
     
     public func speechManagerTranscriptCompleted(_ transcript: String) {
-        print("testing -> conversationManager calling speechManagerTranscriptCompleted \(transcript)")
-        handleTranscript(transcript)
+        if !isSendingChat {
+            print("testing -> conversationManager calling speechManagerTranscriptCompleted \(transcript)")
+            handleTranscript(transcript)
+        }
     }
 
     private func handleTranscript(_ transcript: String) {
@@ -138,28 +140,6 @@ public class ConversationManager: SpeechManagerDelegate {
                 self.isSendingChat = false
                 print("testing -> ❌ JSON parsing failed: \(error)")
             }
-
-//            do {
-//                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-//                   let choices = json["choices"] as? [[String: Any]],
-//                   let message = choices.first?["message"] as? [String: String],
-//                   let content = message["content"] {
-//
-//                    print("testing -> conversationManager 💬 ChatGPT (GPT-4 Turbo): \(content)")
-//                    self.conversationHistory.append(["role": "assistant", "content": content])
-//                    self.isSendingChat = false
-//                    
-//                    DispatchQueue.main.async {
-//                        if let speechManager = self.speechManager {
-//                            try? speechManager.startSpeechRecognition()
-//                        }
-//                    }
-//                } else {
-//                    print("testing -> conversationManager ❌ Failed to parse ChatGPT response.")
-//                }
-//            } catch {
-//                print("testing -> conversationManager ❌ JSON decode error: \(error)")
-//            }
         }
 
         task.resume()

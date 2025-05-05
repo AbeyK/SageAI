@@ -28,9 +28,24 @@ class ChatMessageCell: UITableViewCell {
         return label
     }()
     
+    private var sentLeadingConstraint: NSLayoutConstraint!
+    private var sentTrailingConstraint: NSLayoutConstraint!
+    private var receivedLeadingConstraint: NSLayoutConstraint!
+    private var receievedTrailingConstraint: NSLayoutConstraint!
+    
     // Configure the cell with message
-    func configure(with text: String) {
+    func configure(with text: String, sent: Bool) {
         messageLabel.text = text
+        bubbleView.backgroundColor = sent
+        ? UIColor.systemBlue
+        : UIColor(white: 0.5, alpha: 0.3)
+        
+        messageLabel.textAlignment = sent ? .right : .left
+        
+        sentLeadingConstraint.isActive = sent
+        sentTrailingConstraint.isActive = sent
+        receivedLeadingConstraint.isActive = !sent
+        receievedTrailingConstraint.isActive = !sent
     }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -41,11 +56,22 @@ class ChatMessageCell: UITableViewCell {
         contentView.addSubview(bubbleView)
         bubbleView.addSubview(messageLabel)
         
+        receivedLeadingConstraint = bubbleView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20)
+        receievedTrailingConstraint = bubbleView.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -60)
+        
+        sentLeadingConstraint = bubbleView.leadingAnchor.constraint(greaterThanOrEqualTo: contentView.leadingAnchor, constant: 60)
+        sentTrailingConstraint = bubbleView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20)
+        
+        
         NSLayoutConstraint.activate([
             bubbleView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
             bubbleView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
-            bubbleView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            bubbleView.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -60),
+            sentLeadingConstraint,
+            sentTrailingConstraint,
+            receivedLeadingConstraint,
+            receievedTrailingConstraint,
+//            bubbleView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 60),
+//            bubbleView.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -20),
             
             messageLabel.topAnchor.constraint(equalTo: bubbleView.topAnchor, constant: 10),
             messageLabel.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: -10),
