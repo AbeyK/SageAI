@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sage AI Meditation Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            resize: vertical;
+        }
+
+        .status {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .connected {
+            color: #4CAF50;
+        }
+
+        .disconnected {
+            color: #f44336;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #2196F3;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #1976D2;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .log-container {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 4px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .log-info {
+            color: #2196F3;
+        }
+
+        .log-error {
+            color: #f44336;
+        }
+
+        .log-success {
+            color: #4CAF50;
+        }
+
+        .log-warning {
+            color: #ff9800;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Sage AI Meditation Guide</h1>
+        <div class="status" id="status">Disconnected</div>
+        <textarea id="input" placeholder="Type your meditation request here..."></textarea>
+        <div class="controls">
+            <button id="connect">Connect</button>
+            <button id="clear" disabled>Clear</button>
+        </div>
+        <div class="log-container" id="log"></div>
+    </div>
+
+    <script>
+        const input = document.getElementById('input');
+        const connectBtn = document.getElementById('connect');
+        const clearBtn = document.getElementById('clear');
+        const status = document.getElementById('status');
+        const logContainer = document.getElementById('log');
+        let ws = null;
+        let audioContext = null;
+        let audioQueue = [];
+        let isPlaying = false;
+        let messageCount = 0;
+        let audioChunkCount = 0;
+
+        // Logging function
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            entry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // Initialize Web Audio API
+        async function initAudio() {
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    // Resume the audio context (needed for Chrome's autoplay policy)
+                    await audioContext.resume();
+                    log('Audio context initialized', 'success');
+                }
+            } catch (error) {
+                log(`Failed to initialize audio context: ${error.message}`, 'error');
+            }
+        }
+
+        // Play audio chunks
+        async function playAudioChunk(chunk) {
+            try {
+                const audioBuffer = await audioContext.decodeAudioData(chunk);
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(audioContext.destination);
+                source.start();
+                log(`Playing audio chunk ${++audioChunkCount} (duration: ${audioBuffer.duration.toFixed(2)}s)`, 'info');
+                return new Promise(resolve => {
+                    source.onended = () => {
+                        log(`Finished playing chunk ${audioChunkCount}`, 'info');
+                        resolve();
+                    };
+                });
+            } catch (error) {
+                log(`Error playing audio chunk: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        // Process audio queue
+        async function processAudioQueue() {
+            if (isPlaying || audioQueue.length === 0) return;
+            isPlaying = true;
+            log(`Processing audio queue (${audioQueue.length} chunks)`, 'info');
+            while (audioQueue.length > 0) {
+                const chunk = audioQueue.shift();
+                await playAudioChunk(chunk);
+            }
+            isPlaying = false;
+            log('Audio queue processed', 'success');
+        }
+
+        // Connect to WebSocket
+        async function connect() {
+            const wsUrl = 'ws://localhost:8000/ws';
+            log(`Connecting to ${wsUrl}...`, 'info');
+            ws = new WebSocket(wsUrl);
+            // Set binary type to arraybuffer
+            ws.binaryType = 'arraybuffer';
+
+            ws.onopen = async () => {
+                status.textContent = 'Connected';
+                status.className = 'status connected';
+                connectBtn.textContent = 'Disconnect';
+                clearBtn.disabled = false;
+                await initAudio();
+                log('WebSocket connection established', 'success');
+            };
+
+            ws.onclose = (event) => {
+                status.textContent = 'Disconnected';
+                status.className = 'status disconnected';
+                connectBtn.textContent = 'Connect';
+                clearBtn.disabled = true;
+                ws = null;
+                log(`WebSocket closed (code: ${event.code}, reason: ${event.reason || 'none'})`, 'warning');
+            };
+
+            ws.onerror = (error) => {
+                log(`WebSocket error: ${error.message || 'Unknown error'}`, 'error');
+            };
+
+            ws.onmessage = async (event) => {
+                try {
+                    const chunk = event.data;
+                    log(`Received data type: ${chunk.constructor.name}`, 'info');
+
+                    // Handle both text and binary messages
+                    if (typeof chunk === 'string') {
+                        if (chunk.startsWith('Error:')) {
+                            log(`Server error: ${chunk}`, 'error');
+                            return;
+                        }
+                        log(`Received text message: ${chunk}`, 'info');
+                        return;
+                    }
+
+                    // Handle binary audio data
+                    if (!(chunk instanceof ArrayBuffer)) {
+                        throw new Error(`Expected ArrayBuffer, got ${chunk.constructor.name}`);
+                    }
+
+                    log(`Received audio chunk (size: ${chunk.byteLength} bytes)`, 'info');
+                    audioQueue.push(chunk);
+                    await processAudioQueue();
+                } catch (error) {
+                    log(`Error processing message: ${error.message}`, 'error');
+                }
+            };
+        }
+
+        // Handle input changes
+        let debounceTimer;
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    const text = input.value;
+                    log(`Sending message ${++messageCount}: "${text}"`, 'info');
+                    ws.send(text);
+                } else {
+                    log('Cannot send message: WebSocket not connected', 'warning');
+                }
+            }, 300);
+        });
+
+        // Connect button handler
+        connectBtn.addEventListener('click', async () => {
+            if (ws) {
+                log('Disconnecting WebSocket...', 'info');
+                ws.close();
+            } else {
+                await connect();
+            }
+        });
+
+        // Clear button handler
+        clearBtn.addEventListener('click', () => {
+            input.value = '';
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                log('Clearing input and sending empty message', 'info');
+                ws.send('');
+            }
+        });
+
+        // Log initial state
+        log('Application initialized', 'info');
+    </script>
+</body>
+
+</html>

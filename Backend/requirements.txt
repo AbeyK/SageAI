@@ -1,5 +1,9 @@
 fastapi
-uvicorn
+uvicorn[standard]
+aiohttp
 openai
-python-multipart
-pytest 
+python-dotenv
+pytest
+pytest-asyncio
+aioresponses
+websockets 
