@@ -1,40 +1,74 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from app.llm import stream_llm_to_tts
+import json
+import time
+import os
+from dotenv import load_dotenv
+from app.services.meditation_service import MeditationService
 from app.logger import get_logger
+
+# Load environment variables
+load_dotenv()
+
+# Verify OpenAI API key is set
+if not os.getenv("OPENAI_API_KEY"):
+    raise ValueError("OPENAI_API_KEY environment variable is not set")
 
 app = FastAPI()
 logger = get_logger(__name__)
+meditation_service = MeditationService()
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
-async def root():
+async def read_root():
     logger.info("Serving index.html")
     return FileResponse("static/index.html")
 
 @app.websocket("/ws")
-async def websocket_endpoint(ws: WebSocket):
-    client_id = id(ws)
-    logger.info(f"New WebSocket connection request from client {client_id}")
-    
-    await ws.accept()
-    logger.info(f"WebSocket connection accepted for client {client_id}")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    logger.info("WebSocket connection accepted")
     
     try:
-        async for text in ws.iter_text():
-            logger.info(f"Received text from client {client_id}: {text[:100]}...")
+        while True:
             try:
-                async for chunk in stream_llm_to_tts(text):
-                    # Send as binary data
-                    await ws.send_bytes(chunk)
-                    logger.debug(f"Sent audio chunk to client {client_id} (size: {len(chunk)} bytes)")
-            except Exception as e:
-                logger.error(f"Error processing text for client {client_id}: {str(e)}")
-                await ws.send_text(f"Error: {str(e)}")
+                request_start = time.time()
+                data = await websocket.receive_text()
+                receive_time = time.time() - request_start
+                
+                message = json.loads(data)
+                
+                if message.get("type") == "text":
+                    text = message.get("text", "").strip()
+                    if not text:
+                        continue
+                        
+                    logger.info(f"Received text after {receive_time:.2f}s: {text[:100]}...")
+                    
+                    try:
+                        # Process request through meditation service
+                        audio_bytes = await meditation_service.process_request(text)
+                        
+                        # Send response
+                        send_start = time.time()
+                        await websocket.send_bytes(audio_bytes)
+                        send_time = time.time() - send_start
+                        
+                        total_time = time.time() - request_start
+                        logger.info(f"Sent audio response in {send_time:.2f}s - Total request time: {total_time:.2f}s")
+                    except Exception as e:
+                        error_time = time.time() - request_start
+                        logger.error(f"Error processing request after {error_time:.2f}s: {str(e)}")
+                        await websocket.send_text(f"Error: {str(e)}")
+                    
+            except json.JSONDecodeError:
+                logger.error("Invalid JSON received")
+                continue
+                
+    except WebSocketDisconnect:
+        logger.info("WebSocket disconnected")
     except Exception as e:
-        logger.error(f"WebSocket error for client {client_id}: {str(e)}")
-    finally:
-        logger.info(f"WebSocket connection closed for client {client_id}") 
+        logger.error(f"Error in WebSocket: {str(e)}") 
