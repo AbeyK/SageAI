@@ -1,19 +1,28 @@
 FROM python:3.11-slim
 
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=8080
+
+# Set working directory
 WORKDIR /app
 
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app/ app/
-COPY tests/ tests/
+# Copy application code
+COPY . .
 
-ENV PYTHONPATH=/app
+# Create non-root user
+RUN useradd -m appuser && chown -R appuser:appuser /app
+USER appuser
 
-# Set OpenAI API key as an environment variable
-# You should use a more secure way to pass this in production
-# This will be overridden by fly secrets
-ENV OPENAI_API_KEY=your_openai_api_key_here
-
-# Use port 8080 to match fly.toml configuration
+# Run the application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"] 
