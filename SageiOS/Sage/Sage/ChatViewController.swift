@@ -68,6 +68,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         gradientLayer.frame = view.bounds
+        muteButton.layer.cornerRadius = muteButton.bounds.width / 2
     }
     
     private func setupUI() {
@@ -82,29 +83,29 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         
         // Set up constraints
         NSLayoutConstraint.activate([
-            // Settings button constraints
+            // Settings button
             settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
             settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             settingsButton.widthAnchor.constraint(equalToConstant: 30),
             settingsButton.heightAnchor.constraint(equalToConstant: 30),
 
-            // Face view constraints
+            // Face view (larger)
             faceView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
             faceView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            faceView.widthAnchor.constraint(equalToConstant: 120),
-            faceView.heightAnchor.constraint(equalToConstant: 120),
-            
-            // Chat table view constraints
-            chatTableView.topAnchor.constraint(equalTo: faceView.bottomAnchor, constant: 30),
+            faceView.widthAnchor.constraint(equalToConstant: 180),
+            faceView.heightAnchor.constraint(equalToConstant: 180),
+
+            // Chat table (shorter)
+            chatTableView.topAnchor.constraint(equalTo: faceView.bottomAnchor, constant: 20),
             chatTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             chatTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            chatTableView.bottomAnchor.constraint(equalTo: muteButton.topAnchor, constant: -30),
-            
-            // Mute button constraints
+            chatTableView.bottomAnchor.constraint(equalTo: muteButton.topAnchor, constant: -60),
+
+            // Mute button (larger)
             muteButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             muteButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -30),
-            muteButton.widthAnchor.constraint(equalToConstant: 50),
-            muteButton.heightAnchor.constraint(equalToConstant: 50)
+            muteButton.widthAnchor.constraint(equalToConstant: 70),
+            muteButton.heightAnchor.constraint(equalToConstant: 70)
         ])
         
         // Add button action
