@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Backend Test</title>
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .user {
+            background: #e3f2fd;
+            margin-left: 20%;
+        }
+
+        .assistant {
+            background: #f5f5f5;
+            margin-right: 20%;
+        }
+
+        .error {
+            color: red;
+        }
+
+        input,
+        button {
+            padding: 8px;
+            margin: 5px;
+        }
+
+        .audio-player {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Backend Test</h1>
+
+    <!-- Firebase Auth -->
+    <div id="auth">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="signIn()">Sign In</button>
+        <button onclick="signUp()">Sign Up</button>
+        <p id="authError" class="error"></p>
+    </div>
+
+    <!-- Chat Interface -->
+    <div id="chat" style="display: none;">
+        <p>Logged in as: <span id="userEmail"></span></p>
+        <button onclick="signOut()">Sign Out</button>
+        <hr>
+        <div id="messages"></div>
+        <div>
+            <input type="text" id="messageInput" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+
+    <script>
+        // Helper function to convert base64 to Blob
+        function b64ToBlob(b64Data, contentType = '', sliceSize = 512) {
+            const byteCharacters = atob(b64Data);
+            const byteArrays = [];
+
+            for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                const slice = byteCharacters.slice(offset, offset + sliceSize);
+                const byteNumbers = Array.from(slice).map(char => char.charCodeAt(0));
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+
+            return new Blob(byteArrays, { type: contentType });
+        }
+
+        // Initialize Firebase with your config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDIdSh0IB8I_WDRUuXCLnhNa7nJGrjsTmw",
+            authDomain: "sageai-ceb53.firebaseapp.com",
+            projectId: "sageai-ceb53",
+            storageBucket: "sageai-ceb53.firebasestorage.app",
+            messagingSenderId: "462497744916",
+            appId: "1:462497744916:web:500a6d693192c46af7bf01",
+            measurementId: "G-ECMNWMKKPN"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        // Auth state observer
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('auth').style.display = 'none';
+                document.getElementById('chat').style.display = 'block';
+                document.getElementById('userEmail').textContent = user.email;
+            } else {
+                document.getElementById('auth').style.display = 'block';
+                document.getElementById('chat').style.display = 'none';
+            }
+        });
+
+        // Auth functions
+        async function signIn() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                await firebase.auth().signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                document.getElementById('authError').textContent = error.message;
+            }
+        }
+
+        async function signUp() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                await firebase.auth().createUserWithEmailAndPassword(email, password);
+            } catch (error) {
+                document.getElementById('authError').textContent = error.message;
+            }
+        }
+
+        async function signOut() {
+            try {
+                await firebase.auth().signOut();
+            } catch (error) {
+                document.getElementById('authError').textContent = error.message;
+            }
+        }
+
+        // Chat functions
+        let chatHistory = [];
+
+        async function sendMessage() {
+            const message = document.getElementById('messageInput').value.trim();
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage('user', message);
+            document.getElementById('messageInput').value = '';
+
+            try {
+                const user = firebase.auth().currentUser;
+                const idToken = await user.getIdToken();
+                chatHistory.push({ role: 'user', content: message });
+
+                const response = await fetch('http://127.0.0.1:8000/api/v1/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({ messages: chatHistory })
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+
+                addMessage('assistant', data.text_response, data.audio_base64);
+                chatHistory.push({ role: 'assistant', content: data.text_response });
+
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('error', `Error: ${error.message}`);
+            }
+        }
+
+        function addMessage(role, content, audioBase64 = null) {
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+
+            const text = document.createElement('p');
+            text.textContent = content;
+            div.appendChild(text);
+
+            if (audioBase64) {
+                console.log("Audio base64 length:", audioBase64?.length);
+                console.log("Audio base64 starts with:", audioBase64?.slice(0, 50));
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                audio.className = 'audio-player';
+
+                const audioBlob = b64ToBlob(audioBase64, "audio/mpeg");
+                const audioURL = URL.createObjectURL(audioBlob);
+                audio.src = audioURL;
+
+                // Optional autoplay for debugging:
+                audio.play().catch(e => console.warn("Autoplay blocked:", e.message));
+
+                div.appendChild(audio);
+            }
+
+            document.getElementById('messages').appendChild(div);
+        }
+
+        // Handle Enter key
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+
+</html>

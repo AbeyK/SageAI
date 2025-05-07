@@ -1,0 +1,56 @@
+# Git
+.git
+.gitignore
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# IDE and editor specific files
+.vscode/
+.idea/
+*.project
+*.komodoproject
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Docker specific
+Dockerfile
+.dockerignore
+
+# Secrets / Environment files (these should be managed via runtime environment variables or secrets management)
+.env
+*.env
+*.env.*
+!default.env # Example: if you have a default.env that IS safe to commit
+
+# Test outputs
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Logs
+*.log
+logs/
+
+# Local development files
+*.db
+*.sqlite3 

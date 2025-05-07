@@ -1,0 +1,10 @@
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-dotenv==1.0.1
+firebase-admin==6.5.0
+openai>=1.77.0
+pydantic-settings==2.2.1
+
+# Note: These versions are examples. 
+# For a production build, generate this file using `pip freeze > requirements.txt`
+# in your activated virtual environment after installing dependencies. 
