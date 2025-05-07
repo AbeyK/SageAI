@@ -3,6 +3,7 @@ import Foundation
 public class ConversationManager: SpeechManagerDelegate {
     private let openAIKey: String
     private var speechManager: SpeechManager?
+    private var ttsManager: TTSManager?
     private let session = URLSession.shared
     private var isSendingChat = false
     private var delegate: ConversationManagerDelegate?
@@ -22,6 +23,7 @@ public class ConversationManager: SpeechManagerDelegate {
     public init(apiKey: String, delegate: ConversationManagerDelegate) {
         self.delegate = delegate
         openAIKey = apiKey
+        ttsManager = TTSManager(apiKey: "sk-proj-REDACTED")
     }
 
     public func startConversation() {
@@ -124,10 +126,18 @@ public class ConversationManager: SpeechManagerDelegate {
 
                     print("testing -> 💬 ChatGPT Response: \(content)")
                     self.conversationHistory.append(["role": "assistant", "content": content])
+                
                     self.isSendingChat = false
+                    self.ttsManager?.speak(text: content) {
+                        
+                    }
                     DispatchQueue.main.async {
                         try? self.speechManager?.startSpeechRecognition()
                     }
+                    
+//                    DispatchQueue.main.async {
+//                        try? self.speechManager?.startSpeechRecognition()
+//                    }
                 } else if let error = json["error"] as? [String: Any] {
                     self.isSendingChat = false
                     print("testing -> ❌ OpenAI Error Object: \(error)")
