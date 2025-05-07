@@ -117,10 +117,23 @@
     </div>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <script>
+        // DOM Elements
+        const authSection = document.getElementById('authSection');
+        const chatSection = document.getElementById('chatSection');
+        const loginForm = document.getElementById('loginForm');
+        const userInfo = document.getElementById('userInfo');
+        const userEmail = document.getElementById('userEmail');
+        const authError = document.getElementById('authError');
+        const messages = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+
+        // Chat history
+        let chatHistory = [];
+
         // Your Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDIdSh0IB8I_WDRUuXCLnhNa7nJGrjsTmw",
@@ -134,19 +147,6 @@
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-
-        // DOM Elements
-        const authSection = document.getElementById('authSection');
-        const chatSection = document.getElementById('chatSection');
-        const loginForm = document.getElementById('loginForm');
-        const userInfo = document.getElementById('userInfo');
-        const userEmail = document.getElementById('userEmail');
-        const authError = document.getElementById('authError');
-        const messages = document.getElementById('messages');
-        const messageInput = document.getElementById('messageInput');
-
-        // Chat history
-        let chatHistory = [];
 
         // Firebase Auth State Observer
         firebase.auth().onAuthStateChanged((user) => {
@@ -214,7 +214,7 @@
                 chatHistory.push({ role: 'user', content: message });
 
                 // Send to backend
-                const response = await fetch('http://127.0.0.1:8001/api/v1/chat', {
+                const response = await fetch('http://127.0.0.1:8000/api/v1/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

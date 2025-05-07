@@ -48,7 +48,7 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
         return f"Error: Could not get response from AI service. Details: {str(e)}"
 
 # Placeholder for TTS function - to be implemented in Task 6
-async def text_to_speech_openai(text: str, model: str = "tts-1-hd", voice: str = "alloy") -> str:
+async def text_to_speech_openai(text: str, model: str = "tts-1-hd", voice: str = "nova") -> str:
     """
     Converts text to speech using OpenAI TTS and returns base64 encoded audio.
     """
