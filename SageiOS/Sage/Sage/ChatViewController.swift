@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ChatViewController: UIViewController {
+class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let faceView: WaterFaceView = {
         let view = WaterFaceView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -25,7 +25,7 @@ class ChatViewController: UIViewController {
     private let chatTableView: UITableView = {
         let tableView = UITableView()
         tableView.separatorStyle = .none
-        tableView.backgroundColor = UIColor(white: 0.5, alpha: 0.3) // semi-transparent gray
+        tableView.backgroundColor = UIColor(white: 0.5, alpha: 0.3) // semi-transparent grey
         tableView.layer.cornerRadius = 16
         tableView.clipsToBounds = true
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -61,18 +61,18 @@ class ChatViewController: UIViewController {
         setupUI()
         setupTableView()
         
-        let manager = SpeechManager()
-        manager.startSpeechRecognition()
+        let conversationManager = ConversationManager(apiKey: "sk-proj-REDACTED", delegate: self)
+        conversationManager.startConversation()
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         gradientLayer.frame = view.bounds
+        muteButton.layer.cornerRadius = muteButton.bounds.width / 2
     }
     
     private func setupUI() {
         // Set up gradient background
-        
         view.layer.insertSublayer(gradientLayer, at: 0)
         
         // Add subviews
@@ -83,29 +83,29 @@ class ChatViewController: UIViewController {
         
         // Set up constraints
         NSLayoutConstraint.activate([
-            // Settings button constraints
+            // Settings button
             settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
             settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             settingsButton.widthAnchor.constraint(equalToConstant: 30),
             settingsButton.heightAnchor.constraint(equalToConstant: 30),
 
-            // Face view constraints
+            // Face view (larger)
             faceView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
             faceView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            faceView.widthAnchor.constraint(equalToConstant: 120),
-            faceView.heightAnchor.constraint(equalToConstant: 120),
-            
-            // Chat table view constraints
-            chatTableView.topAnchor.constraint(equalTo: faceView.bottomAnchor, constant: 30),
+            faceView.widthAnchor.constraint(equalToConstant: 180),
+            faceView.heightAnchor.constraint(equalToConstant: 180),
+
+            // Chat table (shorter)
+            chatTableView.topAnchor.constraint(equalTo: faceView.bottomAnchor, constant: 20),
             chatTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             chatTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            chatTableView.bottomAnchor.constraint(equalTo: muteButton.topAnchor, constant: -30),
-            
-            // Mute button constraints
+            chatTableView.bottomAnchor.constraint(equalTo: muteButton.topAnchor, constant: -60),
+
+            // Mute button (larger)
             muteButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             muteButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -30),
-            muteButton.widthAnchor.constraint(equalToConstant: 50),
-            muteButton.heightAnchor.constraint(equalToConstant: 50)
+            muteButton.widthAnchor.constraint(equalToConstant: 70),
+            muteButton.heightAnchor.constraint(equalToConstant: 70)
         ])
         
         // Add button action
@@ -120,9 +120,6 @@ class ChatViewController: UIViewController {
         chatTableView.delegate = self
         chatTableView.dataSource = self
         chatTableView.register(ChatMessageCell.self, forCellReuseIdentifier: "ChatMessageCell")
-        
-        // Add some sample messages
-        addMessage("Hello! How can I help you today?")
     }
     
     @objc private func muteButtonTapped() {
@@ -152,6 +149,12 @@ class ChatViewController: UIViewController {
             }
         }
     }
+
+    func conversationManagerAddingMessage(_ transcript: String) {
+        DispatchQueue.main.async {
+            self.addMessage(transcript)
+        }
+    }
 }
 
 // MARK: - UITableViewDelegate & UITableViewDataSource
@@ -162,7 +165,7 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ChatMessageCell", for: indexPath) as! ChatMessageCell
-        cell.configure(with: messages[indexPath.row])
+        cell.configure(with: messages[indexPath.row], sent: indexPath.row % 2 == 0)
         return cell
     }
     

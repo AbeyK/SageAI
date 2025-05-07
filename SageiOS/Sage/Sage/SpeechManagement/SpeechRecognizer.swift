@@ -6,7 +6,9 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
+    private var finalTranscript: String = ""
 
+    public weak var delegate: SpeechRecognizerDelegate?
     public var onTranscriptUpdate: ((String) -> Void)?
 
     func startRecognition() throws {
@@ -22,7 +24,7 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
         // Initialize recognition request
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         guard let recognitionRequest = recognitionRequest else {
-            fatalError("testing ->  Unable to create a recognition request")
+            fatalError("testing -> speechRecognizer Unable to create a recognition request")
         }
         recognitionRequest.shouldReportPartialResults = true
 
@@ -42,36 +44,45 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
         // Start recognition task
         recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { result, error in
             if let result = result {
+                
                 let transcript = result.bestTranscription.formattedString
-                print("testing -> Transcription: \(transcript)")
+                
+                if transcript == "" || transcript == self.finalTranscript {
+                    return
+                }
+                
+                self.finalTranscript = transcript
+                print("testing -> speechRecognizer Transcription: \(transcript)")
 
                 self.onTranscriptUpdate?(transcript)
 
-                if result.isFinal { // Check if the recognition is final
-                    print("testing -> User has finished speaking.")
+                if self.isRunning() && result.isFinal { // Check if the recognition is final
+                    print("testing -> speechRecognizer User has finished speaking.")
                     self.stopRecognition()
                 }
             }
 
             if let error = error {
-                print("testing -> Recognition error: \(error.localizedDescription)")
+                print("testing -> speechRecognizer Recognition error: \(error.localizedDescription)")
                 self.stopRecognition()
             }
         }
     }
 
     func stopRecognition() {
-        print("testing -> stopRecognition")
+        print("testing -> speechRecognizer stopRecognition")
         audioEngine.stop()
         recognitionRequest?.endAudio()
         recognitionTask?.cancel()
         recognitionTask = nil
+        if (finalTranscript != "") {
+            self.delegate?.speechRecognizerRecognitionStopped(finalTranscript)
+        }
     }
-    
     
     // Public functions
     
-    public func status() -> Bool {
+    public func isRunning() -> Bool {
         return audioEngine.isRunning
     }
 }
