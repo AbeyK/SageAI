@@ -6,8 +6,18 @@
 //
 
 import UIKit
+import AVKit
 
 class ChatViewController: UIViewController, ConversationManagerDelegate {
+    private let backgroundModeView: BackgroundModeView = {
+        guard let url = Bundle.main.url(forResource: "Forest", withExtension: "mp4") else {
+            fatalError("testing -> Video file not found in bundle.")
+        }
+        let view = BackgroundModeView(frame: .zero, videoURL: url)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
     private let faceView: WaterFaceView = {
         let view = WaterFaceView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -73,9 +83,10 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     
     private func setupUI() {
         // Set up gradient background
-        view.layer.insertSublayer(gradientLayer, at: 0)
-        
+//        view.layer.insertSublayer(gradientLayer, at: 0)
+        view.backgroundColor = .clear
         // Add subviews
+        view.insertSubview(backgroundModeView, at: 0)
         view.addSubview(faceView)
         view.addSubview(chatTableView)
         view.addSubview(muteButton)
@@ -83,6 +94,12 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         
         // Set up constraints
         NSLayoutConstraint.activate([
+            // Background mode view
+            backgroundModeView.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundModeView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            backgroundModeView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundModeView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
             // Settings button
             settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
             settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),

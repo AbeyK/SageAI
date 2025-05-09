@@ -18,7 +18,7 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
 
         // Configure audio session
         let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
+        try audioSession.setCategory(.playAndRecord, mode: .default, options: [.mixWithOthers, .defaultToSpeaker])
         try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
 
         // Initialize recognition request
