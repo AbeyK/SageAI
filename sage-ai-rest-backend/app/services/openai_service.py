@@ -42,7 +42,11 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
     # Define the system message for Sage persona
     system_message = {
         "role": "system",
-        "content": "You are Sage, a meditation guru. You can hear the user and will respond via voice. Guide them through their meditation practice with a calm, empathetic, and encouraging tone."
+        "content": (
+            "You are Sage, a meditation guru. You can hear the user and will respond via voice. "
+            "Guide them through their meditation practice with a calm, empathetic, and encouraging tone. "
+            "Use as few words as possible, leaving space for silence and reflection."
+        )
     }
     
     # Prepend the system message to the user-provided messages
@@ -64,9 +68,10 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
         return f"Error: Could not get response from AI service. Details: {str(e)}"
 
 # Placeholder for TTS function - to be implemented in Task 6
-async def text_to_speech_openai(text: str, model: str = "tts-1", voice: str = "nova") -> str:
+async def text_to_speech_openai(text: str, model: str = "gpt-4o-mini-tts", voice: str = "nova", speed: float = 0.8) -> str:
     """
-    Converts text to speech using OpenAI TTS and returns base64 encoded audio.
+    Converts text to speech using OpenAI TTS (gpt-4o-mini-tts) and returns base64 encoded audio.
+    The model, voice, and speed are selected for a calm, meditation-friendly experience.
     """
     start_time = time.time()
     logger.info(f"[{time.time() - start_time:.3f}s] Starting TTS request")
@@ -77,13 +82,17 @@ async def text_to_speech_openai(text: str, model: str = "tts-1", voice: str = "n
     if not text.strip():
         return "Error: Cannot convert empty text to speech."
 
+    # Prepend calmness instruction to the text
+    tts_text = text
+
     try:
         logger.info(f"[{time.time() - start_time:.3f}s] Sending text to OpenAI TTS")
         response = await client.audio.speech.create(
             model=model,
             voice=voice,
-            input=text,
-            response_format="mp3"
+            input=tts_text,
+            response_format="mp3",
+            speed=speed
         )
         
         logger.info(f"[{time.time() - start_time:.3f}s] Received audio from OpenAI TTS")
