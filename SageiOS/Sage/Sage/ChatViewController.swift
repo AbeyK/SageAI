@@ -9,6 +9,8 @@ import UIKit
 import AVKit
 
 class ChatViewController: UIViewController, ConversationManagerDelegate {
+    var authManager: FirebaseAuthManager?
+    
     private let backgroundModeView: BackgroundModeView = {
         guard let url = Bundle.main.url(forResource: "Forest", withExtension: "mp4") else {
             fatalError("testing -> Video file not found in bundle.")
@@ -144,6 +146,10 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         muteButton.backgroundColor = isMuted ? .red : .gray
     }
 
+    private func stopBackgroundVideo() {
+        backgroundModeView.stopVideo()
+    }
+
     @objc private func settingsButtonTapped() {
         let settingsVC = SettingsViewController()
         settingsVC.modalPresentationStyle = .formSheet
@@ -193,6 +199,9 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
 
 extension ChatViewController: ChatViewControllerDelegate {
     func didTapSignOut() {
-        dismiss(animated: true)
+        stopBackgroundVideo()
+        dismiss(animated: true) {
+            self.authManager?.signOut()
+        }
     }
 }
