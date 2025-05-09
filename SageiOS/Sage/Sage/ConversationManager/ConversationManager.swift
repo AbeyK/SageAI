@@ -2,7 +2,6 @@ import Foundation
 import FirebaseAuth // Assuming Firebase Auth is imported
 
 public class ConversationManager: SpeechManagerDelegate {
-    private let openAIKey: String
     private var speechManager: SpeechManager?
     private var ttsManager: TTSManager?
     private let session = URLSession.shared
@@ -21,10 +20,10 @@ public class ConversationManager: SpeechManagerDelegate {
         }
     }
 
-    public init(apiKey: String, delegate: ConversationManagerDelegate) {
+    public init(delegate: ConversationManagerDelegate) {
         self.delegate = delegate
-        openAIKey = apiKey
-        ttsManager = TTSManager(apiKey: "")
+        ttsManager = TTSManager()
+    }
 
     public func startConversation() {
         speechManager = SpeechManager(delegate: self)
@@ -160,15 +159,14 @@ public class ConversationManager: SpeechManagerDelegate {
                         }
                     } else {
                         if chatResponse.audio_base64.isEmpty {
-                            print("testing -> 🔊 No audio data received. Using TTS for text response.")
+                            print("testing -> 🔊 No audio data received from backend. Speech recognition will be restarted.")
                         } else {
-                            print("testing -> ⚠️ Failed to decode base64 audio string. Using TTS for text response.")
+                            print("testing -> ⚠️ Failed to decode base64 audio string from backend. Speech recognition will be restarted.")
                         }
-                        // Fallback to TTS if no audio data or decoding fails
-                        self.ttsManager?.speak(text: chatResponse.text_response) {
-                            DispatchQueue.main.async {
-                                try? self.speechManager?.startSpeechRecognition()
-                            }
+                        // Fallback TTS call removed as per request.
+                        // Restart speech recognition if no audio was played.
+                        DispatchQueue.main.async {
+                           try? self.speechManager?.startSpeechRecognition()
                         }
                     }
 
