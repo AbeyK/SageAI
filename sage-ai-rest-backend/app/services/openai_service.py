@@ -39,11 +39,20 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
     if not client:
         return "Error: OpenAI client not initialized. Please check API key configuration."
 
+    # Define the system message for Sage persona
+    system_message = {
+        "role": "system",
+        "content": "You are Sage, a meditation guru. You can hear the user and will respond via voice. Guide them through their meditation practice with a calm, empathetic, and encouraging tone."
+    }
+    
+    # Prepend the system message to the user-provided messages
+    updated_messages = [system_message] + messages
+
     try:
         logger.info(f"[{time.time() - start_time:.3f}s] Sending messages to OpenAI")
         response = await client.chat.completions.create(
             model=model,
-            messages=messages
+            messages=updated_messages  # Use the updated messages list
         )
         assistant_message = response.choices[0].message.content
         logger.info(f"[{time.time() - start_time:.3f}s] Received response from OpenAI")
