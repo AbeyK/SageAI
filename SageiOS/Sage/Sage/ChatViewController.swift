@@ -146,6 +146,10 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         muteButton.backgroundColor = isMuted ? .red : .gray
     }
 
+    private func stopBackgroundVideo() {
+        backgroundModeView.stopVideo()
+    }
+
     @objc private func settingsButtonTapped() {
         let settingsVC = SettingsViewController()
         settingsVC.modalPresentationStyle = .formSheet
@@ -195,6 +199,7 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
 
 extension ChatViewController: ChatViewControllerDelegate {
     func didTapSignOut() {
+        stopBackgroundVideo()
         dismiss(animated: true) {
             self.authManager?.signOut()
         }
