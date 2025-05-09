@@ -129,15 +129,12 @@ public class ConversationManager: SpeechManagerDelegate {
                 
                     self.isSendingChat = false
                     self.ttsManager?.speak(text: content) {
-                        
-                    }
-                    DispatchQueue.main.async {
-                        try? self.speechManager?.startSpeechRecognition()
+                        DispatchQueue.main.async {
+                            try? self.speechManager?.startSpeechRecognition()
+                        }
                     }
                     
-//                    DispatchQueue.main.async {
-//                        try? self.speechManager?.startSpeechRecognition()
-//                    }
+
                 } else if let error = json["error"] as? [String: Any] {
                     self.isSendingChat = false
                     print("testing -> ❌ OpenAI Error Object: \(error)")

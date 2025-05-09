@@ -14,7 +14,7 @@ public class TTSManager: NSObject, AVAudioPlayerDelegate {
         self.completion = onComplete
 
         guard let url = URL(string: "https://api.openai.com/v1/audio/speech") else {
-            print("TTSManager ❌ Invalid URL")
+            print("testing -> TTSManager ❌ Invalid URL")
             return
         }
 
@@ -33,28 +33,28 @@ public class TTSManager: NSObject, AVAudioPlayerDelegate {
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: payload)
         } catch {
-            print("TTSManager ❌ Failed to encode request: \(error)")
+            print("testing -> TTSManager ❌ Failed to encode request: \(error)")
             return
         }
 
         let task = URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
             guard let self = self else { return }
             if let error = error {
-                print("TTSManager ❌ Request error: \(error.localizedDescription)")
+                print("testing -> TTSManager ❌ Request error: \(error.localizedDescription)")
                 return
             }
 
             guard let data = data else {
-                print("TTSManager ❌ No data received")
+                print("testing -> TTSManager ❌ No data received")
                 return
             }
 
             DispatchQueue.main.async {
                 do {
                     try AVAudioSession.sharedInstance().setCategory(
-                        .playback,
+                        .playAndRecord,
                         mode: .default,
-                        options: [.defaultToSpeaker, .allowBluetooth]
+                        options: [.mixWithOthers, .duckOthers, .defaultToSpeaker, .defaultToSpeaker, .allowBluetooth]
                     )
                     try AVAudioSession.sharedInstance().setActive(true)
 
@@ -62,9 +62,9 @@ public class TTSManager: NSObject, AVAudioPlayerDelegate {
                     self.player?.delegate = self
                     self.player?.prepareToPlay()
                     self.player?.play()
-                    print("TTSManager 🔊 Playing speech")
+                    print("testing -> TTSManager 🔊 Playing speech")
                 } catch {
-                    print("TTSManager ❌ Audio playback error: \(error)")
+                    print("testing -> TTSManager ❌ Audio playback error: \(error)")
                 }
             }
         }
@@ -73,7 +73,7 @@ public class TTSManager: NSObject, AVAudioPlayerDelegate {
     }
 
     public func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        print("TTSManager ✅ Playback finished")
+        print("testing -> TTSManager ✅ Playback finished")
         completion?()
     }
 }
