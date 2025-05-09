@@ -4,17 +4,15 @@ from fastapi import HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.config import settings
 
-# Use settings object
-FIREBASE_CREDENTIALS_PATH = settings.FIREBASE_SERVICE_ACCOUNT_KEY_PATH
+# Get credentials from settings
+cred_dict = settings.get_firebase_credentials()
 
-if not FIREBASE_CREDENTIALS_PATH:
-    print("WARNING: FIREBASE_SERVICE_ACCOUNT_KEY_PATH environment variable not set. Firebase Auth will not work.")
-    # You might want to raise an error here or handle it depending on your deployment strategy
-    # For now, we'll allow the app to start but auth will fail.
+if not cred_dict:
+    print("WARNING: FIREBASE_CREDENTIALS environment variable not set. Firebase Auth will not work.")
     cred = None
 else:
     try:
-        cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+        cred = credentials.Certificate(cred_dict)
     except Exception as e:
         print(f"Error loading Firebase credentials: {e}. Firebase Auth will not work.")
         cred = None
@@ -66,7 +64,6 @@ async def verify_firebase_token(creds: HTTPAuthorizationCredentials = Security(s
             headers={"WWW-Authenticate": "Bearer error=\'invalid_token\', error_description=\'Invalid token\'"}
         )
     except Exception as e:
-        # Log the exception e for more details in production
         print(f"An unexpected error occurred during token verification: {e}")
         raise HTTPException(
             status_code=500,
