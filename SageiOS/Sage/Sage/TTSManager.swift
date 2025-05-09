@@ -13,7 +13,7 @@ public class TTSManager: NSObject, AVAudioPlayerDelegate {
     public func speak(text: String, onComplete: (() -> Void)? = nil) {
         self.completion = onComplete
 
-        guard let url = URL(string: "https://api.openai.com/v1/audio/speech") else {
+        guard let url = URL(string: "https://sanity.com") else {
             print("testing -> TTSManager ❌ Invalid URL")
             return
         }
@@ -70,6 +70,29 @@ public class TTSManager: NSObject, AVAudioPlayerDelegate {
         }
 
         task.resume()
+    }
+
+    public func playAudioData(_ data: Data, onComplete: (() -> Void)? = nil) {
+        self.completion = onComplete
+        DispatchQueue.main.async {
+            do {
+                try AVAudioSession.sharedInstance().setCategory(
+                    .playAndRecord,
+                    mode: .default,
+                    options: [.mixWithOthers, .duckOthers, .defaultToSpeaker, .allowBluetooth]
+                )
+                try AVAudioSession.sharedInstance().setActive(true)
+
+                self.player = try AVAudioPlayer(data: data)
+                self.player?.delegate = self
+                self.player?.prepareToPlay()
+                self.player?.play()
+                print("testing -> TTSManager 🔊 Playing audio data")
+            } catch {
+                print("testing -> TTSManager ❌ Audio playback error from data: \(error)")
+                self.completion?() // Call completion if playback fails to start
+            }
+        }
     }
 
     public func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
