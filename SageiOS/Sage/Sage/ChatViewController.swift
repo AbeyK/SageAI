@@ -73,7 +73,8 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         setupUI()
         setupTableView()
         
-        let conversationManager = ConversationManager(apiKey: "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", delegate: self)
+        // Initialize ConversationManager without the hardcoded API key
+        let conversationManager = ConversationManager(delegate: self)
         conversationManager.startConversation()
     }
     
