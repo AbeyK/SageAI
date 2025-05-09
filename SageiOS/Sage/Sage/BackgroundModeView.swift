@@ -71,7 +71,17 @@ class BackgroundModeView: UIView {
         queuePlayer?.play()
     }
 
+    func stopVideo() {
+        queuePlayer?.pause()
+        queuePlayer?.removeAllItems()
+        playerLooper = nil
+        playerLayer?.removeFromSuperlayer()
+        playerLayer = nil
+        queuePlayer = nil
+    }
+
     deinit {
         NotificationCenter.default.removeObserver(self)
+        stopVideo()
     }
 }
