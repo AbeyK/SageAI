@@ -7,11 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3CE2378D2DCDB28900CF974B /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 3CE2378C2DCDB28900CF974B /* FirebaseAnalytics */; };
-		3CE2378F2DCDB2A000CF974B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3CE2378E2DCDB2A000CF974B /* GoogleService-Info.plist */; };
-		3CE2379A2DCDB55A00CF974B /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 3CE237992DCDB55A00CF974B /* FirebaseAppCheck */; };
-		3CE2379C2DCDB55A00CF974B /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 3CE2379B2DCDB55A00CF974B /* FirebaseAuth */; };
-		3CE2379E2DCDB55A00CF974B /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3CE2379D2DCDB55A00CF974B /* FirebaseCore */; };
+		47790FF92DCE836E00B746E5 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 47790FF82DCE836E00B746E5 /* FirebaseAnalytics */; };
+		47790FFB2DCE836E00B746E5 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 47790FFA2DCE836E00B746E5 /* FirebaseAppCheck */; };
+		47790FFD2DCE836E00B746E5 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 47790FFC2DCE836E00B746E5 /* FirebaseAuth */; };
+		47790FFF2DCE836E00B746E5 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 47790FFE2DCE836E00B746E5 /* FirebaseCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,7 +31,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		3CE2378E2DCDB2A000CF974B /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		472E2E062DC2DA4F002C51F7 /* Sage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sage.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		472E2E1F2DC2DA51002C51F7 /* SageTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SageTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		472E2E292DC2DA51002C51F7 /* SageUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SageUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -74,10 +72,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3CE2379A2DCDB55A00CF974B /* FirebaseAppCheck in Frameworks */,
-				3CE2379C2DCDB55A00CF974B /* FirebaseAuth in Frameworks */,
-				3CE2379E2DCDB55A00CF974B /* FirebaseCore in Frameworks */,
-				3CE2378D2DCDB28900CF974B /* FirebaseAnalytics in Frameworks */,
+				47790FFB2DCE836E00B746E5 /* FirebaseAppCheck in Frameworks */,
+				47790FFD2DCE836E00B746E5 /* FirebaseAuth in Frameworks */,
+				47790FFF2DCE836E00B746E5 /* FirebaseCore in Frameworks */,
+				47790FF92DCE836E00B746E5 /* FirebaseAnalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,7 +103,6 @@
 				472E2E222DC2DA51002C51F7 /* SageTests */,
 				472E2E2C2DC2DA51002C51F7 /* SageUITests */,
 				472E2E072DC2DA4F002C51F7 /* Products */,
-				3CE2378E2DCDB2A000CF974B /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -139,10 +136,10 @@
 			);
 			name = Sage;
 			packageProductDependencies = (
-				3CE2378C2DCDB28900CF974B /* FirebaseAnalytics */,
-				3CE237992DCDB55A00CF974B /* FirebaseAppCheck */,
-				3CE2379B2DCDB55A00CF974B /* FirebaseAuth */,
-				3CE2379D2DCDB55A00CF974B /* FirebaseCore */,
+				47790FF82DCE836E00B746E5 /* FirebaseAnalytics */,
+				47790FFA2DCE836E00B746E5 /* FirebaseAppCheck */,
+				47790FFC2DCE836E00B746E5 /* FirebaseAuth */,
+				47790FFE2DCE836E00B746E5 /* FirebaseCore */,
 			);
 			productName = Sage;
 			productReference = 472E2E062DC2DA4F002C51F7 /* Sage.app */;
@@ -227,7 +224,7 @@
 			mainGroup = 472E2DFD2DC2DA4F002C51F7;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				3CE2378B2DCDB28900CF974B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				47790FF72DCE836E00B746E5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 472E2E072DC2DA4F002C51F7 /* Products */;
@@ -246,7 +243,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3CE2378F2DCDB2A000CF974B /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,22 +307,20 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = VG9GKFMARV;
+				DEVELOPMENT_TEAM = SQ5RL484UZ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Sage/Info.plist;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses the microphone to capture your voice for conversation.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.SageAI.Sage;
+				PRODUCT_BUNDLE_IDENTIFIER = SageAI.Sage;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -341,22 +335,20 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = VG9GKFMARV;
+				DEVELOPMENT_TEAM = SQ5RL484UZ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Sage/Info.plist;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses the microphone to capture your voice for conversation.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.SageAI.Sage;
+				PRODUCT_BUNDLE_IDENTIFIER = SageAI.Sage;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -593,7 +585,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		3CE2378B2DCDB28900CF974B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+		47790FF72DCE836E00B746E5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
 			requirement = {
@@ -604,24 +596,24 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		3CE2378C2DCDB28900CF974B /* FirebaseAnalytics */ = {
+		47790FF82DCE836E00B746E5 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3CE2378B2DCDB28900CF974B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 47790FF72DCE836E00B746E5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalytics;
 		};
-		3CE237992DCDB55A00CF974B /* FirebaseAppCheck */ = {
+		47790FFA2DCE836E00B746E5 /* FirebaseAppCheck */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3CE2378B2DCDB28900CF974B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 47790FF72DCE836E00B746E5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAppCheck;
 		};
-		3CE2379B2DCDB55A00CF974B /* FirebaseAuth */ = {
+		47790FFC2DCE836E00B746E5 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3CE2378B2DCDB28900CF974B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 47790FF72DCE836E00B746E5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
 		};
-		3CE2379D2DCDB55A00CF974B /* FirebaseCore */ = {
+		47790FFE2DCE836E00B746E5 /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3CE2378B2DCDB28900CF974B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 47790FF72DCE836E00B746E5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCore;
 		};
 /* End XCSwiftPackageProductDependency section */
