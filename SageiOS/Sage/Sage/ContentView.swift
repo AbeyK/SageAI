@@ -7,13 +7,7 @@ struct ContentView: View {
         NavigationView {
             if authManager.user != nil {
                 // User is logged in - show ChatViewController
-                ChatViewControllerRepresentable()
-                    .navigationBarItems(trailing: Button(action: {
-                        authManager.signOut()
-                    }) {
-                        Text("Sign Out")
-                            .foregroundColor(.red)
-                    })
+                ChatViewControllerRepresentable(authManager: authManager)
             } else {
                 // User is not logged in
                 LoginView(authManager: authManager)
@@ -25,8 +19,12 @@ struct ContentView: View {
 
 // UIKit wrapper for ChatViewController
 struct ChatViewControllerRepresentable: UIViewControllerRepresentable {
+    let authManager: FirebaseAuthManager
+    
     func makeUIViewController(context: Context) -> ChatViewController {
-        return ChatViewController()
+        let chatVC = ChatViewController()
+        chatVC.authManager = authManager
+        return chatVC
     }
     
     func updateUIViewController(_ uiViewController: ChatViewController, context: Context) {

@@ -9,6 +9,8 @@ import UIKit
 import AVKit
 
 class ChatViewController: UIViewController, ConversationManagerDelegate {
+    var authManager: FirebaseAuthManager?
+    
     private let backgroundModeView: BackgroundModeView = {
         guard let url = Bundle.main.url(forResource: "Forest", withExtension: "mp4") else {
             fatalError("testing -> Video file not found in bundle.")
@@ -193,6 +195,8 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
 
 extension ChatViewController: ChatViewControllerDelegate {
     func didTapSignOut() {
-        dismiss(animated: true)
+        dismiss(animated: true) {
+            self.authManager?.signOut()
+        }
     }
 }
