@@ -23,20 +23,8 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     logger.info(f"[{time.time() - start_time:.3f}s] Authenticated user: {user.get('uid')}")
     logger.info(f"[{time.time() - start_time:.3f}s] Received messages: {request.messages}")
 
-    # Convert Pydantic models to list of dicts for OpenAI API
-    # Also add the system prompt if it's not already there or to reinforce it.
-    # For MVP, client sends full history. We might add a system prompt here.
-    # A more robust solution would involve checking if a system prompt of a certain kind exists.
-    
     # Simplified message preparation for OpenAI
     openai_messages = []
-    has_system_message = any(msg.role == "system" for msg in request.messages)
-
-    # Add a default system message if none is provided by the client
-    # This can be customized based on the meditation app's persona
-    if not has_system_message:
-        openai_messages.append({"role": "system", "content": "You are a calm and empathetic meditation assistant. Respond in a soothing and supportive tone. Keep responses concise, typically 1-2 sentences, unless more detail is needed for guidance."})
-    
     for msg in request.messages:
         openai_messages.append({"role": msg.role, "content": msg.content})
 
