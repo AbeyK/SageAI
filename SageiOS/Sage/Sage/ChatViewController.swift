@@ -140,7 +140,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     
     @objc private func muteButtonTapped() {
         isMuted.toggle()
-        muteButton.backgroundColor = isMuted ? .red : .gray
+        muteButton.backgroundColor = isMuted ? .red : SageColors.primaryButtonColor
     }
 
     @objc private func settingsButtonTapped() {
