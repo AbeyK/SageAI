@@ -12,7 +12,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     var authManager: FirebaseAuthManager?
 
     private let pandaView: RedPandaView = {
-        let view = RedPandaView(frame: .zero, type: .meditating)
+        let view = RedPandaView(frame: .zero, type: .happy)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -28,7 +28,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let chatTableView: UITableView = {
         let tableView = UITableView()
         tableView.separatorStyle = .none
-        tableView.backgroundColor = UIColor(white: 0.5, alpha: 0.3) // semi-transparent grey
+        tableView.backgroundColor = SageColors.primaryButtonColor.withAlphaComponent(0.3)
         tableView.layer.cornerRadius = 16
         tableView.clipsToBounds = true
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -40,7 +40,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "mic.fill"), for: .normal)
         button.tintColor = .white
-        button.backgroundColor = UIColor.gray
+        button.backgroundColor = SageColors.primaryButtonColor
         button.layer.cornerRadius = 25
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -165,12 +165,19 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             }
         }
     }
+    
+    // MARK: - ConversationManagerDelegate
 
     func conversationManagerAddingMessage(_ transcript: String) {
         DispatchQueue.main.async {
             self.addMessage(transcript)
         }
     }
+
+    func conversationManagerListening(isListening: Bool) {
+        pandaView.updateListeningState(isListening: isListening)
+    }
+
 }
 
 // MARK: - UITableViewDelegate & UITableViewDataSource
