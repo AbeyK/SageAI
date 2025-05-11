@@ -15,11 +15,18 @@ public enum PandaType {
 }
 
 public class RedPandaView: UIView {
-    private let imageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        return imageView
+    private let pandaView: UIImageView = {
+        let pandaView = UIImageView()
+        pandaView.contentMode = .scaleAspectFit
+        pandaView.translatesAutoresizingMaskIntoConstraints = false
+        return pandaView
+    }()
+    
+    private let backgroundView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.black.withAlphaComponent(0.1)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
     }()
     
     private var currentType: PandaType
@@ -27,40 +34,47 @@ public class RedPandaView: UIView {
     init(frame: CGRect, type: PandaType) {
         self.currentType = type
         super.init(frame: frame)
-        setupImageView()
-        updateImageView(for: type)
+        setupView()
+        updatePandaView(for: type)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    private func setupImageView() {
-        addSubview(imageView)
+    private func setupView() {
+        addSubview(backgroundView)
+        addSubview(pandaView)
         NSLayoutConstraint.activate([
-            imageView.topAnchor.constraint(equalTo: topAnchor),
-            imageView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            imageView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            imageView.trailingAnchor.constraint(equalTo: trailingAnchor)
+            pandaView.topAnchor.constraint(equalTo: topAnchor),
+            pandaView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            pandaView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            pandaView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            
+            backgroundView.centerXAnchor.constraint(equalTo: pandaView.centerXAnchor),
+            backgroundView.centerYAnchor.constraint(equalTo: pandaView.centerYAnchor),
+            backgroundView.widthAnchor.constraint(equalTo: pandaView.heightAnchor, multiplier: 1.3),
+            backgroundView.heightAnchor.constraint(equalTo: pandaView.heightAnchor, multiplier: 1.3),
         ])
     }
     
-    public func updateImageView(for type: PandaType) {
-        UIView.transition(with: imageView, duration: 0.3, options: .transitionCrossDissolve, animations: {
+    public func updatePandaView(for type: PandaType) {
+        UIView.transition(with: pandaView, duration: 0.3, options: .transitionCrossDissolve, animations: {
             switch type {
             case .meditating:
-                self.imageView.image = UIImage(named: "PandaMeditating")
+                self.pandaView.image = UIImage(named: "PandaMeditating")
             case .sleeping:
-                self.imageView.image = UIImage(named: "PandaSleeping")
+                self.pandaView.image = UIImage(named: "PandaSleeping")
             case .talking:
-                self.imageView.image = UIImage(named: "PandaTalking")
+                self.pandaView.image = UIImage(named: "PandaTalking")
             case .happy:
-                self.imageView.image = UIImage(named: "PandaHappy")
+                self.pandaView.image = UIImage(named: "PandaHappy")
             }
         }, completion: nil)
     }
     
     public override func layoutSubviews() {
         super.layoutSubviews()
+        backgroundView.layer.cornerRadius = backgroundView.frame.height / 2
     }
 } 
