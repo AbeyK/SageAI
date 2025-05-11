@@ -10,7 +10,11 @@ import UIKit
 class LoginViewController: UIViewController {
     
     private let faceView: RedPandaView = {
+<<<<<<< HEAD
         let view = RedPandaView(frame: .zero, type: .happy)
+=======
+        let view = RedPandaView(frame: .zero, type: .meditating)
+>>>>>>> 3186bc5 (panda taliking, panda listening)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()

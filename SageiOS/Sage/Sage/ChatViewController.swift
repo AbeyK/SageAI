@@ -77,7 +77,9 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     
     private func setupUI() {
         view.backgroundColor = SageColors.backgroundColor
+        view.backgroundColor = SageColors.backgroundColor
         // Add subviews
+        view.addSubview(pandaView)
         view.addSubview(pandaView)
         view.addSubview(chatTableView)
         view.addSubview(muteButton)
