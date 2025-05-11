@@ -46,16 +46,18 @@ public class RedPandaView: UIView {
     }
     
     public func updateImageView(for type: PandaType) {
-        switch type {
-        case .meditating:
-            imageView.image = UIImage(named: "PandaMeditating")
-        case .sleeping:
-            imageView.image = UIImage(named: "PandaSleeping")
-        case .talking:
-            imageView.image = UIImage(named: "PandaTalking")
-        case .happy:
-            imageView.image = UIImage(named: "PandaHappy")
-        }
+        UIView.transition(with: imageView, duration: 0.3, options: .transitionCrossDissolve, animations: {
+            switch type {
+            case .meditating:
+                self.imageView.image = UIImage(named: "PandaMeditating")
+            case .sleeping:
+                self.imageView.image = UIImage(named: "PandaSleeping")
+            case .talking:
+                self.imageView.image = UIImage(named: "PandaTalking")
+            case .happy:
+                self.imageView.image = UIImage(named: "PandaHappy")
+            }
+        }, completion: nil)
     }
     
     public override func layoutSubviews() {
