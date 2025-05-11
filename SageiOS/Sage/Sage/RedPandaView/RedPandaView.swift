@@ -29,6 +29,16 @@ public class RedPandaView: UIView {
         return view
     }()
     
+    private let listeningLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Listening ..."
+        label.textColor = .white
+        label.textAlignment = .center
+        label.alpha = 0.0 // Initially hidden
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     private var currentType: PandaType
 
     init(frame: CGRect, type: PandaType) {
@@ -45,6 +55,7 @@ public class RedPandaView: UIView {
     private func setupView() {
         addSubview(backgroundView)
         addSubview(pandaView)
+        addSubview(listeningLabel)
         NSLayoutConstraint.activate([
             pandaView.topAnchor.constraint(equalTo: topAnchor),
             pandaView.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -55,6 +66,10 @@ public class RedPandaView: UIView {
             backgroundView.centerYAnchor.constraint(equalTo: pandaView.centerYAnchor),
             backgroundView.widthAnchor.constraint(equalTo: pandaView.heightAnchor, multiplier: 1.3),
             backgroundView.heightAnchor.constraint(equalTo: pandaView.heightAnchor, multiplier: 1.3),
+
+            listeningLabel.bottomAnchor.constraint(equalTo: pandaView.topAnchor, constant: -10),
+            listeningLabel.centerXAnchor.constraint(equalTo: pandaView.centerXAnchor),
+            listeningLabel.widthAnchor.constraint(equalTo: pandaView.widthAnchor)
         ])
     }
     
@@ -70,6 +85,12 @@ public class RedPandaView: UIView {
             case .happy:
                 self.pandaView.image = UIImage(named: "PandaHappy")
             }
+        }, completion: nil)
+    }
+    
+    public func updateListeningState(isListening: Bool) {
+        UIView.transition(with: listeningLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
+            self.listeningLabel.alpha = isListening ? 1.0 : 0.0
         }, completion: nil)
     }
     
