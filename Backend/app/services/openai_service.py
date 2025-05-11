@@ -68,7 +68,7 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
         return f"Error: Could not get response from AI service. Details: {str(e)}"
 
 # Placeholder for TTS function - to be implemented in Task 6
-async def text_to_speech_openai(text: str, model: str = "gpt-4o-mini-tts", voice: str = "nova", speed: float = 0.8) -> str:
+async def text_to_speech_openai(text: str, model: str = "gpt-4o-mini-tts", voice: str = "sage", speed: float = 0.8) -> str:
     """
     Converts text to speech using OpenAI TTS (gpt-4o-mini-tts) and returns base64 encoded audio.
     The model, voice, and speed are selected for a calm, meditation-friendly experience.
@@ -93,7 +93,7 @@ async def text_to_speech_openai(text: str, model: str = "gpt-4o-mini-tts", voice
             input=tts_text,
             response_format="mp3",
             speed=speed,
-            instructions="Wise meditation guru with 100 years of experience; gentle optimism; speaking to a stressed adult in a quiet room; lower pitch; measured 90 wpm."
+            instructions="Wise, 1000-year-old meditation guru; gentle optimism; speaking to a stressed adult in a quiet room; low pitch; 90 wpm."
         )
         
         logger.info(f"[{time.time() - start_time:.3f}s] Received audio from OpenAI TTS")
