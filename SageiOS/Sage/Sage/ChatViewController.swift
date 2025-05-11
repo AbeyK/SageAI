@@ -20,7 +20,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let settingsButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "gearshape.fill"), for: .normal)
-        button.tintColor = .white
+        button.tintColor = SageColors.primaryButtonColor
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -107,9 +107,9 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         NSLayoutConstraint.activate([
             // Settings button
             settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-            settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            settingsButton.widthAnchor.constraint(equalToConstant: 30),
-            settingsButton.heightAnchor.constraint(equalToConstant: 30),
+            settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+            settingsButton.widthAnchor.constraint(equalToConstant: 40),
+            settingsButton.heightAnchor.constraint(equalToConstant: 40),
 
             // Chat table
             chatTableView.heightAnchor.constraint(equalToConstant: 200),
