@@ -15,6 +15,7 @@ public enum PandaType {
 }
 
 public class RedPandaView: UIView {
+<<<<<<< HEAD
     private let pandaView: UIImageView = {
         let pandaView = UIImageView()
         pandaView.contentMode = .scaleAspectFit
@@ -38,6 +39,13 @@ public class RedPandaView: UIView {
         label.font = UIFont.systemFont(ofSize: 26, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
+=======
+    private let imageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+>>>>>>> 3186bc5 (panda taliking, panda listening)
     }()
     
     private var currentType: PandaType
@@ -45,14 +53,20 @@ public class RedPandaView: UIView {
     init(frame: CGRect, type: PandaType) {
         self.currentType = type
         super.init(frame: frame)
+<<<<<<< HEAD
         setupView()
         updatePandaView(for: type)
+=======
+        setupImageView()
+        updateImageView(for: type)
+>>>>>>> 3186bc5 (panda taliking, panda listening)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+<<<<<<< HEAD
     private func setupView() {
         addSubview(backgroundView)
         addSubview(pandaView)
@@ -93,10 +107,36 @@ public class RedPandaView: UIView {
         UIView.transition(with: listeningLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
             self.listeningLabel.alpha = isListening ? 1.0 : 0.0
         }, completion: nil)
+=======
+    private func setupImageView() {
+        addSubview(imageView)
+        NSLayoutConstraint.activate([
+            imageView.topAnchor.constraint(equalTo: topAnchor),
+            imageView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            imageView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: trailingAnchor)
+        ])
+    }
+    
+    public func updateImageView(for type: PandaType) {
+        switch type {
+        case .meditating:
+            imageView.image = UIImage(named: "PandaMeditating")
+        case .sleeping:
+            imageView.image = UIImage(named: "PandaSleeping")
+        case .talking:
+            imageView.image = UIImage(named: "PandaTalking")
+        case .happy:
+            imageView.image = UIImage(named: "PandaHappy")
+        }
+>>>>>>> 3186bc5 (panda taliking, panda listening)
     }
     
     public override func layoutSubviews() {
         super.layoutSubviews()
+<<<<<<< HEAD
         backgroundView.layer.cornerRadius = backgroundView.frame.height / 2
+=======
+>>>>>>> 3186bc5 (panda taliking, panda listening)
     }
 } 
