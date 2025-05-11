@@ -179,6 +179,12 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             self.addMessage(transcript)
         }
     }
+
+    func conversationManagerDidAddMessage(_ message: ChatMessage) {
+        DispatchQueue.main.async {
+            self.addMessage(message.content)
+        }
+    }
 }
 
 // MARK: - UITableViewDelegate & UITableViewDataSource
