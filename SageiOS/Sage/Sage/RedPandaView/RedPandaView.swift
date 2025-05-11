@@ -24,7 +24,7 @@ public class RedPandaView: UIView {
     
     private let backgroundView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor.black.withAlphaComponent(0.1)
+        view.backgroundColor = SageColors.primaryButtonColor.withAlphaComponent(0.3)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -32,9 +32,10 @@ public class RedPandaView: UIView {
     private let listeningLabel: UILabel = {
         let label = UILabel()
         label.text = "Listening ..."
-        label.textColor = .white
+        label.textColor = UIColor.lightGray
         label.textAlignment = .center
-        label.alpha = 0.0 // Initially hidden
+        label.alpha = 1.0 // Initially hidden
+        label.font = UIFont.systemFont(ofSize: 26, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -67,7 +68,7 @@ public class RedPandaView: UIView {
             backgroundView.widthAnchor.constraint(equalTo: pandaView.heightAnchor, multiplier: 1.3),
             backgroundView.heightAnchor.constraint(equalTo: pandaView.heightAnchor, multiplier: 1.3),
 
-            listeningLabel.bottomAnchor.constraint(equalTo: pandaView.topAnchor, constant: -10),
+            listeningLabel.bottomAnchor.constraint(equalTo: backgroundView.topAnchor, constant: -16),
             listeningLabel.centerXAnchor.constraint(equalTo: pandaView.centerXAnchor),
             listeningLabel.widthAnchor.constraint(equalTo: pandaView.widthAnchor)
         ])
