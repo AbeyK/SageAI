@@ -9,8 +9,8 @@ import UIKit
 
 class LoginViewController: UIViewController {
     
-    private let faceView: WaterFaceView = {
-        let view = WaterFaceView()
+    private let faceView: RedPandaView = {
+        let view = RedPandaView(frame: .zero, type: .meditating)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
