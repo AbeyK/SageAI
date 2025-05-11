@@ -92,7 +92,8 @@ async def text_to_speech_openai(text: str, model: str = "gpt-4o-mini-tts", voice
             voice=voice,
             input=tts_text,
             response_format="mp3",
-            speed=speed
+            speed=speed,
+            instructions="Wise meditation guru with 100 years of experience; gentle optimism; speaking to a stressed adult in a quiet room; lower pitch; measured 90 wpm."
         )
         
         logger.info(f"[{time.time() - start_time:.3f}s] Received audio from OpenAI TTS")
