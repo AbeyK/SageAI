@@ -183,9 +183,9 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ChatMessageCell", for: indexPath) as! ChatMessageCell
         cell.configure(with: messages[indexPath.row], sent: indexPath.row % 2 == 0)
         if (indexPath.row % 2 != 0) {
-            pandaView.updateImageView(for: .talking)
+            pandaView.updatePandaView(for: .talking)
         } else {
-            pandaView.updateImageView(for: .meditating)
+            pandaView.updatePandaView(for: .meditating)
         }
         return cell
     }
