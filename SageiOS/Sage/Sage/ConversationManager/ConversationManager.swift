@@ -48,7 +48,7 @@ public class ConversationManager: SpeechManagerDelegate {
     
     // Auto-prompting messages
     private let continuationPrompts = [
-        "Please continue the current phase of the meditation.",
+        "__CONTINUE__",
     ]
 
     public private(set) var currentPhase: MeditationPhase = .idle {
