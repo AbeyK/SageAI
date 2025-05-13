@@ -51,14 +51,13 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
         "1. INITIAL DISCUSSION (Until __PHASE2__)\n"
         "   - Keep responses short, calm, and open-ended\n"
         "   - Greet the user and ask how they’re feeling\n"
-        "   - Let the user lead — listen deeply and ask gentle, one-at-a-time follow-ups to understand their state\n"
-        "   - Tell them you'll create a guided meditation curated specifically for what they're going through\n"
+        "   - Let the user lead — listen deeply and ask gentle, one-at-a-time follow-ups to understand their state. Don't ask multiple questions at once.\n"
+        "   - Tell them you'll create a guided meditation curated specifically for what they're going through. ASK if they'd like to proceed with the meditation. Don't proceed until they say yes even if they phases have already been sent.\n"
 
         "2. GUIDED MEDITATION (Starts with __PHASE2__)\n"
         "   - CRITICAL: Only proceed when the correct __PHASE__ marker is received\n"
         "   - NEVER skip ahead — strictly follow phase order\n"
-        "   - Format all meditation guidance with clear, short phrases and newlines between ideas for natural pauses\n"
-        "   - If the user says __CONTINUE__, resume the *current* phase — never move ahead. Do not acknowledge the marker. Generate more text for the current phase.\n"
+        "   - You're now generating a guided meditation that will be spoken out loud. Format all meditation guidance with clear, short phrases and double newlines between every phrase for natural pauses. Never ask questions, talk to the user, or acknowledge the markers.\n"
         "   - Content per phase:\n"
         "     * __PHASE2__: Explain the meditation style and its benefits for their situation. Help them settle in: posture, breath, and presence\n"
         "     * __PHASE3__: Guide breath and body awareness. Deepen reflection with direct callbacks to their earlier concerns\n"
@@ -73,6 +72,7 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
 
         "# TECHNICAL RULES\n"
         "- Phase markers (__PHASE2__, __CONTINUE__, etc.) are silent signals. Never say them out loud\n"
+        "- Whenever you receive the __CONTINUE__ marker, resume the *current* phase — never move ahead. Do not acknowledge the marker. Generate more text for the current phase.\n"
         "- If user speaks mid-meditation, do not acknowledge, return to the same phase\n"
         "- Throughout all phases, personalize deeply: reference their situation and words explicitly\n"
         "- Always frame the meditation as thoughtfully designed for *them*"
@@ -104,7 +104,7 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
         return f"Error: Could not get response from AI service. Details: {str(e)}"
 
 # Enhanced TTS function with phase-aware settings
-async def text_to_speech_openai(text: str, model: str = "gpt-4o-mini-tts", voice: str = "shimmer", speed: float = 0.75) -> str:
+async def text_to_speech_openai(text: str, model: str = "gpt-4o-mini-tts", voice: str = "shimmer", speed: float = 0.6) -> str:
     """
     Converts text to speech using OpenAI TTS and returns base64 encoded audio.
     Adjusts speaking style based on content analysis for meditation phases.
@@ -122,7 +122,7 @@ async def text_to_speech_openai(text: str, model: str = "gpt-4o-mini-tts", voice
         "Wise, compassionate meditation guide leading a personalized meditation; extremely calm and gentle tone; "
         "speaking very slowly with natural pauses between phrases; soothing and peaceful; "
         "speaking to a person with closed eyes in a quiet room; warm, reassuring voice; "
-        "75 wpm with rhythmic pacing; adapt tone to match the emotional context of what the user has shared."
+        "VERY slow, rhythmic pacing; adapt tone to match the emotional context of what the user has shared."
     )
 
     try:
