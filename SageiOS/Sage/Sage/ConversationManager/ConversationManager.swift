@@ -126,11 +126,13 @@ public class ConversationManager: SpeechManagerDelegate {
         currentPhase = .initialDiscussion
         lastUserInteractionTime = Date()  // Initialize interaction time
 
-        // Add an initial user message to kick off the conversation
-        conversationHistory.append(["role": "user", "content": ""])
+        // Add an initial user message to kick off the conversation but don't add it to conversation history
+        // This prevents showing an empty message in the UI
+        let initialMessage = ["role": "user", "content": ""]
 
         DispatchQueue.global(qos: .userInitiated).async {
-            self.sendToBackend() // AI will respond with its greeting and start STAGE 1 of prompt.
+            // Send the initial message to the backend without adding it to conversation history
+            self.sendToBackend(withMessage: initialMessage)
         }
         
         // Schedule the *start* of the formal meditation (__PHASE2__)
@@ -240,11 +242,11 @@ public class ConversationManager: SpeechManagerDelegate {
         let prompt = continuationPrompts[promptIndex]
         log("Sending auto-continuation prompt: \"\(prompt)\"")
         
-        // Send the continuation prompt to the backend
-        conversationHistory.append(["role": "user", "content": prompt])
+        // Send the continuation prompt directly to the backend without adding to conversation history
+        let continuationMessage = ["role": "user", "content": prompt]
         
         DispatchQueue.global(qos: .userInitiated).async {
-            self.sendToBackend()
+            self.sendToBackend(withMessage: continuationMessage)
         }
         
         // Reset the interaction time
@@ -363,10 +365,12 @@ public class ConversationManager: SpeechManagerDelegate {
         }
         
         log("Client sending phase marker to backend: \(marker)")
-        conversationHistory.append(["role": "user", "content": marker])
+        
+        // Send phase marker directly to backend without adding to conversation history
+        let phaseMarkerMessage = ["role": "user", "content": marker]
         
         DispatchQueue.global(qos: .userInitiated).async {
-            self.sendToBackend()
+            self.sendToBackend(withMessage: phaseMarkerMessage)
         }
     }
 
@@ -411,6 +415,23 @@ public class ConversationManager: SpeechManagerDelegate {
             log("Already sending request, ignoring duplicate.")
             return
         }
+        
+        // Use the conversation history for regular sends
+        let messagesPayload = self.conversationHistory.map { ChatMessage(role: $0["role"]!, content: $0["content"]!) }
+        sendToBackend(withMessages: messagesPayload)
+    }
+    
+    private func sendToBackend(withMessage message: [String: String]) {
+        // Create a single message payload without affecting conversation history
+        let messagePayload = [ChatMessage(role: message["role"]!, content: message["content"]!)]
+        sendToBackend(withMessages: messagePayload)
+    }
+    
+    private func sendToBackend(withMessages messages: [ChatMessage]) {
+        guard !isSendingChat else {
+            log("Already sending request, ignoring duplicate.")
+            return
+        }
         isSendingChat = true
 
         getCurrentUserIDToken { [weak self] idToken in
@@ -432,10 +453,8 @@ public class ConversationManager: SpeechManagerDelegate {
             request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
-            let messagesPayload = self.conversationHistory.map { ChatMessage(role: $0["role"]!, content: $0["content"]!) }
-
             do {
-                let jsonData = try JSONEncoder().encode(["messages": messagesPayload])
+                let jsonData = try JSONEncoder().encode(["messages": messages])
                 request.httpBody = jsonData
             } catch {
                 self.log("Failed to encode request", fields: ["error": error])
@@ -453,7 +472,7 @@ public class ConversationManager: SpeechManagerDelegate {
                     if error.code == .networkConnectionLost {
                         self.log("Retrying after connection lost...")
                         DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
-                            self.sendToBackend()
+                            self.sendToBackend(withMessages: messages)
                         }
                     }
                     return
