@@ -58,6 +58,7 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
         "   - CRITICAL: Only proceed when the correct __PHASE__ marker is received\n"
         "   - NEVER skip ahead — strictly follow phase order\n"
         "   - Format all meditation guidance with clear, short phrases and newlines between ideas for natural pauses\n"
+        "   - If the user says __CONTINUE__, resume the *current* phase — never move ahead. Do not acknowledge the marker. Generate more text for the current phase.\n"
         "   - Content per phase:\n"
         "     * __PHASE2__: Explain the meditation style and its benefits for their situation. Help them settle in: posture, breath, and presence\n"
         "     * __PHASE3__: Guide breath and body awareness. Deepen reflection with direct callbacks to their earlier concerns\n"
@@ -71,9 +72,8 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
         "   - Thank them for showing up and exploring this with you\n\n"
 
         "# TECHNICAL RULES\n"
-        "- Phase markers (__PHASE2__, etc.) are silent signals. Never say them out loud\n"
-        "- If user says 'Please continue', resume the *current* phase — never move ahead\n"
-        "- If user speaks mid-meditation, acknowledge briefly, then return to the same phase\n"
+        "- Phase markers (__PHASE2__, __CONTINUE__, etc.) are silent signals. Never say them out loud\n"
+        "- If user speaks mid-meditation, do not acknowledge, return to the same phase\n"
         "- Throughout all phases, personalize deeply: reference their situation and words explicitly\n"
         "- Always frame the meditation as thoughtfully designed for *them*"
     )
