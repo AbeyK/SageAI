@@ -179,6 +179,12 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             self.addMessage(transcript)
         }
     }
+
+    func conversationManagerDidAddMessage(_ message: ChatMessage) {
+        DispatchQueue.main.async {
+            self.addMessage(message.content)
+        }
+    }
 }
 
 // MARK: - UITableViewDelegate & UITableViewDataSource
@@ -189,7 +195,7 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ChatMessageCell", for: indexPath) as! ChatMessageCell
-        cell.configure(with: messages[indexPath.row], sent: indexPath.row % 2 == 0)
+        cell.configure(with: messages[indexPath.row], sent: indexPath.row % 2 == 1)
         return cell
     }
     
