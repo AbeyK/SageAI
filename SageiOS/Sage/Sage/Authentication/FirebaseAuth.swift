@@ -46,14 +46,17 @@ class FirebaseAuthManager: ObservableObject {
         }
     }
 
-    func signIn(email: String, password: String) {
+    func signIn(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void) {
         Auth.auth().signIn(withEmail: email, password: password) { [weak self] (authResult, error) in
             if let error = error {
                 self?.authError = error
+                completion(.failure(error))
                 return
             }
-            // User is signed in
-            self?.authError = nil
+            if let user = authResult?.user {
+                self?.authError = nil
+                completion(.success(user))
+            }
         }
     }
 
