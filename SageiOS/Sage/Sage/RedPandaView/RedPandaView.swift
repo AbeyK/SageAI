@@ -65,8 +65,6 @@ public class RedPandaView: UIView {
         super.init(frame: frame)
         setupView()
         updatePandaView(for: type)
-        setupImageView()
-        updateImageView(for: type)
     }
         
     required init?(coder: NSCoder) {
@@ -116,32 +114,7 @@ public class RedPandaView: UIView {
             }, completion: nil)
         }
     }
-    
-    private func setupImageView() {
-        addSubview(imageView)
-        NSLayoutConstraint.activate([
-            imageView.topAnchor.constraint(equalTo: topAnchor),
-            imageView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            imageView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            imageView.trailingAnchor.constraint(equalTo: trailingAnchor)
-        ])
-    }
-        
-    public func updateImageView(for type: PandaType) {
-        DispatchQueue.main.async {
-            switch type {
-            case .meditating:
-                self.imageView.image = UIImage(named: "PandaMeditating")
-            case .sleeping:
-                self.imageView.image = UIImage(named: "PandaSleeping")
-            case .talking:
-                self.imageView.image = UIImage(named: "PandaTalking")
-            case .happy:
-                self.imageView.image = UIImage(named: "PandaHappy")
-            }
-        }
-    }
-    
+
     public func updateListeningState(isListening: Bool) {
         DispatchQueue.main.async {
             UIView.transition(with: self.listeningLabel, duration: 0.3, options:.transitionCrossDissolve, animations: {
