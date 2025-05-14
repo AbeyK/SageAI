@@ -432,23 +432,6 @@ public class ConversationManager: SpeechManagerDelegate {
             log("Already sending request, ignoring duplicate.")
             return
         }
-        
-        // Use the conversation history for regular sends
-        let messagesPayload = self.conversationHistory.map { ChatMessage(role: $0["role"]!, content: $0["content"]!) }
-        sendToBackend(withMessages: messagesPayload)
-    }
-    
-    private func sendToBackend(withMessage message: [String: String]) {
-        // Create a single message payload without affecting conversation history
-        let messagePayload = [ChatMessage(role: message["role"]!, content: message["content"]!)]
-        sendToBackend(withMessages: messagePayload)
-    }
-    
-    private func sendToBackend(withMessages messages: [ChatMessage]) {
-        guard !isSendingChat else {
-            log("Already sending request, ignoring duplicate.")
-            return
-        }
 
         isSendingChat = true
         self.updateConversationStatus(to: .isThinking)
