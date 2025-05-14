@@ -24,7 +24,7 @@ class LoginViewController: UIViewController {
         let label = UILabel()
         label.text = "Sage"
         label.font = .systemFont(ofSize: 28, weight: .semibold)
-        label.textColor = .gray
+        label.textColor = SageColors.backgroundColor
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -33,11 +33,11 @@ class LoginViewController: UIViewController {
     private let usernameTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Username"
-        textField.backgroundColor = UIColor(white: 1, alpha: 0.1)
+        textField.backgroundColor = UIColor(white: 1, alpha: 0.3)
         textField.textColor = .white
         textField.attributedPlaceholder = NSAttributedString(
             string: "Username",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor(white: 1, alpha: 0.6)]
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor(white: 1, alpha: 0.8)]
         )
         textField.layer.cornerRadius = 8
         textField.autocapitalizationType = .none
@@ -50,11 +50,11 @@ class LoginViewController: UIViewController {
     private let passwordTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Password"
-        textField.backgroundColor = UIColor(white: 1, alpha: 0.1)
+        textField.backgroundColor = UIColor(white: 1, alpha: 0.3)
         textField.textColor = .white
         textField.attributedPlaceholder = NSAttributedString(
             string: "Password",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor(white: 1, alpha: 0.6)]
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor(white: 1, alpha: 0.8)]
         )
         textField.layer.cornerRadius = 8
         textField.isSecureTextEntry = true
@@ -68,7 +68,7 @@ class LoginViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle("Log In", for: .normal)
         button.backgroundColor = SageColors.backgroundColor
-        button.setTitleColor(.white, for: .normal)
+        button.setTitleColor(SageColors.primaryButtonColor, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
         button.layer.cornerRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -101,7 +101,7 @@ class LoginViewController: UIViewController {
             SageColors.primaryButtonColor.cgColor,
             SageColors.primaryButtonColor.cgColor,
         ]
-        layer.locations = [0.0, 0.5, 1.0]
+        layer.locations = [0.0, 0.6, 1.0]
         return layer
     }()
 
