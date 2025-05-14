@@ -56,7 +56,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         return layer
     }()
     
-    private var messages: [String] = []
+    private var messages: [(content: String, isSentByUser: Bool)] = []
     private var isMuted: Bool = false
     
     override func viewDidLoad() {
@@ -153,8 +153,8 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     }
 
     
-    func addMessage(_ message: String) {
-        messages.append(message)
+    func addMessage(_ message: String, isSentByUser: Bool) {
+        messages.append((content: message, isSentByUser: isSentByUser))
         let indexPath = IndexPath(row: messages.count - 1, section: 0)
         chatTableView.insertRows(at: [indexPath], with: .automatic)
         chatTableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
@@ -170,15 +170,9 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     
     // MARK: - ConversationManagerDelegate
 
-    func conversationManagerAddingMessage(_ transcript: String) {
+    func conversationManagerDidAddMessage(_ message: ChatMessage, isSentByUser: Bool) {
         DispatchQueue.main.async {
-            self.addMessage(transcript)
-        }
-    }
-  
-    func conversationManagerDidAddMessage(_ message: ChatMessage) {
-        DispatchQueue.main.async {
-            self.addMessage(message.content)
+            self.addMessage(message.content, isSentByUser: isSentByUser)
         }
     }
 
@@ -208,8 +202,8 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ChatMessageCell", for: indexPath) as! ChatMessageCell
-        cell.configure(with: messages[indexPath.row], sent: indexPath.row % 2 == 1)
-
+        let message = messages[indexPath.row]
+        cell.configure(with: message.content, sent: message.isSentByUser)
         return cell
     }
     
@@ -220,10 +214,8 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
 
 extension ChatViewController: ChatViewControllerDelegate {
     func didTapSignOut() {
-        self.authManager?.signOut()
-        let loginViewController = LoginViewController()
-        loginViewController.modalPresentationStyle = .fullScreen
-        loginViewController.isModalInPresentation = true // Prevent dismissal
-        present(loginViewController, animated: true, completion: nil)
+        dismiss(animated: true) {
+            self.authManager?.signOut()
+        }
     }
 }

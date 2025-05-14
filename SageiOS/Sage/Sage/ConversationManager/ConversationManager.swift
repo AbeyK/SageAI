@@ -91,7 +91,7 @@ public class ConversationManager: SpeechManagerDelegate {
                     DispatchQueue.main.async { // Dispatch to main thread for UI updates
                         // Assuming the delegate method is now: conversationManagerDidAddMessage(_ message: ChatMessage)
                         // You will need to ensure your actual delegate protocol matches this.
-                        self.delegate?.conversationManagerDidAddMessage(chatMessage)
+                        self.delegate?.conversationManagerDidAddMessage(chatMessage, isSentByUser: role == "user")
                     }
                 }
             }
