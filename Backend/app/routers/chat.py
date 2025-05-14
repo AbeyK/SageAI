@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.models import ChatRequest, ChatResponse, ChatMessage
 from app.auth.firebase_auth import verify_firebase_token
 from app.services.openai_service import get_chat_completion, text_to_speech_openai
+from app.services.rate_limiter import is_rate_limited
 from typing import List
 import time
 import logging
@@ -22,6 +23,10 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     
     logger.info(f"[{time.time() - start_time:.3f}s] Authenticated user: {user.get('uid')}")
     logger.info(f"[{time.time() - start_time:.3f}s] Received messages: {request.messages}")
+
+    # Rate limiting check
+    if await is_rate_limited(user["uid"]):
+        raise HTTPException(status_code=429, detail="Daily limit reached. Please try again tomorrow.")
 
     # Simplified message preparation for OpenAI
     openai_messages = []
