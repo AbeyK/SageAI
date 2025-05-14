@@ -8,18 +8,19 @@
 import UIKit
 
 class LoginViewController: UIViewController {
+    private let authManager = FirebaseAuthManager()
     
-    private let faceView: WaterFaceView = {
-        let view = WaterFaceView()
+    private let faceView: RedPandaView = {
+        let view = RedPandaView(frame: .zero, type: .happy)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Sage AI"
+        label.text = "Sage"
         label.font = .systemFont(ofSize: 28, weight: .semibold)
-        label.textColor = .white
+        label.textColor = SageColors.backgroundColor
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -28,11 +29,11 @@ class LoginViewController: UIViewController {
     private let usernameTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Username"
-        textField.backgroundColor = UIColor(white: 1, alpha: 0.1)
+        textField.backgroundColor = UIColor(white: 1, alpha: 0.3)
         textField.textColor = .white
         textField.attributedPlaceholder = NSAttributedString(
             string: "Username",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor(white: 1, alpha: 0.6)]
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor(white: 1, alpha: 0.8)]
         )
         textField.layer.cornerRadius = 8
         textField.autocapitalizationType = .none
@@ -45,11 +46,11 @@ class LoginViewController: UIViewController {
     private let passwordTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Password"
-        textField.backgroundColor = UIColor(white: 1, alpha: 0.1)
+        textField.backgroundColor = UIColor(white: 1, alpha: 0.3)
         textField.textColor = .white
         textField.attributedPlaceholder = NSAttributedString(
             string: "Password",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor(white: 1, alpha: 0.6)]
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor(white: 1, alpha: 0.8)]
         )
         textField.layer.cornerRadius = 8
         textField.isSecureTextEntry = true
@@ -61,9 +62,9 @@ class LoginViewController: UIViewController {
     
     private let loginButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Sign In", for: .normal)
-        button.backgroundColor = UIColor(red: 0.7, green: 0.4, blue: 1.0, alpha: 1.0)
-        button.setTitleColor(.white, for: .normal)
+        button.setTitle("Log In", for: .normal)
+        button.backgroundColor = SageColors.backgroundColor
+        button.setTitleColor(SageColors.primaryButtonColor, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
         button.layer.cornerRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -92,10 +93,11 @@ class LoginViewController: UIViewController {
     private let gradientLayer: CAGradientLayer = {
         let layer = CAGradientLayer()
         layer.colors = [
-            UIColor(red: 0.6, green: 0.4, blue: 0.9, alpha: 1.0).cgColor,
-            UIColor(red: 0.2, green: 0.2, blue: 0.4, alpha: 1.0).cgColor
+            SageColors.backgroundColor.cgColor,
+            SageColors.primaryButtonColor.cgColor,
+            SageColors.primaryButtonColor.cgColor,
         ]
-        layer.locations = [0.0, 1.0]
+        layer.locations = [0.0, 0.6, 1.0]
         return layer
     }()
 
@@ -166,8 +168,27 @@ class LoginViewController: UIViewController {
     }
     
     @objc private func loginButtonTapped() {
+        guard let username = usernameTextField.text, !username.isEmpty,
+              let password = passwordTextField.text, !password.isEmpty else {
+            // Show error message
+            return
+        }
+        
+        authManager.signIn(email: username, password: password) { [weak self] result in
+            switch result {
+            case .success:
+                self?.transitionToChatViewController()
+            case .failure(let error):
+                // Handle error (e.g., show alert)
+                print("Login error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func transitionToChatViewController() {
         let chatViewController = ChatViewController()
         chatViewController.modalPresentationStyle = .fullScreen
+        chatViewController.authManager = authManager
         present(chatViewController, animated: true)
     }
     

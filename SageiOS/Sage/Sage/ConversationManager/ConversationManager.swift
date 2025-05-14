@@ -432,7 +432,26 @@ public class ConversationManager: SpeechManagerDelegate {
             log("Already sending request, ignoring duplicate.")
             return
         }
+        
+        // Use the conversation history for regular sends
+        let messagesPayload = self.conversationHistory.map { ChatMessage(role: $0["role"]!, content: $0["content"]!) }
+        sendToBackend(withMessages: messagesPayload)
+    }
+    
+    private func sendToBackend(withMessage message: [String: String]) {
+        // Create a single message payload without affecting conversation history
+        let messagePayload = [ChatMessage(role: message["role"]!, content: message["content"]!)]
+        sendToBackend(withMessages: messagePayload)
+    }
+    
+    private func sendToBackend(withMessages messages: [ChatMessage]) {
+        guard !isSendingChat else {
+            log("Already sending request, ignoring duplicate.")
+            return
+        }
+
         isSendingChat = true
+        self.updateConversationStatus(to: .isThinking)
 
         getCurrentUserIDToken { [weak self] idToken in
             guard let self = self else { return }
@@ -509,7 +528,9 @@ public class ConversationManager: SpeechManagerDelegate {
                         self.log("Decoded audio data (size: \(audioData.count) bytes). Attempting to play.")
                         
                         self.isAISpeaking = true
-                        
+                       
+                        self.updateConversationStatus(to: .isTalking)
+                         
                         self.ttsManager?.playAudioData(audioData) {
                             DispatchQueue.main.async {
                                 self.log("Audio playback completed")
@@ -517,7 +538,7 @@ public class ConversationManager: SpeechManagerDelegate {
                                 
                                 // Ensure that we check if any phases were missed or interrupted
                                 if self.currentPhase != .ended {
-                                    self.speechManager?.startSpeechRecognition()
+                                    self.startSpeechRecognition()
                                     
                                     // Note: This reschedules auto-prompt but doesn't immediately send one
                                     self.scheduleAutoPromptCheck()
@@ -532,7 +553,7 @@ public class ConversationManager: SpeechManagerDelegate {
                         }
                         DispatchQueue.main.async {
                             if self.currentPhase != .ended {
-                                self.speechManager?.startSpeechRecognition()
+                                self.startSpeechRecognition()
                                 self.scheduleAutoPromptCheck()
                             }
                         }
@@ -571,6 +592,16 @@ public class ConversationManager: SpeechManagerDelegate {
             print("[LOG] [\(timestamp)] \(message) | \(fieldsString)")
         }
     }
+
+    private func startSpeechRecognition() {
+        self.speechManager?.startSpeechRecognition()
+        self.updateConversationStatus(to: .isListening)
+    }
+
+    private func updateConversationStatus(to status: ConversationStatus) {
+        self.delegate?.conversationManagerStatus(status: status)
+    }
+
 }
 
 // Helper to convert [ChatMessage] to [[String: Any]] if needed by backend,
@@ -596,4 +627,10 @@ struct ChatResponse: Codable {
     let text_response: String
     let audio_base64: String
     let caption: String?
+}
+
+public enum ConversationStatus {
+    case isListening
+    case isTalking
+    case isThinking
 }
