@@ -10,18 +10,9 @@ import AVKit
 
 class ChatViewController: UIViewController, ConversationManagerDelegate {
     var authManager: FirebaseAuthManager?
-    
-    private let backgroundModeView: BackgroundModeView = {
-        guard let url = Bundle.main.url(forResource: "Forest", withExtension: "mp4") else {
-            fatalError("testing -> Video file not found in bundle.")
-        }
-        let view = BackgroundModeView(frame: .zero, videoURL: url)
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
 
-    private let faceView: WaterFaceView = {
-        let view = WaterFaceView()
+    private let pandaView: RedPandaView = {
+        let view = RedPandaView(frame: .zero, type: .happy)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -29,7 +20,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let settingsButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "gearshape.fill"), for: .normal)
-        button.tintColor = .white
+        button.tintColor = SageColors.primaryButtonColor
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -37,7 +28,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let chatTableView: UITableView = {
         let tableView = UITableView()
         tableView.separatorStyle = .none
-        tableView.backgroundColor = UIColor(white: 0.5, alpha: 0.3) // semi-transparent grey
+        tableView.backgroundColor = SageColors.primaryButtonColor.withAlphaComponent(0.3)
         tableView.layer.cornerRadius = 16
         tableView.clipsToBounds = true
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -49,7 +40,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "mic.fill"), for: .normal)
         button.tintColor = .white
-        button.backgroundColor = UIColor.gray
+        button.backgroundColor = SageColors.primaryButtonColor
         button.layer.cornerRadius = 25
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -85,43 +76,50 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     }
     
     private func setupUI() {
-        // Set up gradient background
-//        view.layer.insertSublayer(gradientLayer, at: 0)
-        view.backgroundColor = .clear
+        view.backgroundColor = SageColors.backgroundColor
+        view.backgroundColor = SageColors.backgroundColor
         // Add subviews
-        view.insertSubview(backgroundModeView, at: 0)
-        view.addSubview(faceView)
+        view.addSubview(pandaView)
+        view.addSubview(pandaView)
         view.addSubview(chatTableView)
         view.addSubview(muteButton)
         view.addSubview(settingsButton)
+    
+        // Calculate pandaView dimensions
+        let screenWidth = UIScreen.main.bounds.width
+        let pandaViewDimension = screenWidth * 0.5
+
+        // Create constraints
+        let faceWidthConstraint = pandaView.widthAnchor.constraint(equalToConstant: pandaViewDimension)
+        let faceHeightConstraint = pandaView.heightAnchor.constraint(equalToConstant: pandaViewDimension)
+        let faceMaxWidthConstraint = pandaView.widthAnchor.constraint(lessThanOrEqualToConstant: pandaViewDimension + 20)
+        let faceMaxHeightConstraint = pandaView.heightAnchor.constraint(lessThanOrEqualToConstant: pandaViewDimension + 20)
+
+        // Activate constraints
+        NSLayoutConstraint.activate([
+            faceWidthConstraint,
+            faceHeightConstraint,
+            faceMaxWidthConstraint,
+            faceMaxHeightConstraint,
+            pandaView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            pandaView.bottomAnchor.constraint(equalTo: chatTableView.topAnchor, constant: -80)
+        ])
         
         // Set up constraints
         NSLayoutConstraint.activate([
-            // Background mode view
-            backgroundModeView.topAnchor.constraint(equalTo: view.topAnchor),
-            backgroundModeView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            backgroundModeView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            backgroundModeView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            
             // Settings button
             settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-            settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            settingsButton.widthAnchor.constraint(equalToConstant: 30),
-            settingsButton.heightAnchor.constraint(equalToConstant: 30),
+            settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+            settingsButton.widthAnchor.constraint(equalToConstant: 40),
+            settingsButton.heightAnchor.constraint(equalToConstant: 40),
 
-            // Face view (larger)
-            faceView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
-            faceView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            faceView.widthAnchor.constraint(equalToConstant: 180),
-            faceView.heightAnchor.constraint(equalToConstant: 180),
-
-            // Chat table (shorter)
-            chatTableView.topAnchor.constraint(equalTo: faceView.bottomAnchor, constant: 20),
+            // Chat table
+            chatTableView.heightAnchor.constraint(equalToConstant: 200),
             chatTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             chatTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             chatTableView.bottomAnchor.constraint(equalTo: muteButton.topAnchor, constant: -60),
-
-            // Mute button (larger)
+            
+            // Mute button
             muteButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             muteButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -30),
             muteButton.widthAnchor.constraint(equalToConstant: 70),
@@ -144,11 +142,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     
     @objc private func muteButtonTapped() {
         isMuted.toggle()
-        muteButton.backgroundColor = isMuted ? .red : .gray
-    }
-
-    private func stopBackgroundVideo() {
-        backgroundModeView.stopVideo()
+        muteButton.backgroundColor = isMuted ? .red : SageColors.primaryButtonColor
     }
 
     @objc private func settingsButtonTapped() {
@@ -173,16 +167,35 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             }
         }
     }
+    
+    // MARK: - ConversationManagerDelegate
 
     func conversationManagerAddingMessage(_ transcript: String) {
         DispatchQueue.main.async {
             self.addMessage(transcript)
         }
     }
-
+  
     func conversationManagerDidAddMessage(_ message: ChatMessage) {
         DispatchQueue.main.async {
             self.addMessage(message.content)
+        }
+    }
+
+    func conversationManagerStatus(status: ConversationStatus) {
+        switch status {
+        case .isListening:
+            pandaView.updateListeningState(isListening: true)
+            pandaView.updateThinkingLabelState(isThinking: false)
+            pandaView.updatePandaView(for: .meditating)
+        case .isTalking:
+            pandaView.updateListeningState(isListening: false)
+            pandaView.updateThinkingLabelState(isThinking: false)
+            pandaView.updatePandaView(for: .talking)
+        case .isThinking:
+            pandaView.updateListeningState(isListening: false)
+            pandaView.updateThinkingLabelState(isThinking: true)
+            pandaView.updatePandaView(for: .meditating)
         }
     }
 }
@@ -196,6 +209,7 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ChatMessageCell", for: indexPath) as! ChatMessageCell
         cell.configure(with: messages[indexPath.row], sent: indexPath.row % 2 == 1)
+
         return cell
     }
     
@@ -206,9 +220,10 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
 
 extension ChatViewController: ChatViewControllerDelegate {
     func didTapSignOut() {
-        stopBackgroundVideo()
-        dismiss(animated: true) {
-            self.authManager?.signOut()
-        }
+        self.authManager?.signOut()
+        let loginViewController = LoginViewController()
+        loginViewController.modalPresentationStyle = .fullScreen
+        loginViewController.isModalInPresentation = true // Prevent dismissal
+        present(loginViewController, animated: true, completion: nil)
     }
 }
