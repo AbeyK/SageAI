@@ -6,6 +6,13 @@ public class ConversationManager: SpeechManagerDelegate {
     private var ttsManager: TTSManager?
     private let session = URLSession.shared
     private var isSendingChat = false
+    private var phaseTimers: [DispatchWorkItem] = []
+    private var autoPromptTimer: DispatchWorkItem?
+    private var lastUserInteractionTime = Date()
+    private var lastAIResponseTime = Date()
+    private var isAISpeaking = false
+    private var lastContinuationPromptIndex = -1
+
     // Make delegate weak to prevent retain cycles
     private weak var delegate: ConversationManagerDelegate?
     
@@ -70,13 +77,6 @@ public class ConversationManager: SpeechManagerDelegate {
             return false
         }
     }
-    
-    private var phaseTimers: [DispatchWorkItem] = []
-    private var autoPromptTimer: DispatchWorkItem?
-    private var lastUserInteractionTime = Date()
-    private var lastAIResponseTime = Date()
-    private var isAISpeaking = false
-    private var lastContinuationPromptIndex = -1
 
     // 🔁 Store the conversation history
     private var conversationHistory: [[String: String]] = [] // Initialize as empty
@@ -577,8 +577,14 @@ public class ConversationManager: SpeechManagerDelegate {
     }
 
     private func startSpeechRecognition() {
-        self.speechManager?.startSpeechRecognition()
-        self.updateConversationStatus(to: .isListening)
+        if  currentPhase == .guidedPractice_Phase3 || currentPhase == .guidedPractice_Phase4 {
+            return 
+        }
+
+        if !(ttsManager?.isPlaying ?? false) {
+            self.speechManager?.startSpeechRecognition()
+            self.updateConversationStatus(to: .isListening)
+        }
     }
 
     private func updateConversationStatus(to status: ConversationStatus) {
