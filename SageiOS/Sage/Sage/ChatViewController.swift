@@ -178,6 +178,12 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         pandaView.updateListeningState(isListening: isListening)
     }
 
+
+    func conversationManagerDidAddMessage(_ message: ChatMessage) {
+        DispatchQueue.main.async {
+            self.addMessage(message.content)
+        }
+    }
 }
 
 // MARK: - UITableViewDelegate & UITableViewDataSource
