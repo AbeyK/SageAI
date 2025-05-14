@@ -17,9 +17,9 @@ class LoginViewController: UIViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Sage AI"
+        label.text = "Sage"
         label.font = .systemFont(ofSize: 28, weight: .semibold)
-        label.textColor = .white
+        label.textColor = .gray
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -61,8 +61,8 @@ class LoginViewController: UIViewController {
     
     private let loginButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Sign In", for: .normal)
-        button.backgroundColor = UIColor(red: 0.7, green: 0.4, blue: 1.0, alpha: 1.0)
+        button.setTitle("Log In", for: .normal)
+        button.backgroundColor = SageColors.backgroundColor
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
         button.layer.cornerRadius = 8
@@ -92,10 +92,11 @@ class LoginViewController: UIViewController {
     private let gradientLayer: CAGradientLayer = {
         let layer = CAGradientLayer()
         layer.colors = [
-            UIColor(red: 0.6, green: 0.4, blue: 0.9, alpha: 1.0).cgColor,
-            UIColor(red: 0.2, green: 0.2, blue: 0.4, alpha: 1.0).cgColor
+            SageColors.backgroundColor.cgColor,
+            SageColors.primaryButtonColor.cgColor,
+            SageColors.primaryButtonColor.cgColor,
         ]
-        layer.locations = [0.0, 1.0]
+        layer.locations = [0.0, 0.5, 1.0]
         return layer
     }()
 

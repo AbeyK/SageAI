@@ -34,7 +34,7 @@ public class RedPandaView: UIView {
         label.text = "Listening ..."
         label.textColor = UIColor.lightGray
         label.textAlignment = .center
-        label.alpha = 1.0 // Initially hidden
+        label.alpha = 0.0 // Initially hidden
         label.font = UIFont.systemFont(ofSize: 26, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
