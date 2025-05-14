@@ -15,7 +15,6 @@ public enum PandaType {
 }
 
 public class RedPandaView: UIView {
-<<<<<<< HEAD
     private let pandaView: UIImageView = {
         let pandaView = UIImageView()
         pandaView.contentMode = .scaleAspectFit
@@ -39,15 +38,15 @@ public class RedPandaView: UIView {
         label.font = UIFont.systemFont(ofSize: 26, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
-=======
+    }()
+    
     private let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
->>>>>>> 3186bc5 (panda taliking, panda listening)
     }()
-
+        
     private let thinkingLabel: UILabel = {
         let label = UILabel()
         label.text = "Thinking ..."
@@ -58,32 +57,28 @@ public class RedPandaView: UIView {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
+        
     private var currentType: PandaType
-
+        
     init(frame: CGRect, type: PandaType) {
         self.currentType = type
         super.init(frame: frame)
-<<<<<<< HEAD
         setupView()
         updatePandaView(for: type)
-=======
         setupImageView()
         updateImageView(for: type)
->>>>>>> 3186bc5 (panda taliking, panda listening)
     }
-    
+        
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-<<<<<<< HEAD
+        
     private func setupView() {
         addSubview(backgroundView)
         addSubview(pandaView)
         addSubview(listeningLabel)
         addSubview(thinkingLabel)
-
+        
         NSLayoutConstraint.activate([
             pandaView.topAnchor.constraint(equalTo: topAnchor),
             pandaView.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -94,17 +89,17 @@ public class RedPandaView: UIView {
             backgroundView.centerYAnchor.constraint(equalTo: pandaView.centerYAnchor),
             backgroundView.widthAnchor.constraint(equalTo: pandaView.heightAnchor, multiplier: 1.3),
             backgroundView.heightAnchor.constraint(equalTo: pandaView.heightAnchor, multiplier: 1.3),
-
+            
             listeningLabel.bottomAnchor.constraint(equalTo: backgroundView.topAnchor, constant: -16),
             listeningLabel.centerXAnchor.constraint(equalTo: pandaView.centerXAnchor),
             listeningLabel.widthAnchor.constraint(equalTo: pandaView.widthAnchor),
-
+            
             thinkingLabel.bottomAnchor.constraint(equalTo: backgroundView.topAnchor, constant: -16),
             thinkingLabel.centerXAnchor.constraint(equalTo: pandaView.centerXAnchor),
             thinkingLabel.widthAnchor.constraint(equalTo: pandaView.widthAnchor)
         ])
     }
-    
+        
     public func updatePandaView(for type: PandaType) {
         DispatchQueue.main.async {
             UIView.transition(with: self.pandaView, duration: 0.3, options: .transitionCrossDissolve, animations: {
@@ -122,12 +117,6 @@ public class RedPandaView: UIView {
         }
     }
     
-    public func updateListeningState(isListening: Bool) {
-<<<<<<< HEAD
-        UIView.transition(with: listeningLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
-            self.listeningLabel.alpha = isListening ? 1.0 : 0.0
-        }, completion: nil)
-=======
     private func setupImageView() {
         addSubview(imageView)
         NSLayoutConstraint.activate([
@@ -137,41 +126,40 @@ public class RedPandaView: UIView {
             imageView.trailingAnchor.constraint(equalTo: trailingAnchor)
         ])
     }
-    
+        
     public func updateImageView(for type: PandaType) {
-        switch type {
-        case .meditating:
-            imageView.image = UIImage(named: "PandaMeditating")
-        case .sleeping:
-            imageView.image = UIImage(named: "PandaSleeping")
-        case .talking:
-            imageView.image = UIImage(named: "PandaTalking")
-        case .happy:
-            imageView.image = UIImage(named: "PandaHappy")
+        DispatchQueue.main.async {
+            switch type {
+            case .meditating:
+                self.imageView.image = UIImage(named: "PandaMeditating")
+            case .sleeping:
+                self.imageView.image = UIImage(named: "PandaSleeping")
+            case .talking:
+                self.imageView.image = UIImage(named: "PandaTalking")
+            case .happy:
+                self.imageView.image = UIImage(named: "PandaHappy")
+            }
         }
->>>>>>> 3186bc5 (panda taliking, panda listening)
-=======
-         DispatchQueue.main.async {
-             UIView.transition(with: self.listeningLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
-                 self.listeningLabel.alpha = isListening ? 1.0 : 0.0
-             }, completion: nil)
-         }
-    }
-
-    public func updateThinkingLabelState(isThinking: Bool) {
-         DispatchQueue.main.async {
-             UIView.transition(with: self.thinkingLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
-                 self.thinkingLabel.alpha = isThinking ? 1.0 : 0.0
-             }, completion: nil)
-         }
->>>>>>> 2218139 (thinking, delegate convo status, UI fixes)
     }
     
+    public func updateListeningState(isListening: Bool) {
+        DispatchQueue.main.async {
+            UIView.transition(with: self.listeningLabel, duration: 0.3, options:.transitionCrossDissolve, animations: {
+                    self.listeningLabel.alpha = isListening ? 1.0 : 0.0
+                }, completion: nil)
+        }
+    }
+            
+    public func updateThinkingLabelState(isThinking: Bool) {
+        DispatchQueue.main.async {
+            UIView.transition(with: self.thinkingLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
+                self.thinkingLabel.alpha = isThinking ? 1.0 : 0.0
+            }, completion: nil)
+        }
+    }
+            
     public override func layoutSubviews() {
         super.layoutSubviews()
-<<<<<<< HEAD
         backgroundView.layer.cornerRadius = backgroundView.frame.height / 2
-=======
->>>>>>> 3186bc5 (panda taliking, panda listening)
     }
-} 
+}
