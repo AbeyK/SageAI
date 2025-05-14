@@ -4,4 +4,6 @@ public protocol ConversationManagerDelegate: AnyObject {
     func conversationManagerListening(isListening: Bool)
 
     func conversationManagerDidAddMessage(_ message: ChatMessage)
+    
+    func conversationManagerStatus(status: ConversationStatus)
 }

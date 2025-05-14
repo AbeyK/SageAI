@@ -47,6 +47,17 @@ public class RedPandaView: UIView {
         return imageView
 >>>>>>> 3186bc5 (panda taliking, panda listening)
     }()
+
+    private let thinkingLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Thinking ..."
+        label.textColor = UIColor.lightGray
+        label.textAlignment = .center
+        label.alpha = 0.0 // Initially hidden
+        label.font = UIFont.systemFont(ofSize: 26, weight: .bold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
     
     private var currentType: PandaType
 
@@ -71,6 +82,8 @@ public class RedPandaView: UIView {
         addSubview(backgroundView)
         addSubview(pandaView)
         addSubview(listeningLabel)
+        addSubview(thinkingLabel)
+
         NSLayoutConstraint.activate([
             pandaView.topAnchor.constraint(equalTo: topAnchor),
             pandaView.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -84,26 +97,33 @@ public class RedPandaView: UIView {
 
             listeningLabel.bottomAnchor.constraint(equalTo: backgroundView.topAnchor, constant: -16),
             listeningLabel.centerXAnchor.constraint(equalTo: pandaView.centerXAnchor),
-            listeningLabel.widthAnchor.constraint(equalTo: pandaView.widthAnchor)
+            listeningLabel.widthAnchor.constraint(equalTo: pandaView.widthAnchor),
+
+            thinkingLabel.bottomAnchor.constraint(equalTo: backgroundView.topAnchor, constant: -16),
+            thinkingLabel.centerXAnchor.constraint(equalTo: pandaView.centerXAnchor),
+            thinkingLabel.widthAnchor.constraint(equalTo: pandaView.widthAnchor)
         ])
     }
     
     public func updatePandaView(for type: PandaType) {
-        UIView.transition(with: pandaView, duration: 0.3, options: .transitionCrossDissolve, animations: {
-            switch type {
-            case .meditating:
-                self.pandaView.image = UIImage(named: "PandaMeditating")
-            case .sleeping:
-                self.pandaView.image = UIImage(named: "PandaSleeping")
-            case .talking:
-                self.pandaView.image = UIImage(named: "PandaTalking")
-            case .happy:
-                self.pandaView.image = UIImage(named: "PandaHappy")
-            }
-        }, completion: nil)
+        DispatchQueue.main.async {
+            UIView.transition(with: self.pandaView, duration: 0.3, options: .transitionCrossDissolve, animations: {
+                switch type {
+                case .meditating:
+                    self.pandaView.image = UIImage(named: "PandaMeditating")
+                case .sleeping:
+                    self.pandaView.image = UIImage(named: "PandaSleeping")
+                case .talking:
+                    self.pandaView.image = UIImage(named: "PandaTalking")
+                case .happy:
+                    self.pandaView.image = UIImage(named: "PandaHappy")
+                }
+            }, completion: nil)
+        }
     }
     
     public func updateListeningState(isListening: Bool) {
+<<<<<<< HEAD
         UIView.transition(with: listeningLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
             self.listeningLabel.alpha = isListening ? 1.0 : 0.0
         }, completion: nil)
@@ -130,6 +150,21 @@ public class RedPandaView: UIView {
             imageView.image = UIImage(named: "PandaHappy")
         }
 >>>>>>> 3186bc5 (panda taliking, panda listening)
+=======
+         DispatchQueue.main.async {
+             UIView.transition(with: self.listeningLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
+                 self.listeningLabel.alpha = isListening ? 1.0 : 0.0
+             }, completion: nil)
+         }
+    }
+
+    public func updateThinkingLabelState(isThinking: Bool) {
+         DispatchQueue.main.async {
+             UIView.transition(with: self.thinkingLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
+                 self.thinkingLabel.alpha = isThinking ? 1.0 : 0.0
+             }, completion: nil)
+         }
+>>>>>>> 2218139 (thinking, delegate convo status, UI fixes)
     }
     
     public override func layoutSubviews() {
