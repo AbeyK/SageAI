@@ -432,6 +432,23 @@ public class ConversationManager: SpeechManagerDelegate {
             log("Already sending request, ignoring duplicate.")
             return
         }
+        
+        // Use the conversation history for regular sends
+        let messagesPayload = self.conversationHistory.map { ChatMessage(role: $0["role"]!, content: $0["content"]!) }
+        sendToBackend(withMessages: messagesPayload)
+    }
+    
+    private func sendToBackend(withMessage message: [String: String]) {
+        // Create a single message payload without affecting conversation history
+        let messagePayload = [ChatMessage(role: message["role"]!, content: message["content"]!)]
+        sendToBackend(withMessages: messagePayload)
+    }
+    
+    private func sendToBackend(withMessages messages: [ChatMessage]) {
+        guard !isSendingChat else {
+            log("Already sending request, ignoring duplicate.")
+            return
+        }
 
         isSendingChat = true
         self.updateConversationStatus(to: .isThinking)
@@ -511,8 +528,9 @@ public class ConversationManager: SpeechManagerDelegate {
                         self.log("Decoded audio data (size: \(audioData.count) bytes). Attempting to play.")
                         
                         self.isAISpeaking = true
-                        
+                       
                         self.updateConversationStatus(to: .isTalking)
+                         
                         self.ttsManager?.playAudioData(audioData) {
                             DispatchQueue.main.async {
                                 self.log("Audio playback completed")
@@ -583,6 +601,7 @@ public class ConversationManager: SpeechManagerDelegate {
     private func updateConversationStatus(to status: ConversationStatus) {
         self.delegate?.conversationManagerStatus(status: status)
     }
+
 }
 
 // Helper to convert [ChatMessage] to [[String: Any]] if needed by backend,
