@@ -8,6 +8,7 @@
 import UIKit
 
 class LoginViewController: UIViewController {
+    private let authManager = FirebaseAuthManager()
     
     private let faceView: RedPandaView = {
 <<<<<<< HEAD
@@ -171,8 +172,27 @@ class LoginViewController: UIViewController {
     }
     
     @objc private func loginButtonTapped() {
+        guard let username = usernameTextField.text, !username.isEmpty,
+              let password = passwordTextField.text, !password.isEmpty else {
+            // Show error message
+            return
+        }
+        
+        authManager.signIn(email: username, password: password) { [weak self] result in
+            switch result {
+            case .success:
+                self?.transitionToChatViewController()
+            case .failure(let error):
+                // Handle error (e.g., show alert)
+                print("Login error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func transitionToChatViewController() {
         let chatViewController = ChatViewController()
         chatViewController.modalPresentationStyle = .fullScreen
+        chatViewController.authManager = authManager
         present(chatViewController, animated: true)
     }
     

@@ -217,8 +217,10 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
 
 extension ChatViewController: ChatViewControllerDelegate {
     func didTapSignOut() {
-        dismiss(animated: true) {
-            self.authManager?.signOut()
-        }
+        self.authManager?.signOut()
+        let loginViewController = LoginViewController()
+        loginViewController.modalPresentationStyle = .fullScreen
+        loginViewController.isModalInPresentation = true // Prevent dismissal
+        present(loginViewController, animated: true, completion: nil)
     }
 }

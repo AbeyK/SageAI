@@ -7,6 +7,7 @@
 
 import UIKit
 import SwiftUI
+import FirebaseAuth
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -21,9 +22,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
         let window = UIWindow(windowScene: windowScene)
-        window.rootViewController = LoginViewController() 
+        let chatViewController = ChatViewController()
+        let authManager = FirebaseAuthManager()
+        chatViewController.authManager = authManager
+        window.rootViewController = chatViewController
+        
         self.window = window
         window.makeKeyAndVisible()
+        
+        if Auth.auth().currentUser == nil {
+            DispatchQueue.main.async {
+                window.rootViewController = LoginViewController()
+            }
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
