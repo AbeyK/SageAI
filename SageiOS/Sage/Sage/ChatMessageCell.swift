@@ -37,10 +37,10 @@ class ChatMessageCell: UITableViewCell {
     func configure(with text: String, sent: Bool) {
         messageLabel.text = text
         bubbleView.backgroundColor = sent
-        ? UIColor.systemBlue
+        ? SageColors.primaryButtonColor
         : UIColor(white: 0.5, alpha: 0.3)
         
-        messageLabel.textAlignment = sent ? .right : .left
+        messageLabel.textAlignment = .left
         
         sentLeadingConstraint.isActive = sent
         sentTrailingConstraint.isActive = sent

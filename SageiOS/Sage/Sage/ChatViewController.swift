@@ -187,8 +187,21 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         }
     }
 
-    func conversationManagerListening(isListening: Bool) {
-        pandaView.updateListeningState(isListening: isListening)
+    func conversationManagerStatus(status: ConversationStatus) {
+        switch status {
+        case .isListening:
+            pandaView.updateListeningState(isListening: true)
+            pandaView.updateThinkingLabelState(isThinking: false)
+            pandaView.updatePandaView(for: .meditating)
+        case .isTalking:
+            pandaView.updateListeningState(isListening: false)
+            pandaView.updateThinkingLabelState(isThinking: false)
+            pandaView.updatePandaView(for: .talking)
+        case .isThinking:
+            pandaView.updateListeningState(isListening: false)
+            pandaView.updateThinkingLabelState(isThinking: true)
+            pandaView.updatePandaView(for: .meditating)
+        }
     }
 
 }
@@ -202,11 +215,15 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ChatMessageCell", for: indexPath) as! ChatMessageCell
         cell.configure(with: messages[indexPath.row], sent: indexPath.row % 2 == 1)
+<<<<<<< HEAD
         if (indexPath.row % 2 != 0) {
             pandaView.updatePandaView(for: .talking)
         } else {
             pandaView.updatePandaView(for: .meditating)
         }
+=======
+
+>>>>>>> 2218139 (thinking, delegate convo status, UI fixes)
         return cell
     }
     
