@@ -64,6 +64,7 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
 
             if let error = error {
                 print("testing -> speechRecognizer Recognition error: \(error.localizedDescription)")
+                
                 self.stopRecognition()
             }
         }

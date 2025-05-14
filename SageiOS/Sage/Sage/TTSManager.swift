@@ -5,6 +5,10 @@ public class TTSManager: NSObject, AVAudioPlayerDelegate {
     private var player: AVAudioPlayer?
     private var completion: (() -> Void)?
 
+    public var isPlaying: Bool {
+        return player?.isPlaying ?? false
+    }
+
     public func playAudioData(_ data: Data, onComplete: (() -> Void)? = nil) {
         self.completion = onComplete
         DispatchQueue.main.async {
