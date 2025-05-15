@@ -191,19 +191,25 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
 
     func conversationManagerStatus(status: ConversationStatus) {
         print("[LOG] Conversation status changed: \(status)")
+        // Ensure all labels are reset before setting the new one
+        pandaView.updateListeningState(isListening: false)
+        pandaView.updateThinkingLabelState(isThinking: false)
+        pandaView.updateSpeakingLabelState(isSpeaking: false)       // Reset speaking label
+        pandaView.updateInitializingLabelState(isInitializing: false) // Reset initializing label
+
         switch status {
         case .isListening:
             pandaView.updateListeningState(isListening: true)
-            pandaView.updateThinkingLabelState(isThinking: false)
             pandaView.updatePandaView(for: .meditating)
         case .isTalking:
-            pandaView.updateListeningState(isListening: false)
-            pandaView.updateThinkingLabelState(isThinking: false)
+            pandaView.updateSpeakingLabelState(isSpeaking: true) // Use speaking label
             pandaView.updatePandaView(for: .talking)
         case .isThinking:
-            pandaView.updateListeningState(isListening: false)
             pandaView.updateThinkingLabelState(isThinking: true)
             pandaView.updatePandaView(for: .meditating)
+        case .isInitializing: // Handle new initializing state
+            pandaView.updateInitializingLabelState(isInitializing: true)
+            pandaView.updatePandaView(for: .happy) // Or .meditating, depending on desired initial animation
         }
     }
 }
@@ -229,18 +235,11 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
 extension ChatViewController: ChatViewControllerDelegate {
     func didTapSignOut() {
         print("[LOG] User tapped sign out")
+        conversationManager.stopConversationAndMeditation()
         conversationManager.isSignedOut = true
-        conversationManager.stopAllAudioAndRecording()
+
         dismiss(animated: true) {
-            print("[LOG] Dismissed ChatViewController, signing out from auth.")
-            self.authManager?.signOut()
-            print("[LOG] User signed out, presenting login screen")
-            // Present login screen
-            let loginVC = LoginViewController()
-            loginVC.modalPresentationStyle = .fullScreen
-            self.present(loginVC, animated: true) {
-                print("[LOG] LoginViewController presented after sign out.")
-            }
+            print("[LOG] ChatViewController dismissed. Auth sign out should occur now if not already handled by a coordinator.")
         }
     }
 }

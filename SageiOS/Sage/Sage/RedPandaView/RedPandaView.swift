@@ -35,7 +35,7 @@ public class RedPandaView: UIView {
         label.textColor = UIColor.lightGray
         label.textAlignment = .center
         label.alpha = 0.0 // Initially hidden
-        label.font = UIFont.systemFont(ofSize: 26, weight: .bold)
+        label.font = UIFont(name: "AvenirNext-Medium", size: 26) ?? UIFont.systemFont(ofSize: 26, weight: .medium)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -49,11 +49,33 @@ public class RedPandaView: UIView {
         
     private let thinkingLabel: UILabel = {
         let label = UILabel()
-        label.text = "Reflecting..."
+        label.text = "Thinking..."
         label.textColor = UIColor.lightGray
         label.textAlignment = .center
         label.alpha = 0.0 // Initially hidden
-        label.font = UIFont.systemFont(ofSize: 26, weight: .bold)
+        label.font = UIFont(name: "AvenirNext-Medium", size: 26) ?? UIFont.systemFont(ofSize: 26, weight: .medium)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+        
+    private let speakingLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Speaking..."
+        label.textColor = UIColor.lightGray
+        label.textAlignment = .center
+        label.alpha = 0.0 // Initially hidden
+        label.font = UIFont(name: "AvenirNext-Medium", size: 26) ?? UIFont.systemFont(ofSize: 26, weight: .medium)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
+    private let initializingLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Initializing..."
+        label.textColor = UIColor.lightGray
+        label.textAlignment = .center
+        label.alpha = 0.0 // Initially hidden
+        label.font = UIFont(name: "AvenirNext-Medium", size: 26) ?? UIFont.systemFont(ofSize: 26, weight: .medium)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -76,6 +98,8 @@ public class RedPandaView: UIView {
         addSubview(pandaView)
         addSubview(listeningLabel)
         addSubview(thinkingLabel)
+        addSubview(speakingLabel)
+        addSubview(initializingLabel)
         
         NSLayoutConstraint.activate([
             pandaView.topAnchor.constraint(equalTo: topAnchor),
@@ -94,7 +118,15 @@ public class RedPandaView: UIView {
             
             thinkingLabel.bottomAnchor.constraint(equalTo: backgroundView.topAnchor, constant: -16),
             thinkingLabel.centerXAnchor.constraint(equalTo: pandaView.centerXAnchor),
-            thinkingLabel.widthAnchor.constraint(equalTo: pandaView.widthAnchor)
+            thinkingLabel.widthAnchor.constraint(equalTo: pandaView.widthAnchor),
+            
+            speakingLabel.bottomAnchor.constraint(equalTo: backgroundView.topAnchor, constant: -16),
+            speakingLabel.centerXAnchor.constraint(equalTo: pandaView.centerXAnchor),
+            speakingLabel.widthAnchor.constraint(equalTo: pandaView.widthAnchor),
+
+            initializingLabel.bottomAnchor.constraint(equalTo: backgroundView.topAnchor, constant: -16),
+            initializingLabel.centerXAnchor.constraint(equalTo: pandaView.centerXAnchor),
+            initializingLabel.widthAnchor.constraint(equalTo: pandaView.widthAnchor)
         ])
     }
         
@@ -127,6 +159,22 @@ public class RedPandaView: UIView {
         DispatchQueue.main.async {
             UIView.transition(with: self.thinkingLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
                 self.thinkingLabel.alpha = isThinking ? 1.0 : 0.0
+            }, completion: nil)
+        }
+    }
+
+    public func updateSpeakingLabelState(isSpeaking: Bool) {
+        DispatchQueue.main.async {
+            UIView.transition(with: self.speakingLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
+                self.speakingLabel.alpha = isSpeaking ? 1.0 : 0.0
+            }, completion: nil)
+        }
+    }
+
+    public func updateInitializingLabelState(isInitializing: Bool) {
+        DispatchQueue.main.async {
+            UIView.transition(with: self.initializingLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
+                self.initializingLabel.alpha = isInitializing ? 1.0 : 0.0
             }, completion: nil)
         }
     }
