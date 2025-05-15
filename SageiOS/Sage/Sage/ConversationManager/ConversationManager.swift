@@ -12,6 +12,7 @@ public class ConversationManager: SpeechManagerDelegate {
     private var lastAIResponseTime = Date()
     private var isAISpeaking = false
     private var lastContinuationPromptIndex = -1
+    public var isSignedOut: Bool = false
 
     // Make delegate weak to prevent retain cycles
     private weak var delegate: ConversationManagerDelegate?
@@ -411,6 +412,7 @@ public class ConversationManager: SpeechManagerDelegate {
     }
 
     private func sendToBackend() {
+        guard !isSignedOut else { return }
         guard !isSendingChat else {
             log("Already sending request, ignoring duplicate.")
             return
@@ -422,12 +424,19 @@ public class ConversationManager: SpeechManagerDelegate {
     }
     
     private func sendToBackend(withMessage message: [String: String]) {
+        guard !isSignedOut else { return }
+        guard !isSendingChat else {
+            log("Already sending request, ignoring duplicate.")
+            return
+        }
+        
         // Create a single message payload without affecting conversation history
         let messagePayload = [ChatMessage(role: message["role"]!, content: message["content"]!)]
         sendToBackend(withMessages: messagePayload)
     }
     
     private func sendToBackend(withMessages messages: [ChatMessage]) {
+        guard !isSignedOut else { return }
         guard !isSendingChat else {
             log("Already sending request, ignoring duplicate.")
             return
@@ -589,6 +598,11 @@ public class ConversationManager: SpeechManagerDelegate {
 
     private func updateConversationStatus(to status: ConversationStatus) {
         self.delegate?.conversationManagerStatus(status: status)
+    }
+
+    public func stopAllAudioAndRecording() {
+        ttsManager?.stopPlayback()
+        speechManager?.stopSpeechRecognition()
     }
 
 }
