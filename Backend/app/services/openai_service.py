@@ -24,42 +24,29 @@ else:
     )
     logger.info("OpenAI client initialized.")
 
-async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-4.1-nano", max_message_length: int = 200) -> str:
+async def get_chat_completion(
+    messages: List[Dict[str, str]],
+    system_prompt: str,
+    model: str = "gpt-4.1-nano",
+    max_output_tokens: Optional[int] = None
+) -> str:
     """
-    Gets a chat completion from the specified OpenAI model.
-    The service prepends a comprehensive system prompt defining Sage's identity, meditation structure, and phase handling.
+    Gets a chat completion from the specified OpenAI model using the provided system prompt.
 
     Args:
-        messages: A list of message dictionaries from the client (user, assistant, and phase markers as user role).
-                  It should NOT contain a system message, as this service defines it.
-        model: The OpenAI model to use (default: "gpt-4o-mini").
-        max_message_length: Maximum length for each message content. Longer messages are truncated with '...'.
+        messages: A list of message dictionaries from the client.
+        system_prompt: The system prompt to use for the chat completion.
+        model: The OpenAI model to use.
+        max_output_tokens: Optional. The maximum number of tokens to generate in the chat completion.
 
     Returns:
         The content of the assistant's response message, or an error message if the API call fails.
     """
     start_time = time.time()
-    logger.info(f"[{time.time() - start_time:.3f}s] Starting OpenAI chat completion")
+    logger.info(f"[{time.time() - start_time:.3f}s] Starting OpenAI chat completion with specific system prompt.")
 
     if not client:
         return "Error: OpenAI client not initialized. Please check API key configuration."
-    system_prompt = (
-        "# Sage: Your Calm & Contemporary Meditation Guide\n"
-        "You are Sage. Your core identity is a warm, supportive, and compassionate guru. Maintain a consistently calm and understanding demeanor in all interactions.\n\n"
-        "Always start with questions to understand the user's needs on a deep level.\n\n"
-        "ONLY AFTER really understanding the user's needs, create a curated, personalized meditation experience JUST for them thats 5 minutes long. Include a LOT of pauses in the meditation.\n\n"
-        "**Output for Audio (Text-to-Speech):**\n"
-        "Your generated text will be used for audio output. Structure your responses to facilitate natural-sounding speech:\n"
-        "- Use relatively short phrases and sentences.\n"
-        "- Ensure a natural rhythm, incorporating pauses where needed.\n"
-        "**Language & Relatability:**\n"
-        "Connect with the user through relatable language. Adopt a contemporary style, mirroring the user's energy, common phrases, and appropriate slang for someone in their early 20s. This should feel authentic and supportive, not forced or trying too hard.\n\n"
-        "**Your Purpose: Guidance & Personalization:**\n"
-        "Your overarching goal is to gently guide the user. Facilitate a process where they can:\n"
-        "- **Reflect:** Encourage self-reflection on their thoughts, feelings, and experiences.\n"
-        "- **Explore:** Support them in exploring their inner landscape and current situation without pressure or judgment.\n"
-        "- **Personalize:** Collaborate with them to build a unique meditation or mindfulness experience specifically tailored to their needs in that moment.\n"
-    )
 
     final_system_message = {"role": "system", "content": system_prompt}
     
@@ -73,11 +60,16 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
         for i, msg in enumerate(updated_messages[1:4]): 
             logger.debug(f"Message {i+1}: Role: {msg['role']}, Content: {str(msg['content'])[:100]}...")
             
-        response = await client.chat.completions.create(
-            model=model,
-            messages=updated_messages,
-            temperature=0.7  
-        )
+        completion_params = {
+            "model": model,
+            "messages": updated_messages,
+            "temperature": 0.7
+        }
+        if max_output_tokens is not None:
+            completion_params["max_tokens"] = max_output_tokens
+            logger.info(f"[{time.time() - start_time:.3f}s] Requesting max_output_tokens: {max_output_tokens}")
+
+        response = await client.chat.completions.create(**completion_params)
         assistant_message = response.choices[0].message.content
         logger.info(f"[{time.time() - start_time:.3f}s] Received response from OpenAI")
         return assistant_message
@@ -113,16 +105,17 @@ def split_text_on_periods(text: str) -> List[str]:
 
 async def text_to_speech_openai(
     text: str,
+    tts_instructions: str,
     model: str = "gpt-4o-mini-tts",
     voice: str = "shimmer",
-    speed: float = 0.1,
     return_bytes: bool = False
 ) -> Optional[str]:
     """
     Converts text to speech using OpenAI TTS and returns base64 encoded audio or raw bytes.
+    Uses the provided tts_instructions.
     """
     start_time = time.time()
-    logger.info(f"[{time.time() - start_time:.3f}s] Starting TTS request")
+    logger.info(f"[{time.time() - start_time:.3f}s] Starting TTS request with specific instructions.")
 
     if not client:
         return None if return_bytes else "Error: OpenAI client not initialized. TTS failed."
@@ -130,29 +123,14 @@ async def text_to_speech_openai(
     if not text.strip():
         return None if return_bytes else "Error: Cannot convert empty text to speech."
 
-    instructions = (
-        "Voice Affect: Soft, gentle, soothing; embody tranquility.\n"
-
-        "Tone: Calm, reassuring, peaceful; convey genuine warmth and serenity.\n"
-
-        # "Pacing: Slow, deliberate, and unhurried; pause gently after instructions to allow the listener time to relax and follow along.\n"
-
-        "Emotion: Deeply soothing and comforting; express genuine kindness and care.\n"
-
-        "Pronunciation: Smooth, soft articulation, slightly elongating vowels to create a sense of ease.\n"
-
-        "Pauses: Use thoughtful pauses, especially between breathing instructions and visualization guidance, enhancing relaxation and mindfulness.\n"
-    )
-
     try:
-        logger.info(f"[{time.time() - start_time:.3f}s] Sending text to OpenAI TTS")
+        logger.info(f"[{time.time() - start_time:.3f}s] Sending text to OpenAI TTS with instructions: {tts_instructions[:100]}...")
         response = await client.audio.speech.create(
             model=model,
             voice=voice,
             input=text,
             response_format="mp3",
-            speed=speed,
-            instructions=instructions
+            instructions=tts_instructions
         )
         
         logger.info(f"[{time.time() - start_time:.3f}s] Received audio from OpenAI TTS")
@@ -166,14 +144,17 @@ async def text_to_speech_openai(
         logger.error(f"[{time.time() - start_time:.3f}s] Error calling OpenAI TTS API: {e}")
         return None if return_bytes else f"Error: Could not generate audio. Details: {str(e)}"
 
-async def tts_parallel_stitch(text: str) -> str:
+async def tts_parallel_stitch(text: str, tts_instructions: str) -> str:
     """
     Split text on periods, run TTS in parallel, and stitch the audio together. Returns base64-encoded audio.
+    Requires tts_instructions to pass to underlying calls.
     """
     chunks = split_text_on_periods(text)
-    logger.info(f"TTS will run in {len(chunks)} chunks.")
-    tts_tasks = [text_to_speech_openai(chunk, return_bytes=True) for chunk in chunks]
-    audio_bytes_list = await asyncio.gather(*tts_tasks)    # Filter out any failed chunks
+    logger.info(f"TTS will run in {len(chunks)} chunks using specific instructions.")
+    # Pass mandatory tts_instructions to each text_to_speech_openai call
+    tts_tasks = [text_to_speech_openai(chunk, return_bytes=True, tts_instructions=tts_instructions) for chunk in chunks]
+    audio_bytes_list = await asyncio.gather(*tts_tasks)
+    # Filter out any failed chunks
     audio_bytes_list = [b for b in audio_bytes_list if b]
     stitched = b''.join(audio_bytes_list)
     base64_audio = base64.b64encode(stitched).decode('utf-8')
