@@ -87,7 +87,7 @@ public class ConversationManager: SpeechManagerDelegate {
                let role = lastMessageDict["role"],
                let content = lastMessageDict["content"] {
                 // Don't show phase markers or excessively long system messages in UI directly via this simple delegate
-                if !content.starts(with: "__PHASE") && !(role == "system" && content.count > 200) { 
+                if !content.starts(with: "__PHASE") && !(role == "system" && content.count > 200) {
                     let chatMessage = ChatMessage(role: role, content: content)
                     DispatchQueue.main.async { // Dispatch to main thread for UI updates
                         // Assuming the delegate method is now: conversationManagerDidAddMessage(_ message: ChatMessage)
@@ -492,8 +492,8 @@ public class ConversationManager: SpeechManagerDelegate {
             let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
                 guard let self = self else { return }
 
-                defer { 
-                    self.isSendingChat = false 
+                defer {
+                    self.isSendingChat = false
                     self.log("testing -> ConversationManager: isSendingChat = false (in defer after data task completion)")
                 }
 
@@ -576,7 +576,7 @@ public class ConversationManager: SpeechManagerDelegate {
                         DispatchQueue.main.async {
                             if self.currentPhase != .ended {
                                 self.log("testing -> ConversationManager: No audio from backend, current phase not .ended. Setting isAISpeaking=false, starting speech rec, scheduling auto-prompt.")
-                                self.isAISpeaking = false 
+                                self.isAISpeaking = false
                                  self.log("testing -> ConversationManager: isAISpeaking = false (no audio from backend)")
                                 self.startSpeechRecognition()
                                 self.scheduleAutoPromptCheck()
@@ -628,14 +628,15 @@ public class ConversationManager: SpeechManagerDelegate {
         log("testing -> ConversationManager: startSpeechRecognition called.")
         if  currentPhase == .guidedPractice_Phase3 || currentPhase == .guidedPractice_Phase4 {
             log("testing -> ConversationManager: Not starting speech recognition due to current phase being G3 or G4.")
-            return 
-        if  isAISpeaking || ttsManager?.isPlaying ?? false || currentPhase == .guidedPractice_Phase2 || currentPhase == .guidedPractice_Phase3 || currentPhase == .guidedPractice_Phase4 {
             return
         }
-
+            
+        if isAISpeaking || ttsManager?.isPlaying ?? false || currentPhase == .guidedPractice_Phase2 || currentPhase == .guidedPractice_Phase3 || currentPhase == .guidedPractice_Phase4 {
+            return
+        }
+            
         self.speechManager?.startSpeechRecognition()
         self.updateConversationStatus(to: .isListening)
-        
     }
 
     private func updateConversationStatus(to status: ConversationStatus) {
@@ -681,3 +682,4 @@ public enum ConversationStatus {
     case isThinking
     case isInitializing
 }
+
