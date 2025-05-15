@@ -21,61 +21,14 @@ public class ConversationManager: SpeechManagerDelegate {
     public enum MeditationPhase: String, CaseIterable {
         case idle
         case initialDiscussion // User and AI discuss problems
-        case meditationStarting // AI has confirmed meditation, __PHASE2__ is about to be/has been sent
-        case guidedPractice_Phase2 // Active meditation, guided by AI reacting to __PHASE2__
-        case guidedPractice_Phase3 // Active meditation, guided by AI reacting to __PHASE3__
-        case guidedPractice_Phase4 // Active meditation, guided by AI reacting to __PHASE4__
-        case concludingMeditation_Phase5 // Active meditation, guided by AI reacting to __PHASE5__
+        case meditating
         case retroDiscussion // Post-meditation chat
         case ended
     }
 
-    private struct PhaseMarker {
-        static let meditationStart = "__PHASE2__" // Formal start of guided practice
-        static let growthReflection = "__PHASE3__"
-        static let continuedBreathing = "__PHASE4__"
-        static let conclusion = "__PHASE5__"
-    }
-
-    // Timings for the *structured part* of the meditation, once it begins
-    private struct MeditationTimings {
-        // Total meditation time: approx 5 minutes (300 seconds)
-        // Allow 30-40 seconds for initial discussion
-        static let discussionBeforeMeditationStart: TimeInterval = 40.0 // Reduced from 90s
-        
-        // Phase durations need to account for AI speech time
-        static let phase2Duration: TimeInterval = 100.0 // Increased from 60s to account for audio playback
-        static let phase3Duration: TimeInterval = 100.0 // Increased from 60s
-        static let phase4Duration: TimeInterval = 100.0 // Increased from 60s
-        // Phase 5 is the conclusion, no specific duration *after* it for another phase marker.
-        
-        // Auto-prompting timings
-        static let userInactivityThreshold: TimeInterval = 90.0
-        static let aiResponseTimeout: TimeInterval = 15.0
-    }
-    
-    // Auto-prompting messages
-    private let continuationPrompts = [
-        "__CONTINUE__",
-    ]
-
     public private(set) var currentPhase: MeditationPhase = .idle {
         didSet {
             log("testing -> Meditation phase changed from \(oldValue.rawValue) to: \(currentPhase.rawValue)")
-            if currentPhase == .guidedPractice_Phase2 && oldValue != .guidedPractice_Phase2 {
-                log("testing -> Meditation practice (Phase 2) has officially started.")
-                // delegate?.meditationDidStart() // Uncomment if you add this delegate method
-            }
-            // delegate?.meditationPhaseDidChange(to: currentPhase) // Uncomment if you add this delegate method
-        }
-    }
-    
-    public var isMeditationActive: Bool {
-        switch currentPhase {
-        case .meditationStarting, .guidedPractice_Phase2, .guidedPractice_Phase3, .guidedPractice_Phase4, .concludingMeditation_Phase5:
-            return true
-        default:
-            return false
         }
     }
 
@@ -124,10 +77,11 @@ public class ConversationManager: SpeechManagerDelegate {
             log("testing -> ConversationManager: Conversation or meditation already in progress.")
             return
         }
+        
         log("testing -> ConversationManager: Initiating conversation flow...")
         currentPhase = .initialDiscussion
         updateConversationStatus(to: .isInitializing)
-        lastUserInteractionTime = Date()  // Initialize interaction time
+        lastUserInteractionTime = Date()  // Initialize interaction time hassank - not sure if we even want to keep track of lastUserInteractionTime anymore
 
         // Add an initial user message to kick off the conversation but don't add it to conversation history
         // This prevents showing an empty message in the UI
@@ -137,19 +91,6 @@ public class ConversationManager: SpeechManagerDelegate {
             // Send the initial message to the backend without adding it to conversation history
             self.sendToBackend(withMessage: initialMessage)
         }
-        
-        // Schedule the *start* of the formal meditation (__PHASE2__)
-        // This timer represents the period for initial discussion. The AI is expected
-        // to have guided the user towards agreeing to meditate within this time.
-        scheduleNextPhase(
-            marker: PhaseMarker.meditationStart,
-            delay: MeditationTimings.discussionBeforeMeditationStart,
-            fromPhase: .initialDiscussion, // Prerequisite phase
-            toPhase: .meditationStarting // Target state before AI acts on marker
-        )
-        
-        // Start monitoring for auto-prompting
-        scheduleAutoPromptCheck()
     }
     
     public func speechManagerTranscriptCompleted(_ transcript: String) {
@@ -162,11 +103,6 @@ public class ConversationManager: SpeechManagerDelegate {
 
     private func handleTranscript(_ transcript: String) {
         log("testing -> ConversationManager: User said", fields: ["transcript": transcript])
-        // Ignore phase markers in user transcripts (shouldn't happen, but safety check)
-        if transcript.starts(with: "__PHASE") {
-            log("testing -> ConversationManager: Ignoring phase marker in user transcript", fields: ["transcript": transcript])
-            return
-        }
         
         // Cancel any pending auto-prompt since user has spoken
         cancelAutoPrompt()
@@ -176,9 +112,6 @@ public class ConversationManager: SpeechManagerDelegate {
         DispatchQueue.global(qos: .userInitiated).async {
             self.sendToBackend()
         }
-        
-        // Reset auto-prompt scheduling after user speaks
-        scheduleAutoPromptCheck()
     }
 
     // MARK: - Auto-Prompting Logic
@@ -192,36 +125,19 @@ public class ConversationManager: SpeechManagerDelegate {
             guard let self = self, self.currentPhase != .idle && self.currentPhase != .ended else { return }
             
             let now = Date()
-            let timeSinceUserInteraction = now.timeIntervalSince(self.lastUserInteractionTime)
-            let timeSinceAIResponse = now.timeIntervalSince(self.lastAIResponseTime)
-            
+
             // Don't auto-prompt if AI is currently speaking
             if self.isAISpeaking {
               //  log("Delaying auto-prompt because AI is speaking")
-              //  self.scheduleAutoPromptCheck() // Check again later
+                self.scheduleAutoPromptCheck() // Check again later
                 return
             }
             
-            // Auto-prompt if user has been inactive for the threshold period
-            if timeSinceUserInteraction >= MeditationTimings.userInactivityThreshold {
-                log("testing -> ConversationManager: Auto-prompting due to user inactivity (\(timeSinceUserInteraction) seconds)")
-                self.sendContinuationPrompt()
-                return
-            }
-            
-            // If AI hasn't responded for a while and we've sent a message, consider re-prompting
-            if timeSinceAIResponse >= MeditationTimings.aiResponseTimeout && self.isSendingChat {
-                log("testing -> ConversationManager: Auto-prompting due to AI response timeout (\(timeSinceAIResponse) seconds)")
-                self.sendContinuationPrompt()
-                return
-            }
-            
-            // Otherwise, schedule another check
-            self.scheduleAutoPromptCheck()
+            self.sendContinuationPrompt()
         }
         
         autoPromptTimer = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10.0, execute: workItem) // Check every 10 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10.0, execute: workItem)
     }
     
     private func cancelAutoPrompt() {
@@ -230,168 +146,22 @@ public class ConversationManager: SpeechManagerDelegate {
     }
     
     private func sendContinuationPrompt() {
-        guard currentPhase != .idle && currentPhase != .ended && !isAISpeaking else {
-            log("testing -> ConversationManager: Skipping continuation prompt due to phase or AI speaking state")
-            return
-        }
-        
-        // Select a random prompt, but avoid repeating the last one
-        var promptIndex = Int.random(in: 0..<continuationPrompts.count)
-        if promptIndex == lastContinuationPromptIndex && continuationPrompts.count > 1 {
-            promptIndex = (promptIndex + 1) % continuationPrompts.count
-        }
-        lastContinuationPromptIndex = promptIndex
-        
-        let prompt = continuationPrompts[promptIndex]
-        log("testing -> ConversationManager: Sending auto-continuation prompt: \"\(prompt)\"")
-        
-        // Send the continuation prompt directly to the backend without adding to conversation history
-        let continuationMessage = ["role": "user", "content": prompt]
-        
-        DispatchQueue.global(qos: .userInitiated).async {
-            self.sendToBackend(withMessage: continuationMessage)
+        DispatchQueue.global(qos: .background).async {
+            self.sendToBackend()
         }
         
         // Reset the interaction time
         lastUserInteractionTime = Date()
-        
-        // Schedule the next auto-prompt check
-//        scheduleAutoPromptCheck()
-    }
-
-    // MARK: - Meditation Sequence Logic
-    
-    private func scheduleNextPhase(marker: String, delay: TimeInterval, fromPhase prerequisitePhase: MeditationPhase, toPhase targetPhase: MeditationPhase) {
-        let workItem = DispatchWorkItem { [weak self] in
-            guard let self = self else { return }
-            
-            // Ensure we are in the correct prerequisite phase or that the session is still active for meditation
-            guard self.currentPhase == prerequisitePhase || (self.isMeditationActive && self.currentPhase != .ended && self.currentPhase != .idle) else {
-                log("testing -> ConversationManager: Prerequisite phase \(prerequisitePhase.rawValue) not met (current: \(self.currentPhase.rawValue)) or meditation inactive. Cancelling transition to \(targetPhase.rawValue).", fields: ["current_phase": self.currentPhase.rawValue, "marker": marker])
-                return
-            }
-            
-            // Check if AI is currently speaking, if so delay the phase transition
-            if self.isAISpeaking {
-                log("testing -> ConversationManager: Delaying phase transition to \(targetPhase.rawValue) because AI is speaking", fields: ["current_phase": self.currentPhase.rawValue, "marker": marker])
-                // Reschedule the phase transition after a short delay
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    self.scheduleNextPhase(
-                        marker: marker,
-                        delay: 0.1, // Small delay since we're just checking again
-                        fromPhase: prerequisitePhase,
-                        toPhase: targetPhase
-                    )
-                }
-                return
-            }
-
-            log("testing -> ConversationManager: Timer elapsed for phase: \(targetPhase.rawValue). Sending marker: \(marker)", fields: ["elapsed_time": delay])
-            self.currentPhase = targetPhase
-            
-            // Cancel any pending auto-prompt since we're sending a phase marker
-            self.cancelAutoPrompt()
-            
-            self.sendPhaseMarkerToBackend(marker)
-
-            // Schedule the *next* marker based on the one just sent
-            switch marker {
-            case PhaseMarker.meditationStart: // __PHASE2__ was sent
-                self.currentPhase = .guidedPractice_Phase2
-                // Tracking time actually spent in this phase
-                let phaseStartTime = Date()
-                log("testing -> ConversationManager: Phase 2 started", fields: ["start_time": phaseStartTime])
-                
-                self.scheduleNextPhase(
-                    marker: PhaseMarker.growthReflection,
-                    delay: MeditationTimings.phase2Duration,
-                    fromPhase: .guidedPractice_Phase2,
-                    toPhase: .guidedPractice_Phase3
-                )
-            case PhaseMarker.growthReflection: // __PHASE3__ was sent
-                self.currentPhase = .guidedPractice_Phase3
-                // Tracking time actually spent in this phase
-                let phaseStartTime = Date()
-                log("testing -> ConversationManager: Phase 3 started", fields: ["start_time": phaseStartTime])
-                
-                self.scheduleNextPhase(
-                    marker: PhaseMarker.continuedBreathing,
-                    delay: MeditationTimings.phase3Duration,
-                    fromPhase: .guidedPractice_Phase3,
-                    toPhase: .guidedPractice_Phase4
-                )
-            case PhaseMarker.continuedBreathing: // __PHASE4__ was sent
-                self.currentPhase = .guidedPractice_Phase4
-                // Tracking time actually spent in this phase
-                let phaseStartTime = Date()
-                log("testing -> ConversationManager: Phase 4 started", fields: ["start_time": phaseStartTime])
-                
-                self.scheduleNextPhase(
-                    marker: PhaseMarker.conclusion,
-                    delay: MeditationTimings.phase4Duration,
-                    fromPhase: .guidedPractice_Phase4,
-                    toPhase: .concludingMeditation_Phase5
-                )
-            case PhaseMarker.conclusion: // __PHASE5__ was sent
-                self.currentPhase = .concludingMeditation_Phase5
-                log("testing -> ConversationManager: Conclusion marker sent. AI will wrap up. Meditation sequence finished from client perspective.")
-                // Transition to retroDiscussion after a delay
-                DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { // Give AI time to respond to __PHASE5__
-                    if self.currentPhase == .concludingMeditation_Phase5 {
-                         self.currentPhase = .retroDiscussion
-                        self.log("Transitioned to retroDiscussion phase, awaiting user or AI.")
-                        // Reset auto-prompt check for the retro discussion
-                        // self.scheduleAutoPromptCheck()
-                    }
-                }
-            default:
-                log("testing -> ConversationManager: Unknown marker for scheduling next phase: \(marker)")
-            }
-            
-            // After sending any phase marker, reset auto-prompt scheduling
-            // self.scheduleAutoPromptCheck()
-        }
-        
-        phaseTimers.append(workItem)
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
-        log("testing -> ConversationManager: Scheduled marker '\(marker)' for phase \(targetPhase.rawValue) in \(delay)s. Prerequisite: \(prerequisitePhase.rawValue)")
-    }
-
-    private func sendPhaseMarkerToBackend(_ marker: String) {
-        // If the AI is currently speaking, delay sending the phase marker
-        if isAISpeaking {
-            log("testing -> ConversationManager: Delaying sending phase marker: \(marker) because AI is speaking")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-                self?.sendPhaseMarkerToBackend(marker)
-            }
-            return
-        }
-        
-        log("testing -> ConversationManager: Client sending phase marker to backend: \(marker)")
-        
-        // Send phase marker directly to backend without adding to conversation history
-        let phaseMarkerMessage = ["role": "user", "content": marker]
-        
-        DispatchQueue.global(qos: .userInitiated).async {
-            self.sendToBackend(withMessage: phaseMarkerMessage)
-        }
     }
 
     public func stopConversationAndMeditation() {
         log("testing -> ConversationManager: Stopping conversation and meditation explicitly.")
-        cancelAllPhaseTimers()
         cancelAutoPrompt()
         if speechManager != nil {
             // Optionally stop speech recognition if it's continuously running
             // speechManager?.stopSpeechRecognition()
         }
         currentPhase = .ended
-    }
-
-    private func cancelAllPhaseTimers() {
-        phaseTimers.forEach { $0.cancel() }
-        phaseTimers.removeAll()
-        log("testing -> ConversationManager: All phase timers cancelled.")
     }
 
     // Placeholder for Firebase ID Token - Replace with your actual implementation
@@ -412,6 +182,8 @@ public class ConversationManager: SpeechManagerDelegate {
             completion(nil)
         }
     }
+    
+    // Backend requests
 
     private func sendToBackend() {
         guard !isSignedOut else { log("testing -> ConversationManager: SendToBackend - User is signed out, aborting."); return }
@@ -466,7 +238,7 @@ public class ConversationManager: SpeechManagerDelegate {
                 return
             }
             
-            guard let url = URL(string: "https://sage-ai-backend.fly.dev/api/v1/chat") else {
+            guard let url = currentPhase == .initialDiscussion ? URL(string: "https://sage-ai-backend.fly.dev/api/v1/chat") : URL(string: "https://sage-ai-backend.fly.dev/api/v1/chat/meditation") else {
                 self.log("testing -> ConversationManager: Invalid URL. Aborting send.")
                 self.isSendingChat = false
                 return
@@ -555,11 +327,17 @@ public class ConversationManager: SpeechManagerDelegate {
                                 
                                 if self.currentPhase != .ended {
                                     self.log("testing -> ConversationManager: TTS completed, current phase not .ended. Starting speech recognition and scheduling auto-prompt.")
-                                    self.startSpeechRecognition()
                                     
-                                    // Note: This reschedules auto-prompt but doesn't immediately send one
-                                    self.log("testing -----> scheduleAutoPromptCheck 527")
-                                    self.scheduleAutoPromptCheck()
+                                    if self.currentPhase == .initialDiscussion {
+                                        self.startSpeechRecognition()
+                                    } else if self.currentPhase == .meditating {
+                                        // Note: This reschedules auto-prompt but doesn't immediately send one
+                                        self.log("testing -----> scheduleAutoPromptCheck 355")
+                                        self.scheduleAutoPromptCheck()
+                                    }
+                                    
+                                    
+
                                 } else {
                                     self.log("testing -> ConversationManager: TTS completed, but current phase is .ended. Not starting speech recognition or auto-prompt.")
                                 }
@@ -609,7 +387,9 @@ public class ConversationManager: SpeechManagerDelegate {
         }
     }
 
+    
     // Utility for timestamped logs
+    
     private func log(_ message: String, fields: [String: Any] = [:]) {
         let timestamp = ISO8601DateFormatter().string(from: Date())
         var allFields = fields
@@ -623,22 +403,26 @@ public class ConversationManager: SpeechManagerDelegate {
             print("testing -> [LOG] [\(timestamp)] \(message) | \(fieldsString)")
         }
     }
+    
+    // speech recognition
 
     private func startSpeechRecognition() {
         log("testing -> ConversationManager: startSpeechRecognition called.")
-        if  currentPhase == .guidedPractice_Phase3 || currentPhase == .guidedPractice_Phase4 {
-            log("testing -> ConversationManager: Not starting speech recognition due to current phase being G3 or G4.")
+        if  currentPhase == .meditating {
+            log("testing -> ConversationManager: Not starting speech recognition because user is meditating.")
             return
         }
             
-        if isAISpeaking || ttsManager?.isPlaying ?? false || currentPhase == .guidedPractice_Phase2 || currentPhase == .guidedPractice_Phase3 || currentPhase == .guidedPractice_Phase4 {
+        if isAISpeaking || ttsManager?.isPlaying ?? false {
+            log("testing -> ConversationManager: Not starting speech recognition because isAISpeaking.")
             return
         }
             
         self.speechManager?.startSpeechRecognition()
         self.updateConversationStatus(to: .isListening)
     }
-
+    
+    
     private func updateConversationStatus(to status: ConversationStatus) {
         self.delegate?.conversationManagerStatus(status: status)
     }
