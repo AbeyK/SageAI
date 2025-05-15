@@ -120,9 +120,9 @@ async def text_to_speech_openai(text: str, model: str = "gpt-4o-mini-tts", voice
 
     instructions = (
         "Wise, compassionate meditation guide leading a personalized meditation; extremely calm and gentle tone; "
-        "speaking very slowly with natural pauses between phrases; soothing and peaceful; "
-        "speaking to a person with closed eyes in a quiet room; warm, reassuring voice; "
-        "slow, rhythmic pacing; adapt tone to match the emotional context of what the user has shared."
+        # "speaking very slowly with natural pauses between phrases; soothing and peaceful; "
+        # "speaking to a person with closed eyes in a quiet room; warm, reassuring voice; "
+        # "slow, rhythmic pacing; adapt tone to match the emotional context of what the user has shared."
     )
 
     try:
