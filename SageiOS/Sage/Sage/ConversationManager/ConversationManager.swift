@@ -61,9 +61,9 @@ public class ConversationManager: SpeechManagerDelegate {
 
     public private(set) var currentPhase: MeditationPhase = .idle {
         didSet {
-            log("Meditation phase changed from \(oldValue.rawValue) to: \(currentPhase.rawValue)")
+            log("testing -> Meditation phase changed from \(oldValue.rawValue) to: \(currentPhase.rawValue)")
             if currentPhase == .guidedPractice_Phase2 && oldValue != .guidedPractice_Phase2 {
-                log("Meditation practice (Phase 2) has officially started.")
+                log("testing -> Meditation practice (Phase 2) has officially started.")
                 // delegate?.meditationDidStart() // Uncomment if you add this delegate method
             }
             // delegate?.meditationPhaseDidChange(to: currentPhase) // Uncomment if you add this delegate method
@@ -107,24 +107,26 @@ public class ConversationManager: SpeechManagerDelegate {
     public func startConversation() {
         // Ensure speechManager is re-initialized if called multiple times or if it can be nilled elsewhere
         if self.speechManager == nil {
+            log("testing -> ConversationManager: Initializing SpeechManager")
             self.speechManager = SpeechManager(delegate: self)
         }
-        log("Starting conversation...")
+        log("testing -> ConversationManager: Starting conversation...")
         if self.speechManager != nil { // Check the instance property
             initiateConversationFlow()
         } else {
-            log("SpeechManager failed to initialize.", fields: ["error": true])
+            log("testing -> ConversationManager: SpeechManager failed to initialize.", fields: ["error": true])
             // Handle error: speech manager couldn't be initialized
         }
     }
     
     private func initiateConversationFlow() {
         guard currentPhase == .idle else {
-            log("Conversation or meditation already in progress.")
+            log("testing -> ConversationManager: Conversation or meditation already in progress.")
             return
         }
-        log("Initiating conversation flow...")
+        log("testing -> ConversationManager: Initiating conversation flow...")
         currentPhase = .initialDiscussion
+        updateConversationStatus(to: .isInitializing)
         lastUserInteractionTime = Date()  // Initialize interaction time
 
         // Add an initial user message to kick off the conversation but don't add it to conversation history
@@ -152,17 +154,17 @@ public class ConversationManager: SpeechManagerDelegate {
     
     public func speechManagerTranscriptCompleted(_ transcript: String) {
         if !isSendingChat {
-            log("User transcript completed", fields: ["transcript": transcript])
+            log("testing -> ConversationManager: User transcript completed", fields: ["transcript": transcript])
             lastUserInteractionTime = Date() // Update user interaction time
             handleTranscript(transcript)
         }
     }
 
     private func handleTranscript(_ transcript: String) {
-        log("User said", fields: ["transcript": transcript])
+        log("testing -> ConversationManager: User said", fields: ["transcript": transcript])
         // Ignore phase markers in user transcripts (shouldn't happen, but safety check)
         if transcript.starts(with: "__PHASE") {
-            log("Ignoring phase marker in user transcript", fields: ["transcript": transcript])
+            log("testing -> ConversationManager: Ignoring phase marker in user transcript", fields: ["transcript": transcript])
             return
         }
         
@@ -195,21 +197,21 @@ public class ConversationManager: SpeechManagerDelegate {
             
             // Don't auto-prompt if AI is currently speaking
             if self.isAISpeaking {
-                log("Delaying auto-prompt because AI is speaking")
+                log("testing -> ConversationManager: Delaying auto-prompt because AI is speaking")
                 self.scheduleAutoPromptCheck() // Check again later
                 return
             }
             
             // Auto-prompt if user has been inactive for the threshold period
             if timeSinceUserInteraction >= MeditationTimings.userInactivityThreshold {
-                log("Auto-prompting due to user inactivity (\(timeSinceUserInteraction) seconds)")
+                log("testing -> ConversationManager: Auto-prompting due to user inactivity (\(timeSinceUserInteraction) seconds)")
                 self.sendContinuationPrompt()
                 return
             }
             
             // If AI hasn't responded for a while and we've sent a message, consider re-prompting
             if timeSinceAIResponse >= MeditationTimings.aiResponseTimeout && self.isSendingChat {
-                log("Auto-prompting due to AI response timeout (\(timeSinceAIResponse) seconds)")
+                log("testing -> ConversationManager: Auto-prompting due to AI response timeout (\(timeSinceAIResponse) seconds)")
                 self.sendContinuationPrompt()
                 return
             }
@@ -229,7 +231,7 @@ public class ConversationManager: SpeechManagerDelegate {
     
     private func sendContinuationPrompt() {
         guard currentPhase != .idle && currentPhase != .ended && !isAISpeaking else {
-            log("Skipping continuation prompt due to phase or AI speaking state")
+            log("testing -> ConversationManager: Skipping continuation prompt due to phase or AI speaking state")
             return
         }
         
@@ -241,7 +243,7 @@ public class ConversationManager: SpeechManagerDelegate {
         lastContinuationPromptIndex = promptIndex
         
         let prompt = continuationPrompts[promptIndex]
-        log("Sending auto-continuation prompt: \"\(prompt)\"")
+        log("testing -> ConversationManager: Sending auto-continuation prompt: \"\(prompt)\"")
         
         // Send the continuation prompt directly to the backend without adding to conversation history
         let continuationMessage = ["role": "user", "content": prompt]
@@ -265,13 +267,13 @@ public class ConversationManager: SpeechManagerDelegate {
             
             // Ensure we are in the correct prerequisite phase or that the session is still active for meditation
             guard self.currentPhase == prerequisitePhase || (self.isMeditationActive && self.currentPhase != .ended && self.currentPhase != .idle) else {
-                log("Prerequisite phase \(prerequisitePhase.rawValue) not met (current: \(self.currentPhase.rawValue)) or meditation inactive. Cancelling transition to \(targetPhase.rawValue).", fields: ["current_phase": self.currentPhase.rawValue, "marker": marker])
+                log("testing -> ConversationManager: Prerequisite phase \(prerequisitePhase.rawValue) not met (current: \(self.currentPhase.rawValue)) or meditation inactive. Cancelling transition to \(targetPhase.rawValue).", fields: ["current_phase": self.currentPhase.rawValue, "marker": marker])
                 return
             }
             
             // Check if AI is currently speaking, if so delay the phase transition
             if self.isAISpeaking {
-                log("Delaying phase transition to \(targetPhase.rawValue) because AI is speaking", fields: ["current_phase": self.currentPhase.rawValue, "marker": marker])
+                log("testing -> ConversationManager: Delaying phase transition to \(targetPhase.rawValue) because AI is speaking", fields: ["current_phase": self.currentPhase.rawValue, "marker": marker])
                 // Reschedule the phase transition after a short delay
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                     self.scheduleNextPhase(
@@ -284,7 +286,7 @@ public class ConversationManager: SpeechManagerDelegate {
                 return
             }
 
-            log("Timer elapsed for phase: \(targetPhase.rawValue). Sending marker: \(marker)", fields: ["elapsed_time": delay])
+            log("testing -> ConversationManager: Timer elapsed for phase: \(targetPhase.rawValue). Sending marker: \(marker)", fields: ["elapsed_time": delay])
             self.currentPhase = targetPhase
             
             // Cancel any pending auto-prompt since we're sending a phase marker
@@ -298,7 +300,7 @@ public class ConversationManager: SpeechManagerDelegate {
                 self.currentPhase = .guidedPractice_Phase2
                 // Tracking time actually spent in this phase
                 let phaseStartTime = Date()
-                log("Phase 2 started", fields: ["start_time": phaseStartTime])
+                log("testing -> ConversationManager: Phase 2 started", fields: ["start_time": phaseStartTime])
                 
                 self.scheduleNextPhase(
                     marker: PhaseMarker.growthReflection,
@@ -310,7 +312,7 @@ public class ConversationManager: SpeechManagerDelegate {
                 self.currentPhase = .guidedPractice_Phase3
                 // Tracking time actually spent in this phase
                 let phaseStartTime = Date()
-                log("Phase 3 started", fields: ["start_time": phaseStartTime])
+                log("testing -> ConversationManager: Phase 3 started", fields: ["start_time": phaseStartTime])
                 
                 self.scheduleNextPhase(
                     marker: PhaseMarker.continuedBreathing,
@@ -322,7 +324,7 @@ public class ConversationManager: SpeechManagerDelegate {
                 self.currentPhase = .guidedPractice_Phase4
                 // Tracking time actually spent in this phase
                 let phaseStartTime = Date()
-                log("Phase 4 started", fields: ["start_time": phaseStartTime])
+                log("testing -> ConversationManager: Phase 4 started", fields: ["start_time": phaseStartTime])
                 
                 self.scheduleNextPhase(
                     marker: PhaseMarker.conclusion,
@@ -332,40 +334,35 @@ public class ConversationManager: SpeechManagerDelegate {
                 )
             case PhaseMarker.conclusion: // __PHASE5__ was sent
                 self.currentPhase = .concludingMeditation_Phase5
-                log("Conclusion marker sent. AI will wrap up. Meditation sequence finished from client perspective.")
+                log("testing -> ConversationManager: Conclusion marker sent. AI will wrap up. Meditation sequence finished from client perspective.")
                 // Transition to retroDiscussion after a delay
                 DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { // Give AI time to respond to __PHASE5__
                     if self.currentPhase == .concludingMeditation_Phase5 {
                          self.currentPhase = .retroDiscussion
-                        self.log("Transitioned to retroDiscussion phase, awaiting user or AI.")
-                        // Reset auto-prompt check for the retro discussion
-                        self.scheduleAutoPromptCheck()
+                        self.log("testing -> ConversationManager: Transitioned to retroDiscussion phase, awaiting user or AI.")
                     }
                 }
             default:
-                log("Unknown marker for scheduling next phase: \(marker)")
+                log("testing -> ConversationManager: Unknown marker for scheduling next phase: \(marker)")
             }
-            
-            // After sending any phase marker, reset auto-prompt scheduling
-            self.scheduleAutoPromptCheck()
         }
         
         phaseTimers.append(workItem)
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
-        log("Scheduled marker '\(marker)' for phase \(targetPhase.rawValue) in \(delay)s. Prerequisite: \(prerequisitePhase.rawValue)")
+        log("testing -> ConversationManager: Scheduled marker '\(marker)' for phase \(targetPhase.rawValue) in \(delay)s. Prerequisite: \(prerequisitePhase.rawValue)")
     }
 
     private func sendPhaseMarkerToBackend(_ marker: String) {
         // If the AI is currently speaking, delay sending the phase marker
         if isAISpeaking {
-            log("Delaying sending phase marker: \(marker) because AI is speaking")
+            log("testing -> ConversationManager: Delaying sending phase marker: \(marker) because AI is speaking")
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
                 self?.sendPhaseMarkerToBackend(marker)
             }
             return
         }
         
-        log("Client sending phase marker to backend: \(marker)")
+        log("testing -> ConversationManager: Client sending phase marker to backend: \(marker)")
         
         // Send phase marker directly to backend without adding to conversation history
         let phaseMarkerMessage = ["role": "user", "content": marker]
@@ -376,7 +373,7 @@ public class ConversationManager: SpeechManagerDelegate {
     }
 
     public func stopConversationAndMeditation() {
-        log("Stopping conversation and meditation explicitly.")
+        log("testing -> ConversationManager: Stopping conversation and meditation explicitly.")
         cancelAllPhaseTimers()
         cancelAutoPrompt()
         if speechManager != nil {
@@ -389,7 +386,7 @@ public class ConversationManager: SpeechManagerDelegate {
     private func cancelAllPhaseTimers() {
         phaseTimers.forEach { $0.cancel() }
         phaseTimers.removeAll()
-        log("All phase timers cancelled.")
+        log("testing -> ConversationManager: All phase timers cancelled.")
     }
 
     // Placeholder for Firebase ID Token - Replace with your actual implementation
@@ -399,65 +396,77 @@ public class ConversationManager: SpeechManagerDelegate {
                 guard let self = self else { return }
                 
                 if let error = error {
-                    self.log("Error fetching ID token", fields: ["error": error.localizedDescription])
+                    self.log("testing -> ConversationManager: Error fetching ID token", fields: ["error": error.localizedDescription])
                     completion(nil)
                     return
                 }
                 completion(token)
             }
         } else {
-            log("No current user for ID token.")
+            log("testing -> ConversationManager: No current user for ID token.")
             completion(nil)
         }
     }
 
     private func sendToBackend() {
-        guard !isSignedOut else { return }
+        guard !isSignedOut else { log("testing -> ConversationManager: SendToBackend - User is signed out, aborting."); return }
         guard !isSendingChat else {
-            log("Already sending request, ignoring duplicate.")
+            log("testing -> ConversationManager: Already sending request, ignoring duplicate.")
             return
         }
-        
+        log("testing -> ConversationManager: sendToBackend called with history")
         // Use the conversation history for regular sends
         let messagesPayload = self.conversationHistory.map { ChatMessage(role: $0["role"]!, content: $0["content"]!) }
         sendToBackend(withMessages: messagesPayload)
     }
     
     private func sendToBackend(withMessage message: [String: String]) {
-        guard !isSignedOut else { return }
+        guard !isSignedOut else { log("testing -> ConversationManager: sendToBackend(withMessage:) - User is signed out, aborting."); return }
         guard !isSendingChat else {
-            log("Already sending request, ignoring duplicate.")
+            log("testing -> ConversationManager: Already sending request, ignoring duplicate.")
             return
         }
-        
+        log("testing -> ConversationManager: sendToBackend(withMessage:) called with: \(message)")
         // Create a single message payload without affecting conversation history
         let messagePayload = [ChatMessage(role: message["role"]!, content: message["content"]!)]
         sendToBackend(withMessages: messagePayload)
     }
     
     private func sendToBackend(withMessages messages: [ChatMessage]) {
-        guard !isSignedOut else { return }
+        guard !isSignedOut else { log("testing -> ConversationManager: sendToBackend(withMessages:) - User is signed out, aborting."); return }
         guard !isSendingChat else {
-            log("Already sending request, ignoring duplicate.")
+            log("testing -> ConversationManager: Already sending request, ignoring duplicate.")
             return
         }
+        log("testing -> ConversationManager: sendToBackend(withMessages:) sending \(messages.count) messages. First: \(messages.first?.content ?? "N/A")")
 
         isSendingChat = true
-        self.updateConversationStatus(to: .isThinking)
+        log("testing -> ConversationManager: isSendingChat = true")
+
+        // Check if this is the initial message.
+        // The initial message is [ChatMessage(role: "initializer", content: "")]
+        let isInitialMessage = messages.count == 1 && messages.first?.role == "initializer"
+
+        if !isInitialMessage { // Only set to .isThinking if it's not the special initial message
+            self.updateConversationStatus(to: .isThinking)
+        }
+        // If it *is* the initial message, the status would have been set to .isInitializing
+        // by initiateConversationFlow(), and we keep it that way until the first response.
 
         getCurrentUserIDToken { [weak self] idToken in
             guard let self = self else { return }
             guard let token = idToken else {
-                self.log("Failed to get ID Token.")
+                self.log("testing -> ConversationManager: Failed to get ID Token. Aborting send.")
                 self.isSendingChat = false
                 return
             }
             
             guard let url = URL(string: "https://sage-ai-backend.fly.dev/api/v1/chat") else {
-                self.log("Invalid URL.")
+                self.log("testing -> ConversationManager: Invalid URL. Aborting send.")
                 self.isSendingChat = false
                 return
             }
+            log("testing -> ConversationManager: Preparing URLRequest to \(url)")
 
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
@@ -468,20 +477,25 @@ public class ConversationManager: SpeechManagerDelegate {
                 let jsonData = try JSONEncoder().encode(["messages": messages])
                 request.httpBody = jsonData
             } catch {
-                self.log("Failed to encode request", fields: ["error": error])
+                self.log("testing -> ConversationManager: Failed to encode request", fields: ["error": error])
                 self.isSendingChat = false
+                log("testing -> ConversationManager: isSendingChat = false (json encoding error)")
                 return
             }
             
+            log("testing -> ConversationManager: Starting URLSession data task.")
             let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
                 guard let self = self else { return }
 
-                defer { self.isSendingChat = false }
+                defer { 
+                    self.isSendingChat = false 
+                    self.log("testing -> ConversationManager: isSendingChat = false (in defer after data task completion)")
+                }
 
                 if let error = error as? URLError {
-                    self.log("Backend error", fields: ["error": error.localizedDescription, "code": error.code])
+                    self.log("testing -> ConversationManager: Backend error", fields: ["error": error.localizedDescription, "code": error.code])
                     if error.code == .networkConnectionLost {
-                        self.log("Retrying after connection lost...")
+                        self.log("testing -> ConversationManager: Retrying after connection lost...")
                         DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
                             self.sendToBackend(withMessages: messages)
                         }
@@ -490,25 +504,25 @@ public class ConversationManager: SpeechManagerDelegate {
                 }
 
                 guard let data = data else {
-                    self.log("No data from backend.")
+                    self.log("testing -> ConversationManager: No data from backend.")
                     return
                 }
 
                 if let httpResponse = response as? HTTPURLResponse {
-                    self.log("Backend HTTP status code", fields: ["code": httpResponse.statusCode])
+                    self.log("testing -> ConversationManager: Backend HTTP status code", fields: ["code": httpResponse.statusCode])
                 }
                 
                 if let raw = String(data: data, encoding: .utf8) {
-                    self.log("Raw backend response", fields: ["response": raw.prefix(1000)])
+                    self.log("testing -> ConversationManager: Raw backend response", fields: ["response": raw.prefix(1000)])
                 }
                 
                 do {
                     let decoder = JSONDecoder()
                     let chatResponse = try decoder.decode(ChatResponse.self, from: data)
 
-                    self.log("Backend Response (text)", fields: ["response": chatResponse.text_response])
+                    self.log("testing -> ConversationManager: Backend Response (text)", fields: ["response": chatResponse.text_response])
                     if let caption = chatResponse.caption {
-                        self.log("Backend Response (caption)", fields: ["caption": caption])
+                        self.log("testing -> ConversationManager: Backend Response (caption)", fields: ["caption": caption])
                     }
                     
                     self.lastAIResponseTime = Date()
@@ -517,60 +531,72 @@ public class ConversationManager: SpeechManagerDelegate {
                 
                     if !chatResponse.audio_base64.isEmpty,
                        let audioData = Data(base64Encoded: chatResponse.audio_base64) {
-                        self.log("Decoded audio data (size: \(audioData.count) bytes). Attempting to play.")
+                        self.log("testing -> ConversationManager: Decoded audio data (size: \(audioData.count) bytes). Attempting to play.")
                         
                         guard !self.isSignedOut else {
-                            self.log("Not playing audio because user is signed out.")
+                            self.log("testing -> ConversationManager: Not playing audio because user is signed out.")
                             return
                         }
                         self.isAISpeaking = true
+                        self.log("testing -> ConversationManager: isAISpeaking = true (before TTS play)")
                        
                         self.updateConversationStatus(to: .isTalking)
                          
                         self.ttsManager?.playAudioData(audioData) {
                             DispatchQueue.main.async {
-                                self.log("Audio playback completed")
+                                self.log("testing -> ConversationManager: TTS Audio playback completed")
                                 self.isAISpeaking = false
+                                 self.log("testing -> ConversationManager: isAISpeaking = false (after TTS completion)")
                                 
-                                // Ensure that we check if any phases were missed or interrupted
                                 if self.currentPhase != .ended {
+                                    self.log("testing -> ConversationManager: TTS completed, current phase not .ended. Starting speech recognition and scheduling auto-prompt.")
                                     self.startSpeechRecognition()
-                                    
-                                    // Note: This reschedules auto-prompt but doesn't immediately send one
                                     self.scheduleAutoPromptCheck()
+                                } else {
+                                    self.log("testing -> ConversationManager: TTS completed, but current phase is .ended. Not starting speech recognition or auto-prompt.")
                                 }
                             }
                         }
                     } else {
+                        // No audio data received from backend
                         if chatResponse.audio_base64.isEmpty {
-                            self.log("No audio data received from backend. Speech recognition will be restarted.")
+                            self.log("testing -> ConversationManager: No audio data received from backend. Will attempt to restart speech recognition.")
                         } else {
-                            self.log("Failed to decode base64 audio string from backend. Speech recognition will be restarted.")
+                            self.log("testing -> ConversationManager: Failed to decode base64 audio string from backend. Will attempt to restart speech recognition.")
                         }
+                        // If no audio, AI is not speaking. Start recognition and auto-prompt immediately.
                         DispatchQueue.main.async {
                             if self.currentPhase != .ended {
+                                self.log("testing -> ConversationManager: No audio from backend, current phase not .ended. Setting isAISpeaking=false, starting speech rec, scheduling auto-prompt.")
+                                self.isAISpeaking = false 
+                                 self.log("testing -> ConversationManager: isAISpeaking = false (no audio from backend)")
                                 self.startSpeechRecognition()
                                 self.scheduleAutoPromptCheck()
+                            } else {
+                                 self.log("testing -> ConversationManager: No audio from backend, but current phase is .ended. Not starting SR or auto-prompt.")
                             }
                         }
                     }
 
                 } catch {
-                    self.log("Backend JSON parsing failed", fields: ["error": error])
+                    self.log("testing -> ConversationManager: Backend JSON parsing failed", fields: ["error": error])
                     if let rawString = String(data: data, encoding: .utf8) {
-                        self.log("Failed to parse raw response string for debugging", fields: ["response": rawString])
+                        self.log("testing -> ConversationManager: Failed to parse raw response string for debugging", fields: ["response": rawString])
                     }
                     
-                    self.isSendingChat = false
+                    // self.isSendingChat = false // Already handled by defer
+                    // log("testing -> ConversationManager: isSendingChat = false (json parsing error)")
                     
                     DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
                         if self.currentPhase != .ended {
+                            self.log("testing -> ConversationManager: After JSON parsing error, scheduling auto-prompt check as phase is not .ended")
                             self.scheduleAutoPromptCheck()
                         }
                     }
                 }
             }
             task.resume()
+            log("testing -> ConversationManager: URLSession data task resumed.")
         }
     }
 
@@ -578,25 +604,30 @@ public class ConversationManager: SpeechManagerDelegate {
     private func log(_ message: String, fields: [String: Any] = [:]) {
         let timestamp = ISO8601DateFormatter().string(from: Date())
         var allFields = fields
-        allFields["phase"] = currentPhase.rawValue
-        allFields["isAISpeaking"] = isAISpeaking
+        allFields["phase"] = (self as? ConversationManager)?.currentPhase.rawValue ?? "N/A_CM"
+        allFields["isAISpeaking"] = (self as? ConversationManager)?.isAISpeaking ?? false
         
         let fieldsString = allFields.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
         if fieldsString.isEmpty {
-            print("[LOG] [\(timestamp)] \(message)")
+            print("testing -> [LOG] [\(timestamp)] \(message)")
         } else {
-            print("[LOG] [\(timestamp)] \(message) | \(fieldsString)")
+            print("testing -> [LOG] [\(timestamp)] \(message) | \(fieldsString)")
         }
     }
 
     private func startSpeechRecognition() {
+        log("testing -> ConversationManager: startSpeechRecognition called.")
         if  currentPhase == .guidedPractice_Phase3 || currentPhase == .guidedPractice_Phase4 {
+            log("testing -> ConversationManager: Not starting speech recognition due to current phase being G3 or G4.")
             return 
         }
 
         if !(ttsManager?.isPlaying ?? false) {
+            log("testing -> ConversationManager: TTS is not playing, proceeding to start speech recognition.")
             self.speechManager?.startSpeechRecognition()
             self.updateConversationStatus(to: .isListening)
+        } else {
+            log("testing -> ConversationManager: TTS is playing, speech recognition not started.")
         }
     }
 
@@ -605,6 +636,7 @@ public class ConversationManager: SpeechManagerDelegate {
     }
 
     public func stopAllAudioAndRecording() {
+        log("testing -> ConversationManager: stopAllAudioAndRecording called.")
         ttsManager?.stopPlayback()
         speechManager?.stopSpeechRecognition()
     }
@@ -640,4 +672,5 @@ public enum ConversationStatus {
     case isListening
     case isTalking
     case isThinking
+    case isInitializing
 }
