@@ -129,7 +129,7 @@ public class ConversationManager: SpeechManagerDelegate {
 
         // Add an initial user message to kick off the conversation but don't add it to conversation history
         // This prevents showing an empty message in the UI
-        let initialMessage = ["role": "user", "content": ""]
+        let initialMessage = ["role": "initializer", "content": ""]
 
         DispatchQueue.global(qos: .userInitiated).async {
             // Send the initial message to the backend without adding it to conversation history
@@ -519,6 +519,10 @@ public class ConversationManager: SpeechManagerDelegate {
                        let audioData = Data(base64Encoded: chatResponse.audio_base64) {
                         self.log("Decoded audio data (size: \(audioData.count) bytes). Attempting to play.")
                         
+                        guard !self.isSignedOut else {
+                            self.log("Not playing audio because user is signed out.")
+                            return
+                        }
                         self.isAISpeaking = true
                        
                         self.updateConversationStatus(to: .isTalking)
