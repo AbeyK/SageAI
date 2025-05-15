@@ -1,7 +1,7 @@
 from datetime import datetime
 from app.services.firebase_client import db
 
-DAILY_LIMIT = 20
+DAILY_LIMIT = 2000
 
 
 def get_today_utc_str():
