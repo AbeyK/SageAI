@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.models import ChatRequest, ChatResponse, ChatMessage
 from app.auth.firebase_auth import verify_firebase_token
-from app.services.openai_service import get_chat_completion, text_to_speech_openai
+from app.services.openai_service import get_chat_completion, text_to_speech_openai, tts_parallel_stitch
 from app.services.rate_limiter import is_rate_limited
 from typing import List
 import time
@@ -24,7 +24,7 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     Requires Firebase authentication.
     """
     start_time = time.time()
-    logger.info(f"[{time.time() - start_time:.3f}s] Starting chat processing")
+    logger.info(f"[0.000s] Starting chat processing")
     
     logger.info(f"[{time.time() - start_time:.3f}s] Authenticated user: {user.get('uid')}")
     logger.info(f"[{time.time() - start_time:.3f}s] Received messages: {request.messages}")
@@ -58,7 +58,9 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     # Get text response from OpenAI GPT-4o
     chat_start = time.time()
     text_response = await get_chat_completion(messages=openai_messages)
-    logger.info(f"[{time.time() - start_time:.3f}s] Chat completion took {time.time() - chat_start:.3f}s")
+    chat_duration = time.time() - chat_start
+    logger.info(f"[+{chat_duration:.3f}s] Chat completion took (step duration)")
+    logger.info(f"[{time.time() - start_time:.3f}s] Elapsed since start after OpenAI call")
 
     if text_response.startswith("Error:"):
         logger.error(f"[{time.time() - start_time:.3f}s] OpenAI error: {text_response}")
@@ -66,10 +68,15 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
 
     # Generate audio from the text response
     tts_start = time.time()
-    actual_audio_base64 = await text_to_speech_openai(text=text_response)
-    logger.info(f"[{time.time() - start_time:.3f}s] TTS generation took {time.time() - tts_start:.3f}s")
+    if len(text_response) > 150:
+        actual_audio_base64 = await tts_parallel_stitch(text_response, chunk_length=150)
+    else:
+        actual_audio_base64 = await text_to_speech_openai(text=text_response)
+    tts_duration = time.time() - tts_start
+    logger.info(f"[+{tts_duration:.3f}s] TTS generation took (step duration)")
+    logger.info(f"[{time.time() - start_time:.3f}s] Elapsed since start after TTS")
 
-    if actual_audio_base64.startswith("Error:"):
+    if actual_audio_base64 is None or (isinstance(actual_audio_base64, str) and actual_audio_base64.startswith("Error:")):
         logger.error(f"[{time.time() - start_time:.3f}s] TTS error: {actual_audio_base64}")
         return ChatResponse(
             text_response=text_response,
