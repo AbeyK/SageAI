@@ -104,7 +104,7 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
         return f"Error: Could not get response from AI service. Details: {str(e)}"
 
 # Enhanced TTS function with phase-aware settings
-async def text_to_speech_openai(text: str, model: str = "gpt-4o-mini-tts", voice: str = "shimmer", speed: float = 0.75) -> str:
+async def text_to_speech_openai(text: str, model: str = "gpt-4o-mini-tts", voice: str = "shimmer", speed: float = 0.7) -> str:
     """
     Converts text to speech using OpenAI TTS and returns base64 encoded audio.
     Adjusts speaking style based on content analysis for meditation phases.
@@ -119,7 +119,7 @@ async def text_to_speech_openai(text: str, model: str = "gpt-4o-mini-tts", voice
         return "Error: Cannot convert empty text to speech."
 
     instructions = (
-        "Wise, compassionate meditation guide leading a personalized meditation; extremely calm and gentle tone; "
+        "Speak in a warm, empathetic tone"
         # "speaking very slowly with natural pauses between phrases; soothing and peaceful; "
         # "speaking to a person with closed eyes in a quiet room; warm, reassuring voice; "
         # "slow, rhythmic pacing; adapt tone to match the emotional context of what the user has shared."
