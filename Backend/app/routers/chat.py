@@ -87,15 +87,16 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     logger.info(f"[{time.time() - start_time:.3f}s] Message preparation complete")
 
     # Get text response from OpenAI GPT-4o
-    chat_start = time.time()
+    chat_start_time = time.time()
+    logger.info(f"[{time.time() - start_time:.3f}s] Using CHAT_LLM_INSTRUCTIONS for /chat endpoint.")
+    logger.debug(f"CHAT_LLM_INSTRUCTIONS (first 300 chars): {CHAT_LLM_INSTRUCTIONS[:300]}...")
     text_response = await get_chat_completion(
         messages=openai_messages,
-        system_prompt=CHAT_LLM_INSTRUCTIONS, # Added chat-specific LLM instructions
+        system_prompt=CHAT_LLM_INSTRUCTIONS,
         max_output_tokens=100
-
     )
-    chat_duration = time.time() - chat_start
-    logger.info(f"[+{chat_duration:.3f}s] Chat completion took (step duration)")
+    chat_duration = time.time() - chat_start_time
+    logger.info(f"[{time.time() - start_time:.3f}s] Chat completion call took: {chat_duration:.3f}s")
     logger.info(f"[{time.time() - start_time:.3f}s] Elapsed since start after OpenAI call")
 
     if text_response.startswith("Error:"):
@@ -103,13 +104,15 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
         raise HTTPException(status_code=503, detail=text_response) # Service Unavailable
 
     # Generate audio from the text response
-    tts_start = time.time()
+    tts_start_time = time.time()
+    logger.info(f"[{time.time() - start_time:.3f}s] Using CHAT_TTS_INSTRUCTIONS for /chat endpoint.")
+    logger.debug(f"CHAT_TTS_INSTRUCTIONS (first 300 chars): {CHAT_TTS_INSTRUCTIONS[:300]}...")
     actual_audio_base64 = await tts_parallel_stitch(
         text=text_response,
-        tts_instructions=CHAT_TTS_INSTRUCTIONS, # Added chat-specific TTS instructions
+        tts_instructions=CHAT_TTS_INSTRUCTIONS,
     )
-    tts_duration = time.time() - tts_start
-    logger.info(f"[+{tts_duration:.3f}s] TTS generation took (step duration)")
+    tts_duration = time.time() - tts_start_time
+    logger.info(f"[{time.time() - start_time:.3f}s] TTS generation call (tts_parallel_stitch) took: {tts_duration:.3f}s")
     logger.info(f"[{time.time() - start_time:.3f}s] Elapsed since start after TTS")
 
     if actual_audio_base64 is None or (isinstance(actual_audio_base64, str) and actual_audio_base64.startswith("Error:")):

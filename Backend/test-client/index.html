@@ -114,6 +114,29 @@
                 <button onclick="sendMessage()">Send</button>
             </div>
         </div>
+
+        <!-- Meditation Test Section -->
+        <div class="chat-section" id="meditationTestSection"
+            style="margin-top: 30px; border-top: 2px solid #ccc; padding-top: 20px;">
+            <h2>Meditate Endpoint Test</h2>
+            <div>
+                <label for="percentComplete">Percent Complete (0-100):</label>
+                <input type="number" id="percentComplete" value="0" min="0" max="100" style="width: 60px;">
+            </div>
+            <div style="margin-top: 10px;">
+                <label for="meditationMessages">Messages (JSON format):</label>
+                <textarea id="meditationMessages" rows="8"
+                    style="width: 98%; font-family: monospace; font-size: 12px;"></textarea>
+            </div>
+            <button onclick="callMeditateEndpoint()" style="margin-top:10px;">Call /meditate</button>
+            <div id="meditationResponseArea" style="margin-top:15px;">
+                <h3>Response:</h3>
+                <p id="meditationTextResponse"></p>
+                <div id="meditationAudioPlayer"></div>
+            </div>
+            <p id="meditationError" class="error"></p>
+        </div>
+
     </div>
 
     <!-- Firebase SDK -->
@@ -130,6 +153,14 @@
         const authError = document.getElementById('authError');
         const messages = document.getElementById('messages');
         const messageInput = document.getElementById('messageInput');
+
+        // New DOM Elements for Meditation Test
+        const meditationTestSection = document.getElementById('meditationTestSection');
+        const percentCompleteInput = document.getElementById('percentComplete');
+        const meditationMessagesInput = document.getElementById('meditationMessages');
+        const meditationTextResponse = document.getElementById('meditationTextResponse');
+        const meditationAudioPlayer = document.getElementById('meditationAudioPlayer');
+        const meditationError = document.getElementById('meditationError');
 
         // Chat history
         let chatHistory = [];
@@ -155,13 +186,21 @@
                 loginForm.style.display = 'none';
                 userInfo.style.display = 'block';
                 chatSection.style.display = 'block';
+                meditationTestSection.style.display = 'block'; // Show meditation section
                 userEmail.textContent = user.email;
                 authError.textContent = '';
+                // Pre-fill meditation messages for testing
+                meditationMessagesInput.value = JSON.stringify([
+                    { "role": "user", "content": "I'm feeling really stressed about an upcoming presentation at work." },
+                    { "role": "assistant", "content": "I understand, presentations can definitely bring up a lot of pressure. Can you tell me a bit more about what aspects of it feel most stressful for you right now?" },
+                    { "role": "user", "content": "It's mainly the fear of judgment, and I also find my mind racing, making it hard to focus on what I need to say." }
+                ], null, 2);
             } else {
                 // User is signed out
                 loginForm.style.display = 'block';
                 userInfo.style.display = 'none';
                 chatSection.style.display = 'none';
+                meditationTestSection.style.display = 'none'; // Hide meditation section
                 messages.innerHTML = '';
                 chatHistory = [];
             }
@@ -248,21 +287,20 @@
             messageDiv.className = `message ${role}-message`;
 
             // Add text content
-            const textContent = document.createElement('p');
-            textContent.textContent = content;
-            messageDiv.appendChild(textContent);
+            const textP = document.createElement('p');
+            textP.textContent = content;
+            messageDiv.appendChild(textP);
 
-            // Add audio player if available
+            // Add audio player if audio is present
             if (audioBase64) {
-                const audioPlayer = document.createElement('audio');
-                audioPlayer.controls = true;
-                audioPlayer.className = 'audio-player';
-                audioPlayer.src = `data:audio/mpeg;base64,${audioBase64}`;
-                messageDiv.appendChild(audioPlayer);
+                const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
+                audio.controls = true;
+                audio.className = 'audio-player';
+                messageDiv.appendChild(audio);
+                audio.play().catch(e => console.warn("Audio play failed:", e)); // Autoplay, handle potential errors
             }
-
             messages.appendChild(messageDiv);
-            messages.scrollTop = messages.scrollHeight;
+            messages.scrollTop = messages.scrollHeight; // Scroll to bottom
         }
 
         // Handle Enter key in message input
@@ -271,6 +309,70 @@
                 sendMessage();
             }
         });
+
+        // --- Meditation Endpoint Test Functions ---
+        async function callMeditateEndpoint() {
+            meditationTextResponse.textContent = '';
+            meditationAudioPlayer.innerHTML = '';
+            meditationError.textContent = '';
+
+            const percentComplete = parseInt(percentCompleteInput.value, 10);
+            let messagesPayload;
+
+            try {
+                messagesPayload = JSON.parse(meditationMessagesInput.value);
+            } catch (e) {
+                meditationError.textContent = 'Error: Invalid JSON in messages textarea.';
+                console.error("JSON Parse Error:", e);
+                return;
+            }
+
+            if (isNaN(percentComplete) || percentComplete < 0 || percentComplete > 100) {
+                meditationError.textContent = 'Error: Percent complete must be a number between 0 and 100.';
+                return;
+            }
+
+            try {
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    meditationError.textContent = 'Error: You must be signed in.';
+                    return;
+                }
+                const idToken = await user.getIdToken();
+
+                const response = await fetch('http://127.0.0.1:8000/api/v1/meditate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({
+                        messages: messagesPayload,
+                        percent_complete: percentComplete
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ detail: `HTTP error! status: ${response.status}` }));
+                    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                meditationTextResponse.textContent = data.text_response;
+                if (data.audio_base64) {
+                    const audio = new Audio(`data:audio/mp3;base64,${data.audio_base64}`);
+                    audio.controls = true;
+                    audio.className = 'audio-player';
+                    meditationAudioPlayer.appendChild(audio);
+                    audio.play().catch(e => console.warn("Meditation audio play failed:", e));
+                }
+
+            } catch (error) {
+                console.error('Meditate Endpoint Error:', error);
+                meditationError.textContent = `Error: ${error.message}`;
+            }
+        }
     </script>
 </body>
 
