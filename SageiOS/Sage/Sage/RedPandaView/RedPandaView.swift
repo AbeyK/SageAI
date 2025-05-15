@@ -31,7 +31,7 @@ public class RedPandaView: UIView {
     
     private let listeningLabel: UILabel = {
         let label = UILabel()
-        label.text = "Listening ..."
+        label.text = "Listening..."
         label.textColor = UIColor.lightGray
         label.textAlignment = .center
         label.alpha = 0.0 // Initially hidden
@@ -49,7 +49,7 @@ public class RedPandaView: UIView {
         
     private let thinkingLabel: UILabel = {
         let label = UILabel()
-        label.text = "Thinking ..."
+        label.text = "Reflecting..."
         label.textColor = UIColor.lightGray
         label.textAlignment = .center
         label.alpha = 0.0 // Initially hidden
