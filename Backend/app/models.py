@@ -10,6 +10,11 @@ class ChatRequest(BaseModel):
     """Model for the incoming chat request."""
     messages: List[ChatMessage]
 
+class MeditationRequest(BaseModel):
+    """Model for the incoming meditation request."""
+    messages: List[ChatMessage]
+    phase: str
+
 class ChatResponse(BaseModel):
     """Model for the chat response."""
     text_response: str

@@ -4,6 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 import logging # Import logging
 from app.logging_config import setup_logging # Import setup_logging
+from app.routers import chat, meditation_router # Added import
 
 # Configure logging
 setup_logging()
@@ -52,8 +53,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 # Placeholder for future routers
-from app.routers import chat
 app.include_router(chat.router, prefix="/api/v1")
+app.include_router(meditation_router.router, prefix="/api/v1", tags=["meditation"])
 
 if __name__ == "__main__":
     import uvicorn
