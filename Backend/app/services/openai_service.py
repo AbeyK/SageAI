@@ -24,7 +24,7 @@ else:
     )
     logger.info("OpenAI client initialized.")
 
-async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-3.5-turbo") -> str:
+async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-3.5-turbo", max_message_length: int = 200) -> str:
     """
     Gets a chat completion from the specified OpenAI model.
     The service prepends a comprehensive system prompt defining Sage's identity, meditation structure, and phase handling.
@@ -33,6 +33,7 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
         messages: A list of message dictionaries from the client (user, assistant, and phase markers as user role).
                   It should NOT contain a system message, as this service defines it.
         model: The OpenAI model to use (default: "gpt-4o-mini").
+        max_message_length: Maximum length for each message content. Longer messages are truncated with '...'.
 
     Returns:
         The content of the assistant's response message, or an error message if the API call fails.
@@ -83,9 +84,8 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
     final_system_message = {"role": "system", "content": system_prompt}
     
     # Filter out any stray system messages from the client
-    user_and_assistant_messages = [msg for msg in messages if msg["role"] != "system"]
-    
-    updated_messages = [final_system_message] + user_and_assistant_messages
+
+    updated_messages = [final_system_message] + messages
 
     try:
         logger.info(f"[{time.time() - start_time:.3f}s] Sending final structured messages to OpenAI:")
