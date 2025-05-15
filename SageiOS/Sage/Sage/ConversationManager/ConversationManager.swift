@@ -44,9 +44,9 @@ public class ConversationManager: SpeechManagerDelegate {
         static let discussionBeforeMeditationStart: TimeInterval = 40.0 // Reduced from 90s
         
         // Phase durations need to account for AI speech time
-        static let phase2Duration: TimeInterval = 90.0 // Increased from 60s to account for audio playback
-        static let phase3Duration: TimeInterval = 90.0 // Increased from 60s
-        static let phase4Duration: TimeInterval = 80.0 // Increased from 60s
+        static let phase2Duration: TimeInterval = 100.0 // Increased from 60s to account for audio playback
+        static let phase3Duration: TimeInterval = 100.0 // Increased from 60s
+        static let phase4Duration: TimeInterval = 100.0 // Increased from 60s
         // Phase 5 is the conclusion, no specific duration *after* it for another phase marker.
         
         // Auto-prompting timings
@@ -197,8 +197,8 @@ public class ConversationManager: SpeechManagerDelegate {
             
             // Don't auto-prompt if AI is currently speaking
             if self.isAISpeaking {
-                log("testing -> ConversationManager: Delaying auto-prompt because AI is speaking")
-                self.scheduleAutoPromptCheck() // Check again later
+              //  log("Delaying auto-prompt because AI is speaking")
+              //  self.scheduleAutoPromptCheck() // Check again later
                 return
             }
             
@@ -256,7 +256,7 @@ public class ConversationManager: SpeechManagerDelegate {
         lastUserInteractionTime = Date()
         
         // Schedule the next auto-prompt check
-        scheduleAutoPromptCheck()
+//        scheduleAutoPromptCheck()
     }
 
     // MARK: - Meditation Sequence Logic
@@ -339,12 +339,17 @@ public class ConversationManager: SpeechManagerDelegate {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { // Give AI time to respond to __PHASE5__
                     if self.currentPhase == .concludingMeditation_Phase5 {
                          self.currentPhase = .retroDiscussion
-                        self.log("testing -> ConversationManager: Transitioned to retroDiscussion phase, awaiting user or AI.")
+                        self.log("Transitioned to retroDiscussion phase, awaiting user or AI.")
+                        // Reset auto-prompt check for the retro discussion
+                        // self.scheduleAutoPromptCheck()
                     }
                 }
             default:
                 log("testing -> ConversationManager: Unknown marker for scheduling next phase: \(marker)")
             }
+            
+            // After sending any phase marker, reset auto-prompt scheduling
+            // self.scheduleAutoPromptCheck()
         }
         
         phaseTimers.append(workItem)
@@ -551,6 +556,9 @@ public class ConversationManager: SpeechManagerDelegate {
                                 if self.currentPhase != .ended {
                                     self.log("testing -> ConversationManager: TTS completed, current phase not .ended. Starting speech recognition and scheduling auto-prompt.")
                                     self.startSpeechRecognition()
+                                    
+                                    // Note: This reschedules auto-prompt but doesn't immediately send one
+                                    self.log("testing -----> scheduleAutoPromptCheck 527")
                                     self.scheduleAutoPromptCheck()
                                 } else {
                                     self.log("testing -> ConversationManager: TTS completed, but current phase is .ended. Not starting speech recognition or auto-prompt.")
@@ -590,6 +598,7 @@ public class ConversationManager: SpeechManagerDelegate {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
                         if self.currentPhase != .ended {
                             self.log("testing -> ConversationManager: After JSON parsing error, scheduling auto-prompt check as phase is not .ended")
+                            self.log("testing -----> scheduleAutoPromptCheck 556")
                             self.scheduleAutoPromptCheck()
                         }
                     }
@@ -620,15 +629,13 @@ public class ConversationManager: SpeechManagerDelegate {
         if  currentPhase == .guidedPractice_Phase3 || currentPhase == .guidedPractice_Phase4 {
             log("testing -> ConversationManager: Not starting speech recognition due to current phase being G3 or G4.")
             return 
+        if  isAISpeaking || ttsManager?.isPlaying ?? false || currentPhase == .guidedPractice_Phase2 || currentPhase == .guidedPractice_Phase3 || currentPhase == .guidedPractice_Phase4 {
+            return
         }
 
-        if !(ttsManager?.isPlaying ?? false) {
-            log("testing -> ConversationManager: TTS is not playing, proceeding to start speech recognition.")
-            self.speechManager?.startSpeechRecognition()
-            self.updateConversationStatus(to: .isListening)
-        } else {
-            log("testing -> ConversationManager: TTS is playing, speech recognition not started.")
-        }
+        self.speechManager?.startSpeechRecognition()
+        self.updateConversationStatus(to: .isListening)
+        
     }
 
     private func updateConversationStatus(to status: ConversationStatus) {
