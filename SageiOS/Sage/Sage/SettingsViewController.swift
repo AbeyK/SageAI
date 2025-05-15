@@ -14,10 +14,19 @@ protocol ChatViewControllerDelegate: AnyObject {
 class SettingsViewController: UIViewController {
     public weak var delegate: ChatViewControllerDelegate?
 
+    private let pandaImageView: UIImageView = {
+        let image = UIImage(named: "PandaHappy") ?? UIImage(contentsOfFile: Bundle.main.path(forResource: "PandaHappy", ofType: "png", inDirectory: "Resources") ?? "")
+        let imageView = UIImageView(image: image)
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.clipsToBounds = true
+        return imageView
+    }()
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Settings"
-        label.font = .boldSystemFont(ofSize: 24)
+        label.font = .boldSystemFont(ofSize: 32)
         label.textColor = SageColors.primaryButtonColor
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -27,7 +36,7 @@ class SettingsViewController: UIViewController {
     private let blurbLabel: UILabel = {
         let label = UILabel()
         label.text = "Sage is your mindful AI companion, here to guide you through meditation, reflection, and growth."
-        label.font = .systemFont(ofSize: 16, weight: .regular)
+        label.font = .systemFont(ofSize: 20, weight: .semibold)
         label.textColor = SageColors.primaryButtonColor
         label.textAlignment = .center
         label.numberOfLines = 0
@@ -66,14 +75,21 @@ class SettingsViewController: UIViewController {
         view.backgroundColor = SageColors.backgroundColor
         
         view.addSubview(titleLabel)
+        view.addSubview(pandaImageView)
         view.addSubview(blurbLabel)
         view.addSubview(signOutButton)
         
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            blurbLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 18),
+
+            pandaImageView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 18),
+            pandaImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            pandaImageView.widthAnchor.constraint(equalToConstant: 220),
+            pandaImageView.heightAnchor.constraint(equalToConstant: 220),
+
+            blurbLabel.topAnchor.constraint(equalTo: pandaImageView.bottomAnchor, constant: 18),
+            blurbLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             blurbLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
             blurbLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
             blurbLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 60),
