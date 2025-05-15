@@ -46,4 +46,12 @@ public class SpeechManager: SpeechRecognizerDelegate {
         }
     }
 
+    public func stopSpeechRecognition() {
+        silenceTimer?.invalidate()
+        silenceTimer = nil
+        if recognizer.isRunning() {
+            recognizer.stopRecognition()
+        }
+    }
+
 }

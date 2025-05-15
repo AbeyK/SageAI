@@ -36,4 +36,13 @@ public class TTSManager: NSObject, AVAudioPlayerDelegate {
         print("testing -> TTSManager ✅ Playback finished")
         completion?()
     }
+
+    public func stopPlayback() {
+        if let player = player, player.isPlaying {
+            player.stop()
+        }
+        player = nil
+        completion?()
+        completion = nil
+    }
 }

@@ -18,23 +18,33 @@ class SettingsViewController: UIViewController {
         let label = UILabel()
         label.text = "Settings"
         label.font = .boldSystemFont(ofSize: 24)
-        label.textColor = .white
+        label.textColor = SageColors.primaryButtonColor
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
-    private let voicePicker: UISegmentedControl = {
-        let control = UISegmentedControl(items: ["Voice 1", "Voice 2", "Voice 3"])
-        control.selectedSegmentIndex = 0
-        control.translatesAutoresizingMaskIntoConstraints = false
-        return control
+    private let blurbLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Sage is your mindful AI companion, here to guide you through meditation, reflection, and growth."
+        label.font = .systemFont(ofSize: 16, weight: .regular)
+        label.textColor = SageColors.primaryButtonColor
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.backgroundColor = SageColors.backgroundColor.withAlphaComponent(0.7)
+        label.layer.cornerRadius = 12
+        label.layer.masksToBounds = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
     
     private let signOutButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Sign Out", for: .normal)
-        button.setTitleColor(.red, for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = SageColors.primaryButtonColor
+        button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+        button.layer.cornerRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -53,24 +63,25 @@ class SettingsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Set up gradient background
-        view.layer.insertSublayer(gradientLayer, at: 0)
-
+        view.backgroundColor = SageColors.backgroundColor
         
         view.addSubview(titleLabel)
-        view.addSubview(voicePicker)
+        view.addSubview(blurbLabel)
         view.addSubview(signOutButton)
         
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            voicePicker.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 40),
-            voicePicker.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            voicePicker.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            blurbLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 18),
+            blurbLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
+            blurbLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
+            blurbLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 60),
             
             signOutButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),
-            signOutButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            signOutButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            signOutButton.widthAnchor.constraint(equalToConstant: 180),
+            signOutButton.heightAnchor.constraint(equalToConstant: 44)
         ])
         
         signOutButton.addTarget(self, action: #selector(signOutTapped), for: .touchUpInside)
@@ -82,11 +93,8 @@ class SettingsViewController: UIViewController {
     }
     
     @objc private func signOutTapped() {
-        // Handle sign out
-        dismiss(animated: true)
-        
-        if let delegate = delegate {
-            delegate.didTapSignOut()
+        dismiss(animated: true) { [weak self] in
+            self?.delegate?.didTapSignOut()
         }
     }
 }
