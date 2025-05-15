@@ -6,6 +6,7 @@ import base64 # Required for encoding audio to base64
 import time
 import logging
 import asyncio
+import re
 
 logger = logging.getLogger("meditation_app")
 
@@ -23,7 +24,7 @@ else:
     )
     logger.info("OpenAI client initialized.")
 
-async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-4o") -> str:
+async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-3.5-turbo") -> str:
     """
     Gets a chat completion from the specified OpenAI model.
     The service prepends a comprehensive system prompt defining Sage's identity, meditation structure, and phase handling.
@@ -43,7 +44,7 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
         return "Error: OpenAI client not initialized. Please check API key configuration."
     system_prompt = (
         "# SAGE IDENTITY\n"
-        "You are Sage, a warm, professional meditation guide. Your voice is calm, supportive, and compassionate. "
+        "You are Sage, a warm, professional meditation guide. You are calm, supportive, and compassionate. "
         "Your purpose is to help users reflect, explore what they're going through, and experience a meditation designed just for them.\n\n"
 
         "# MEDITATION FLOW OVERVIEW\n"
@@ -104,24 +105,30 @@ async def get_chat_completion(messages: List[Dict[str, str]], model: str = "gpt-
         logger.error(f"[{time.time() - start_time:.3f}s] Error calling OpenAI chat completion API: {e}")
         return f"Error: Could not get response from AI service. Details: {str(e)}"
 
-def split_text_on_periods(text: str, max_chunk_length: int = 400) -> List[str]:
+def split_text_on_periods(text: str) -> List[str]:
     """
-    Split text into chunks on '.' markers, keeping each chunk under max_chunk_length.
+    Split text on '.', ',', and '?' and group every 2 split strings together for TTS chunks.
     """
-    sentences = [s.strip() for s in text.split('.') if s.strip()]
-    chunks = []
+    # Split on period, comma, or question mark (keep the delimiter)
+    parts = re.split(r'([.,?])', text)
+    # Recombine so each sentence/phrase includes its delimiter
+    sentences = []
     current = ''
-    for s in sentences:
-        if len(current) + len(s) + 1 > max_chunk_length and current:
-            chunks.append(current.strip())
-            current = s + '.'
+    for part in parts:
+        if part in {'.', ',', '?'}:
+            current += part
+            sentences.append(current.strip())
+            current = ''
         else:
-            if current:
-                current += ' ' + s + '.'
-            else:
-                current = s + '.'
-    if current:
-        chunks.append(current.strip())
+            current += part
+    if current.strip():
+        sentences.append(current.strip())
+    # Group every 2 sentences/phrases together
+    chunks = []
+    for i in range(0, len(sentences), 2):
+        chunk = ' '.join(sentences[i:i+2]).strip()
+        if chunk:
+            chunks.append(chunk)
     return chunks
 
 async def text_to_speech_openai(
@@ -169,11 +176,11 @@ async def text_to_speech_openai(
         logger.error(f"[{time.time() - start_time:.3f}s] Error calling OpenAI TTS API: {e}")
         return None if return_bytes else f"Error: Could not generate audio. Details: {str(e)}"
 
-async def tts_parallel_stitch(text: str, chunk_length: int = 400) -> str:
+async def tts_parallel_stitch(text: str) -> str:
     """
     Split text on periods, run TTS in parallel, and stitch the audio together. Returns base64-encoded audio.
     """
-    chunks = split_text_on_periods(text, max_chunk_length=chunk_length)
+    chunks = split_text_on_periods(text)
     logger.info(f"TTS will run in {len(chunks)} chunks.")
     tts_tasks = [text_to_speech_openai(chunk, return_bytes=True) for chunk in chunks]
     audio_bytes_list = await asyncio.gather(*tts_tasks)

@@ -68,10 +68,7 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
 
     # Generate audio from the text response
     tts_start = time.time()
-    if len(text_response) > 150:
-        actual_audio_base64 = await tts_parallel_stitch(text_response, chunk_length=150)
-    else:
-        actual_audio_base64 = await text_to_speech_openai(text=text_response)
+    actual_audio_base64 = await tts_parallel_stitch(text_response)
     tts_duration = time.time() - tts_start
     logger.info(f"[+{tts_duration:.3f}s] TTS generation took (step duration)")
     logger.info(f"[{time.time() - start_time:.3f}s] Elapsed since start after TTS")
