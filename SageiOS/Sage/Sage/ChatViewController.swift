@@ -7,9 +7,11 @@
 
 import UIKit
 import AVKit
+import FirebaseAuth
 
 class ChatViewController: UIViewController, ConversationManagerDelegate {
     var authManager: FirebaseAuthManager?
+    var conversationManager: ConversationManager!
 
     private let pandaView: RedPandaView = {
         let view = RedPandaView(frame: .zero, type: .happy)
@@ -61,12 +63,19 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("[LOG] ChatViewController loaded")
         setupUI()
         setupTableView()
         
-        // Initialize ConversationManager without the hardcoded API key
-        let conversationManager = ConversationManager(delegate: self)
-        conversationManager.startConversation()
+        // Initialize ConversationManager as a property
+        conversationManager = ConversationManager(delegate: self)
+        print("[LOG] ConversationManager initialized")
+        if Auth.auth().currentUser != nil {
+            print("[LOG] User is authenticated, starting conversation")
+            conversationManager.startConversation()
+        } else {
+            print("[LOG] No authenticated user, not starting conversation")
+        }
     }
     
     override func viewDidLayoutSubviews() {
@@ -143,6 +152,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     @objc private func muteButtonTapped() {
         isMuted.toggle()
         muteButton.backgroundColor = isMuted ? .red : SageColors.primaryButtonColor
+        print("[LOG] Mute button tapped. isMuted: \(isMuted)")
     }
 
     @objc private func settingsButtonTapped() {
@@ -150,6 +160,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         settingsVC.modalPresentationStyle = .formSheet
         settingsVC.delegate = self
         present(settingsVC, animated: true)
+        print("[LOG] Settings button tapped. SettingsViewController presented.")
     }
 
     
@@ -158,6 +169,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         let indexPath = IndexPath(row: messages.count - 1, section: 0)
         chatTableView.insertRows(at: [indexPath], with: .automatic)
         chatTableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
+        print("[LOG] Message added to table. Content: \(message), isSentByUser: \(isSentByUser)")
     }
 
     private func startRotatingSettingsButton() {
@@ -171,12 +183,14 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     // MARK: - ConversationManagerDelegate
 
     func conversationManagerDidAddMessage(_ message: ChatMessage, isSentByUser: Bool) {
+        print("[LOG] New message from ConversationManager: \(message.content), sentByUser: \(isSentByUser)")
         DispatchQueue.main.async {
             self.addMessage(message.content, isSentByUser: isSentByUser)
         }
     }
 
     func conversationManagerStatus(status: ConversationStatus) {
+        print("[LOG] Conversation status changed: \(status)")
         switch status {
         case .isListening:
             pandaView.updateListeningState(isListening: true)
@@ -214,8 +228,19 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
 
 extension ChatViewController: ChatViewControllerDelegate {
     func didTapSignOut() {
+        print("[LOG] User tapped sign out")
+        conversationManager.isSignedOut = true
+        conversationManager.stopAllAudioAndRecording()
         dismiss(animated: true) {
+            print("[LOG] Dismissed ChatViewController, signing out from auth.")
             self.authManager?.signOut()
+            print("[LOG] User signed out, presenting login screen")
+            // Present login screen
+            let loginVC = LoginViewController()
+            loginVC.modalPresentationStyle = .fullScreen
+            self.present(loginVC, animated: true) {
+                print("[LOG] LoginViewController presented after sign out.")
+            }
         }
     }
 }
