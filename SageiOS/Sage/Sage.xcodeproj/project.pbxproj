@@ -307,7 +307,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = VG9GKFMARV;
+				DEVELOPMENT_TEAM = SQ5RL484UZ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Sage/Info.plist;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app requires access to the microphone to record audio for voice commands and interactions.";
@@ -337,7 +337,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = VG9GKFMARV;
+				DEVELOPMENT_TEAM = SQ5RL484UZ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Sage/Info.plist;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app requires access to the microphone to record audio for voice commands and interactions.";
