@@ -56,6 +56,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         button.backgroundColor = SageColors.primaryButtonColor
         button.layer.cornerRadius = 25
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.alpha = 0
         return button
     }()
     
@@ -185,10 +186,10 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             meditationButton.heightAnchor.constraint(equalToConstant: 44),
             
             // Timer view
+            timerView.heightAnchor.constraint(equalToConstant: 200),
             timerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             timerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            timerView.bottomAnchor.constraint(equalTo: muteButton.topAnchor, constant: -20),
-            timerView.heightAnchor.constraint(equalToConstant: 200),
+            timerView.bottomAnchor.constraint(equalTo: meditationButton.topAnchor, constant: -20),
             
             // Timer label
             timerLabel.centerXAnchor.constraint(equalTo: timerView.centerXAnchor),
