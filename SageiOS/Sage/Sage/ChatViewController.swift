@@ -161,7 +161,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             faceMaxWidthConstraint,
             faceMaxHeightConstraint,
             pandaView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            pandaView.bottomAnchor.constraint(equalTo: chatTableView.topAnchor, constant: -80)
+            pandaView.bottomAnchor.constraint(equalTo: chatTableView.topAnchor, constant: -60)
         ])
         
         // Set up constraints
@@ -173,16 +173,16 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             settingsButton.heightAnchor.constraint(equalToConstant: 40),
 
             // Chat table
-            chatTableView.heightAnchor.constraint(equalToConstant: 200),
+            chatTableView.heightAnchor.constraint(equalToConstant: 240),
             chatTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             chatTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            chatTableView.bottomAnchor.constraint(equalTo: meditationButton.topAnchor, constant: -20),
+            chatTableView.bottomAnchor.constraint(equalTo: meditationButton.topAnchor, constant: -30),
             
             // Meditation button
             meditationButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             meditationButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            meditationButton.bottomAnchor.constraint(equalTo: muteButton.topAnchor, constant: -20),
-            meditationButton.heightAnchor.constraint(equalToConstant: 44),
+            meditationButton.bottomAnchor.constraint(equalTo: muteButton.topAnchor, constant: 0),
+            meditationButton.heightAnchor.constraint(equalToConstant: 50),
             
             // Timer view
             timerView.heightAnchor.constraint(equalToConstant: 200),
