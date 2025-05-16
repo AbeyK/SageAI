@@ -54,7 +54,7 @@ CHAT_TTS_INSTRUCTIONS = (
 )
 
 # Use a path relative to the working directory (which is /app in Docker)
-STATIC_MP3_PATH = os.path.join("static", "sage-intro.mp3")
+STATIC_MP3_PATH = os.path.join("static", "sage-intro-explained.mp3")
 
 @router.post("/chat", response_model=ChatResponse, tags=["Chat"])
 async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebase_token)):
@@ -77,7 +77,7 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
                 audio_bytes = f.read()
             audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
             return ChatResponse(
-                text_response="Hello! How're you doing today?",
+                text_response="Hey I'm Sage! Just say what’s on your mind and I’ll craft a meditation for you.",
                 audio_base64=audio_base64,
                 caption=""
             )
