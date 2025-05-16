@@ -4,7 +4,7 @@ import AVKit
 class BackgroundModeView: UIView {
     private let dimmedCover: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        view.backgroundColor = UIColor.pandaAccentBrown
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()

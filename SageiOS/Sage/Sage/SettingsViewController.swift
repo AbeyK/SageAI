@@ -27,7 +27,7 @@ class SettingsViewController: UIViewController {
         let label = UILabel()
         label.text = "Settings"
         label.font = .boldSystemFont(ofSize: 32)
-        label.textColor = SageColors.primaryButtonColor
+        label.textColor = UIColor.primaryButtonBackground
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -37,10 +37,10 @@ class SettingsViewController: UIViewController {
         let label = UILabel()
         label.text = "Sage is your mindful AI companion, here to guide you through meditation, reflection, and growth."
         label.font = .systemFont(ofSize: 20, weight: .semibold)
-        label.textColor = SageColors.primaryButtonColor
+        label.textColor = UIColor.primaryButtonBackground
         label.textAlignment = .center
         label.numberOfLines = 0
-        label.backgroundColor = SageColors.backgroundColor.withAlphaComponent(0.7)
+        label.backgroundColor = UIColor.appBackground.withAlphaComponent(0.7)
         label.layer.cornerRadius = 12
         label.layer.masksToBounds = true
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -50,8 +50,8 @@ class SettingsViewController: UIViewController {
     private let signOutButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Sign Out", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = SageColors.primaryButtonColor
+        button.setTitleColor(UIColor.primaryButtonText, for: .normal)
+        button.backgroundColor = UIColor.primaryButtonBackground
         button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
         button.layer.cornerRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -61,8 +61,8 @@ class SettingsViewController: UIViewController {
     private let gradientLayer: CAGradientLayer = {
         let layer = CAGradientLayer()
         layer.colors = [
-            UIColor(red: 0.6, green: 0.4, blue: 0.9, alpha: 1.0).cgColor,
-            UIColor(red: 0.2, green: 0.2, blue: 0.4, alpha: 1.0).cgColor
+            UIColor.appBackground.cgColor,
+            UIColor.primaryButtonBackground.cgColor
         ]
         layer.locations = [0.0, 1.0]
         return layer
@@ -72,7 +72,7 @@ class SettingsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = SageColors.backgroundColor
+        view.backgroundColor = UIColor.appBackground
         
         view.addSubview(titleLabel)
         view.addSubview(pandaImageView)

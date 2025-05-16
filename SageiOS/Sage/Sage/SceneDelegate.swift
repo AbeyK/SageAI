@@ -26,6 +26,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let authManager = FirebaseAuthManager()
         chatViewController.authManager = authManager
         window.rootViewController = chatViewController
+        window.backgroundColor = UIColor.appBackground
         
         self.window = window
         window.makeKeyAndVisible()

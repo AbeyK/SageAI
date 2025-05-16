@@ -23,8 +23,8 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let gradientLayer: CAGradientLayer = {
         let layer = CAGradientLayer()
         layer.colors = [
-            UIColor(red: 0.6, green: 0.4, blue: 0.9, alpha: 1.0).cgColor,
-            UIColor(red: 0.2, green: 0.2, blue: 0.4, alpha: 1.0).cgColor
+            UIColor.appBackground.cgColor,
+            UIColor.primaryButtonBackground.cgColor
         ]
         layer.locations = [0.0, 1.0]
         return layer
@@ -33,7 +33,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let settingsButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "gearshape.fill"), for: .normal)
-        button.tintColor = SageColors.primaryButtonColor
+        button.tintColor = UIColor.statusLabelAndIcon
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -41,7 +41,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let chatTableView: UITableView = {
         let tableView = UITableView()
         tableView.separatorStyle = .none
-        tableView.backgroundColor = SageColors.primaryButtonColor.withAlphaComponent(0.3)
+        tableView.backgroundColor = UIColor.chatTableViewBackground
         tableView.layer.cornerRadius = 16
         tableView.clipsToBounds = true
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -52,8 +52,8 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let muteButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "mic.fill"), for: .normal)
-        button.tintColor = .white
-        button.backgroundColor = SageColors.primaryButtonColor
+        button.tintColor = UIColor.primaryButtonText
+        button.backgroundColor = UIColor.primaryButtonBackground
         button.layer.cornerRadius = 25
         button.translatesAutoresizingMaskIntoConstraints = false
         button.alpha = 0
@@ -63,8 +63,8 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let meditationButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Start My Meditation", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = SageColors.primaryButtonColor
+        button.setTitleColor(UIColor.primaryButtonText, for: .normal)
+        button.backgroundColor = UIColor.primaryButtonBackground
         button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -73,7 +73,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     
     private let timerView: UIView = {
         let view = UIView()
-        view.backgroundColor = SageColors.primaryButtonColor.withAlphaComponent(0.3)
+        view.backgroundColor = UIColor.chatTableViewBackground
         view.layer.cornerRadius = 16
         view.clipsToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -84,7 +84,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let timerLabel: UILabel = {
         let label = UILabel()
         label.text = "5:00"
-        label.textColor = .white
+        label.textColor = UIColor.primaryButtonText
         label.font = .systemFont(ofSize: 48, weight: .bold)
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -94,7 +94,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let timerCircle: CAShapeLayer = {
         let layer = CAShapeLayer()
         layer.fillColor = UIColor.clear.cgColor
-        layer.strokeColor = SageColors.primaryButtonColor.cgColor
+        layer.strokeColor = UIColor.primaryButtonBackground.cgColor
         layer.lineWidth = 8
         layer.lineCap = .round
         return layer
@@ -132,8 +132,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     }
     
     private func setupUI() {
-        view.backgroundColor = SageColors.backgroundColor
-        view.backgroundColor = SageColors.backgroundColor
+        view.backgroundColor = UIColor.appBackground
         // Add subviews
         view.addSubview(pandaView)
         view.addSubview(pandaView)
@@ -219,7 +218,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     
     @objc private func muteButtonTapped() {
         isMuted.toggle()
-        muteButton.backgroundColor = isMuted ? .red : SageColors.primaryButtonColor
+        muteButton.backgroundColor = isMuted ? .red : UIColor.primaryButtonBackground
         print("[LOG] Mute button tapped. isMuted: \(isMuted)")
     }
 

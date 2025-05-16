@@ -24,7 +24,7 @@ public class RedPandaView: UIView {
     
     private let backgroundView: UIView = {
         let view = UIView()
-        view.backgroundColor = SageColors.primaryButtonColor.withAlphaComponent(0.3)
+        view.backgroundColor = UIColor.pandaCircleBackground
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -32,7 +32,7 @@ public class RedPandaView: UIView {
     private let listeningLabel: UILabel = {
         let label = UILabel()
         label.text = "Listening..."
-        label.textColor = UIColor.lightGray
+        label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.alpha = 0.0 // Initially hidden
         label.font = UIFont(name: "AvenirNext-Medium", size: 26) ?? UIFont.systemFont(ofSize: 26, weight: .medium)
@@ -50,7 +50,7 @@ public class RedPandaView: UIView {
     private let thinkingLabel: UILabel = {
         let label = UILabel()
         label.text = "Reflecting..."
-        label.textColor = UIColor.lightGray
+        label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.alpha = 0.0 // Initially hidden
         label.font = UIFont(name: "AvenirNext-Medium", size: 26) ?? UIFont.systemFont(ofSize: 26, weight: .medium)
@@ -61,7 +61,7 @@ public class RedPandaView: UIView {
     private let speakingLabel: UILabel = {
         let label = UILabel()
         label.text = "Speaking..."
-        label.textColor = UIColor.lightGray
+        label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.alpha = 0.0 // Initially hidden
         label.font = UIFont(name: "AvenirNext-Medium", size: 26) ?? UIFont.systemFont(ofSize: 26, weight: .medium)
@@ -72,7 +72,7 @@ public class RedPandaView: UIView {
     private let initializingLabel: UILabel = {
         let label = UILabel()
         label.text = "Waking Up..."
-        label.textColor = UIColor.lightGray
+        label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.alpha = 0.0 // Initially hidden
         label.font = UIFont(name: "AvenirNext-Medium", size: 26) ?? UIFont.systemFont(ofSize: 26, weight: .medium)
