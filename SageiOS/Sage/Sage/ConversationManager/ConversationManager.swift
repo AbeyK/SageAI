@@ -13,6 +13,10 @@ public class ConversationManager: SpeechManagerDelegate {
     private var isAISpeaking = false
     private var lastContinuationPromptIndex = -1
     public var isSignedOut: Bool = false
+    private var meditationProgress: Int = 0  // Track meditation progress as percentage
+    private var timer: Timer?
+    public var remainingSeconds = 300 // 5 minutes in seconds
+    public var onTimerUpdate: ((Int, Int) -> Void)? // Callback for timer updates (minutes, seconds)
 
     // Make delegate weak to prevent retain cycles
     private weak var delegate: ConversationManagerDelegate?
@@ -26,7 +30,7 @@ public class ConversationManager: SpeechManagerDelegate {
         case ended
     }
 
-    public private(set) var currentPhase: MeditationPhase = .idle {
+    public var currentPhase: MeditationPhase = .idle {
         didSet {
             log("testing -> Meditation phase changed from \(oldValue.rawValue) to: \(currentPhase.rawValue)")
         }
@@ -185,7 +189,7 @@ public class ConversationManager: SpeechManagerDelegate {
     
     // Backend requests
 
-    private func sendToBackend() {
+    public func sendToBackend() {
         guard !isSignedOut else { log("testing -> ConversationManager: SendToBackend - User is signed out, aborting."); return }
         guard !isSendingChat else {
             log("testing -> ConversationManager: Already sending request, ignoring duplicate.")
@@ -238,7 +242,7 @@ public class ConversationManager: SpeechManagerDelegate {
                 return
             }
             
-            guard let url = currentPhase == .initialDiscussion ? URL(string: "https://sage-ai-backend.fly.dev/api/v1/chat") : URL(string: "https://sage-ai-backend.fly.dev/api/v1/chat/meditation") else {
+            guard let url = currentPhase == .initialDiscussion ? URL(string: "https://sage-ai-backend.fly.dev/api/v1/chat") : URL(string: "https://sage-ai-backend.fly.dev/api/v1/meditate") else {
                 self.log("testing -> ConversationManager: Invalid URL. Aborting send.")
                 self.isSendingChat = false
                 return
@@ -251,7 +255,18 @@ public class ConversationManager: SpeechManagerDelegate {
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
             do {
-                let jsonData = try JSONEncoder().encode(["messages": messages])
+                // Convert ChatMessage objects to dictionaries
+                let messageDictionaries = messages.map { [
+                    "role": $0.role,
+                    "content": $0.content
+                ] }
+                log("testing -> meditationProgress: \(self.meditationProgress)")
+                
+                let requestBody: [String: Any] = [
+                    "messages": messageDictionaries,
+                    "percent_complete": self.meditationProgress
+                ]
+                let jsonData = try JSONSerialization.data(withJSONObject: requestBody)
                 request.httpBody = jsonData
             } catch {
                 self.log("testing -> ConversationManager: Failed to encode request", fields: ["error": error])
@@ -433,6 +448,46 @@ public class ConversationManager: SpeechManagerDelegate {
         speechManager?.stopSpeechRecognition()
     }
 
+    public func startMeditationTimer() {
+        remainingSeconds = 300 // Reset to 5 minutes
+        meditationProgress = 0
+        
+        sendToBackend()
+        
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            
+            if self.remainingSeconds > 0 {
+                self.remainingSeconds -= 1
+                self.updateMeditationProgress()
+                
+                // Notify delegate of timer update
+                let minutes = self.remainingSeconds / 60
+                let seconds = self.remainingSeconds % 60
+                self.onTimerUpdate?(minutes, seconds)
+            } else {
+                self.timer?.invalidate()
+                self.timer = nil
+                self.endMeditation()
+            }
+        }
+    }
+    
+    private func updateMeditationProgress() {
+        meditationProgress = Int((Double(300 - remainingSeconds) / 300.0) * 100)
+    }
+    
+    private func endMeditation() {
+        currentPhase = .initialDiscussion
+        sendToBackend()
+    }
+    
+    public func stopMeditationTimer() {
+        timer?.invalidate()
+        timer = nil
+        remainingSeconds = 300
+        meditationProgress = 0
+    }
 }
 
 // Helper to convert [ChatMessage] to [[String: Any]] if needed by backend,
