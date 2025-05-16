@@ -20,7 +20,7 @@ class LoginViewController: UIViewController {
         let label = UILabel()
         label.text = "Sage"
         label.font = .systemFont(ofSize: 28, weight: .semibold)
-        label.textColor = UIColor.primaryButtonBackground
+        label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -29,11 +29,11 @@ class LoginViewController: UIViewController {
     private let usernameTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Username"
-        textField.backgroundColor = UIColor.chatBubbleBackground
+        textField.backgroundColor = UIColor.pandaCircleBackground
         textField.textColor = UIColor.chatBubbleText
         textField.attributedPlaceholder = NSAttributedString(
             string: "Username",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor.chatBubbleText.withAlphaComponent(0.5)]
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor.statusLabelAndIcon]
         )
         textField.layer.cornerRadius = 8
         textField.autocapitalizationType = .none
@@ -46,11 +46,11 @@ class LoginViewController: UIViewController {
     private let passwordTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Password"
-        textField.backgroundColor = UIColor.chatBubbleBackground
+        textField.backgroundColor = UIColor.pandaCircleBackground
         textField.textColor = UIColor.chatBubbleText
         textField.attributedPlaceholder = NSAttributedString(
             string: "Password",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor.chatBubbleText.withAlphaComponent(0.5)]
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor.statusLabelAndIcon]
         )
         textField.layer.cornerRadius = 8
         textField.isSecureTextEntry = true
@@ -74,7 +74,7 @@ class LoginViewController: UIViewController {
     private let forgotPasswordButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Forgot Password?", for: .normal)
-        button.setTitleColor(UIColor.primaryButtonText.withAlphaComponent(0.6), for: .normal)
+        button.setTitleColor(UIColor.statusLabelAndIcon, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -84,37 +84,24 @@ class LoginViewController: UIViewController {
         let label = UILabel()
         label.text = "Don't have an account? Sign Up"
         label.font = .systemFont(ofSize: 14)
-        label.textColor = UIColor.primaryButtonText.withAlphaComponent(0.6)
+        label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
-    private let gradientLayer: CAGradientLayer = {
-        let layer = CAGradientLayer()
-        layer.colors = [
-            UIColor.appBackground.cgColor,
-            UIColor.primaryButtonBackground.cgColor
-        ]
-        layer.locations = [0.0, 0.6, 1.0]
-        return layer
-    }()
-
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
         view.backgroundColor = UIColor.appBackground
+        faceView.updateInitializingLabelState(isInitializing: true)
+        setupUI()
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        gradientLayer.frame = view.bounds
     }
     
     private func setupUI() {
-        // Set up gradient background
-        view.layer.insertSublayer(gradientLayer, at: 0)
-        
         // Add subviews
         view.addSubview(faceView)
         view.addSubview(titleLabel)
