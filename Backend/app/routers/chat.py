@@ -33,6 +33,16 @@ CHAT_LLM_INSTRUCTIONS = (
     "- Connect with relatable language. You can adopt a contemporary, warm style, but your primary identity is a wise, empathetic guru. Avoid overly casual slang unless it truly matches a very specific user energy and still fits your compassionate guru persona.\n"
 )
 
+# Additional prompt snippet to guide users to meditation if chat is long
+TRANSITION_TO_MEDITATION_PROMPT = (
+    "\n\n**Transition to Meditation:** The initial discussion phase has been fruitful, and we've explored important aspects of your experience. "
+    "Your role now transitions slightly. Please gently conclude the current line of questioning. "
+    "Suggest to the user that, based on your conversation, you can now prepare a personalized meditation for them. "
+    "Invite them to initiate this next step by clicking a 'Start Meditation' button (or similar phrasing that implies readiness for a guided session). "
+    "For example: 'Thank you for sharing that with me. I believe I have a good understanding now to help craft a meditation specifically for you. When you feel ready to begin, you can press the Start Meditation button, and we can move into that guided experience.' "
+    "Do not ask further diagnostic questions in this particular response; focus on the invitation to meditate."
+)
+
 CHAT_TTS_INSTRUCTIONS = (
     "**Overall Voice Persona:** Embody Sage, a compassionate and insightful meditation guru during an initial, calm consultation. Your voice should reflect this role.\n\n"
     "**Voice Affect:** Soft, gentle, and soothing, conveying genuine warmth and presence. Your voice should be clear and easy to understand, fostering a sense of trust and comfort.\n\n"
@@ -86,14 +96,19 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
 
     logger.info(f"[{time.time() - start_time:.3f}s] Message preparation complete")
 
+    current_system_prompt = CHAT_LLM_INSTRUCTIONS
+    if len(request.messages) > 5:
+        logger.info(f"[{time.time() - start_time:.3f}s] Chat length > 5 messages. Appending transition to meditation prompt.")
+        current_system_prompt += TRANSITION_TO_MEDITATION_PROMPT
+
     # Get text response from OpenAI GPT-4o
     chat_start_time = time.time()
-    logger.info(f"[{time.time() - start_time:.3f}s] Using CHAT_LLM_INSTRUCTIONS for /chat endpoint.")
-    logger.debug(f"CHAT_LLM_INSTRUCTIONS (first 300 chars): {CHAT_LLM_INSTRUCTIONS[:300]}...")
+    logger.info(f"[{time.time() - start_time:.3f}s] Using dynamically constructed CHAT_LLM_INSTRUCTIONS for /chat endpoint.")
+    logger.info(f"SYSTEM_PROMPT (first 300 chars): {current_system_prompt[:300]}...")
     text_response = await get_chat_completion(
         messages=openai_messages,
-        system_prompt=CHAT_LLM_INSTRUCTIONS,
-        max_output_tokens=100
+        system_prompt=current_system_prompt,
+        max_output_tokens=150
     )
     chat_duration = time.time() - chat_start_time
     logger.info(f"[{time.time() - start_time:.3f}s] Chat completion call took: {chat_duration:.3f}s")
