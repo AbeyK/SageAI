@@ -20,7 +20,7 @@ class LoginViewController: UIViewController {
         let label = UILabel()
         label.text = "Sage"
         label.font = .systemFont(ofSize: 28, weight: .semibold)
-        label.textColor = SageColors.backgroundColor
+        label.textColor = UIColor.primaryButtonBackground
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -29,11 +29,11 @@ class LoginViewController: UIViewController {
     private let usernameTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Username"
-        textField.backgroundColor = UIColor(white: 1, alpha: 0.3)
-        textField.textColor = .white
+        textField.backgroundColor = UIColor.chatBubbleBackground
+        textField.textColor = UIColor.chatBubbleText
         textField.attributedPlaceholder = NSAttributedString(
             string: "Username",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor(white: 1, alpha: 0.8)]
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor.chatBubbleText.withAlphaComponent(0.5)]
         )
         textField.layer.cornerRadius = 8
         textField.autocapitalizationType = .none
@@ -46,11 +46,11 @@ class LoginViewController: UIViewController {
     private let passwordTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Password"
-        textField.backgroundColor = UIColor(white: 1, alpha: 0.3)
-        textField.textColor = .white
+        textField.backgroundColor = UIColor.chatBubbleBackground
+        textField.textColor = UIColor.chatBubbleText
         textField.attributedPlaceholder = NSAttributedString(
             string: "Password",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor(white: 1, alpha: 0.8)]
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor.chatBubbleText.withAlphaComponent(0.5)]
         )
         textField.layer.cornerRadius = 8
         textField.isSecureTextEntry = true
@@ -63,8 +63,8 @@ class LoginViewController: UIViewController {
     private let loginButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Log In", for: .normal)
-        button.backgroundColor = SageColors.backgroundColor
-        button.setTitleColor(SageColors.primaryButtonColor, for: .normal)
+        button.backgroundColor = UIColor.primaryButtonBackground
+        button.setTitleColor(UIColor.primaryButtonText, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
         button.layer.cornerRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -74,7 +74,7 @@ class LoginViewController: UIViewController {
     private let forgotPasswordButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Forgot Password?", for: .normal)
-        button.setTitleColor(UIColor(white: 1, alpha: 0.6), for: .normal)
+        button.setTitleColor(UIColor.primaryButtonText.withAlphaComponent(0.6), for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -84,7 +84,7 @@ class LoginViewController: UIViewController {
         let label = UILabel()
         label.text = "Don't have an account? Sign Up"
         label.font = .systemFont(ofSize: 14)
-        label.textColor = UIColor(white: 1, alpha: 0.6)
+        label.textColor = UIColor.primaryButtonText.withAlphaComponent(0.6)
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -93,9 +93,8 @@ class LoginViewController: UIViewController {
     private let gradientLayer: CAGradientLayer = {
         let layer = CAGradientLayer()
         layer.colors = [
-            SageColors.backgroundColor.cgColor,
-            SageColors.primaryButtonColor.cgColor,
-            SageColors.primaryButtonColor.cgColor,
+            UIColor.appBackground.cgColor,
+            UIColor.primaryButtonBackground.cgColor
         ]
         layer.locations = [0.0, 0.6, 1.0]
         return layer
@@ -104,6 +103,7 @@ class LoginViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        view.backgroundColor = UIColor.appBackground
     }
     
     override func viewDidLayoutSubviews() {

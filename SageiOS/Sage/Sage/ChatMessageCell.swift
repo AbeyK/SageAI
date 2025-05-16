@@ -13,7 +13,7 @@ class ChatMessageCell: UITableViewCell {
     
     private let bubbleView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor(white: 0.5, alpha: 0.3)
+        view.backgroundColor = UIColor.chatBubbleBackground
         view.layer.cornerRadius = 16
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -21,7 +21,7 @@ class ChatMessageCell: UITableViewCell {
     
     private let messageLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .white
+        label.textColor = UIColor.chatBubbleText
         label.font = UIFont.systemFont(ofSize: 18)
         label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -37,8 +37,8 @@ class ChatMessageCell: UITableViewCell {
     func configure(with text: String, sent: Bool) {
         messageLabel.text = text
         bubbleView.backgroundColor = sent
-        ? SageColors.primaryButtonColor
-        : UIColor(white: 0.5, alpha: 0.3)
+        ? UIColor.userChatBubbleBackground    // User's messages: new light grey
+        : UIColor.chatBubbleBackground      // Sage's messages: light green
         
         messageLabel.textAlignment = .left
         
