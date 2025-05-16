@@ -62,7 +62,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     
     private let meditationButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Start Meditation", for: .normal)
+        button.setTitle("Start My Meditation", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = SageColors.primaryButtonColor
         button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
