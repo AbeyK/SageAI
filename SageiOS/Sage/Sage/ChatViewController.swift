@@ -19,6 +19,17 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         return view
     }()
 
+
+    private let gradientLayer: CAGradientLayer = {
+        let layer = CAGradientLayer()
+        layer.colors = [
+            UIColor(red: 0.6, green: 0.4, blue: 0.9, alpha: 1.0).cgColor,
+            UIColor(red: 0.2, green: 0.2, blue: 0.4, alpha: 1.0).cgColor
+        ]
+        layer.locations = [0.0, 1.0]
+        return layer
+    }()
+
     private let settingsButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "gearshape.fill"), for: .normal)
@@ -48,13 +59,43 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         return button
     }()
     
-    private let gradientLayer: CAGradientLayer = {
-        let layer = CAGradientLayer()
-        layer.colors = [
-            UIColor(red: 0.6, green: 0.4, blue: 0.9, alpha: 1.0).cgColor,
-            UIColor(red: 0.2, green: 0.2, blue: 0.4, alpha: 1.0).cgColor
-        ]
-        layer.locations = [0.0, 1.0]
+    private let meditationButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Start Meditation", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = SageColors.primaryButtonColor
+        button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+        button.layer.cornerRadius = 12
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    private let timerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = SageColors.primaryButtonColor.withAlphaComponent(0.3)
+        view.layer.cornerRadius = 16
+        view.clipsToBounds = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isHidden = true
+        return view
+    }()
+    
+    private let timerLabel: UILabel = {
+        let label = UILabel()
+        label.text = "5:00"
+        label.textColor = .white
+        label.font = .systemFont(ofSize: 48, weight: .bold)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let timerCircle: CAShapeLayer = {
+        let layer = CAShapeLayer()
+        layer.fillColor = UIColor.clear.cgColor
+        layer.strokeColor = SageColors.primaryButtonColor.cgColor
+        layer.lineWidth = 8
+        layer.lineCap = .round
         return layer
     }()
     
@@ -82,6 +123,11 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         super.viewDidLayoutSubviews()
         gradientLayer.frame = view.bounds
         muteButton.layer.cornerRadius = muteButton.bounds.width / 2
+        
+        // Update timer circle if it's visible
+        if !timerView.isHidden {
+            setupTimerCircle()
+        }
     }
     
     private func setupUI() {
@@ -93,6 +139,10 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         view.addSubview(chatTableView)
         view.addSubview(muteButton)
         view.addSubview(settingsButton)
+        view.addSubview(meditationButton)
+        view.addSubview(timerView)
+        timerView.addSubview(timerLabel)
+        timerView.layer.addSublayer(timerCircle)
     
         // Calculate pandaView dimensions
         let screenWidth = UIScreen.main.bounds.width
@@ -126,18 +176,35 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             chatTableView.heightAnchor.constraint(equalToConstant: 200),
             chatTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             chatTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            chatTableView.bottomAnchor.constraint(equalTo: muteButton.topAnchor, constant: -60),
+            chatTableView.bottomAnchor.constraint(equalTo: meditationButton.topAnchor, constant: -20),
+            
+            // Meditation button
+            meditationButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            meditationButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            meditationButton.bottomAnchor.constraint(equalTo: muteButton.topAnchor, constant: -20),
+            meditationButton.heightAnchor.constraint(equalToConstant: 44),
+            
+            // Timer view
+            timerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            timerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            timerView.bottomAnchor.constraint(equalTo: muteButton.topAnchor, constant: -20),
+            timerView.heightAnchor.constraint(equalToConstant: 200),
+            
+            // Timer label
+            timerLabel.centerXAnchor.constraint(equalTo: timerView.centerXAnchor),
+            timerLabel.centerYAnchor.constraint(equalTo: timerView.centerYAnchor),
             
             // Mute button
             muteButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            muteButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -30),
-            muteButton.widthAnchor.constraint(equalToConstant: 70),
-            muteButton.heightAnchor.constraint(equalToConstant: 70)
+            muteButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            muteButton.widthAnchor.constraint(equalToConstant: 50),
+            muteButton.heightAnchor.constraint(equalToConstant: 50)
         ])
         
-        // Add button action
+        // Add button actions
         settingsButton.addTarget(self, action: #selector(settingsButtonTapped), for: .touchUpInside)
         muteButton.addTarget(self, action: #selector(muteButtonTapped), for: .touchUpInside)
+        meditationButton.addTarget(self, action: #selector(meditationButtonTapped), for: .touchUpInside)
 
         // Start occasional rotation
         // startRotatingSettingsButton()
@@ -163,6 +230,90 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         print("[LOG] Settings button tapped. SettingsViewController presented.")
     }
 
+    @objc private func meditationButtonTapped() {
+        print("[LOG] Meditation button tapped")
+        
+        // Stop any ongoing audio and speech recognition
+        conversationManager.stopAllAudioAndRecording()
+        
+        // Change phase to meditating
+        conversationManager.currentPhase = .meditating
+        
+        // Animate out the meditation button and chat table view
+        UIView.animate(withDuration: 0.3, animations: {
+            self.meditationButton.alpha = 0
+            self.chatTableView.alpha = 0
+        }) { _ in
+            self.meditationButton.isHidden = true
+            self.chatTableView.isHidden = true
+            
+            // Show and animate in the timer view
+            self.timerView.isHidden = false
+            self.timerView.alpha = 0
+            UIView.animate(withDuration: 0.3) {
+                self.timerView.alpha = 1
+            }
+            
+            // Set up timer update callback
+            self.conversationManager.onTimerUpdate = { [weak self] minutes, seconds in
+                self?.updateTimerLabel(minutes: minutes, seconds: seconds)
+                self?.updateTimerCircle()
+            }
+            
+            // Start the timer
+            self.conversationManager.startMeditationTimer()
+        }
+        
+        conversationManager.sendToBackend()
+    }
+    
+    private func updateTimerLabel(minutes: Int, seconds: Int) {
+        timerLabel.text = String(format: "%d:%02d", minutes, seconds)
+    }
+    
+    private func setupTimerCircle() {
+        let center = CGPoint(x: timerView.bounds.midX, y: timerView.bounds.midY)
+        let radius = min(timerView.bounds.width, timerView.bounds.height) * 0.4
+        let circlePath = UIBezierPath(arcCenter: center,
+                                    radius: radius,
+                                    startAngle: -CGFloat.pi / 2,
+                                    endAngle: 2 * CGFloat.pi - CGFloat.pi / 2,
+                                    clockwise: true)
+        timerCircle.path = circlePath.cgPath
+        timerCircle.strokeEnd = 1.0
+    }
+    
+    private func updateTimerCircle() {
+        let progress = CGFloat(conversationManager.remainingSeconds) / 300.0
+        timerCircle.strokeEnd = progress
+    }
+    
+    private func endMeditation() {
+        // Animate out the timer view
+        UIView.animate(withDuration: 0.3, animations: {
+            self.timerView.alpha = 0
+        }) { _ in
+            self.timerView.isHidden = true
+            
+            // Show and animate in the chat table view
+            self.chatTableView.isHidden = false
+            self.chatTableView.alpha = 0
+            UIView.animate(withDuration: 0.3) {
+                self.chatTableView.alpha = 1
+            }
+            
+            // Show and animate in the meditation button
+            self.meditationButton.isHidden = false
+            self.meditationButton.alpha = 0
+            UIView.animate(withDuration: 0.3) {
+                self.meditationButton.alpha = 1
+            }
+        }
+        
+        // Change phase back to initial discussion
+        conversationManager.currentPhase = .initialDiscussion
+        conversationManager.sendToBackend()
+    }
     
     func addMessage(_ message: String, isSentByUser: Bool) {
         messages.append((content: message, isSentByUser: isSentByUser))
