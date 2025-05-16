@@ -127,8 +127,6 @@ public class ConversationManager: SpeechManagerDelegate {
         // Create a new timer to check for inactivity
         let workItem = DispatchWorkItem { [weak self] in
             guard let self = self, self.currentPhase != .idle && self.currentPhase != .ended else { return }
-            
-            let now = Date()
 
             // Don't auto-prompt if AI is currently speaking
             if self.isAISpeaking {

@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "resized-image.png",
+      "filename" : "appstore-old.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,6 +13,7 @@
           "value" : "dark"
         }
       ],
+      "filename" : "resized-image.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
