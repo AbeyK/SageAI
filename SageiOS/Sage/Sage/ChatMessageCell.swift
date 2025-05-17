@@ -36,6 +36,10 @@ class ChatMessageCell: UITableViewCell {
     // Configure the cell with message
     func configure(with text: String, sent: Bool) {
         messageLabel.text = text
+        
+        // Ensure the text color is updated based on the current trait collection
+        messageLabel.textColor = UIColor.chatBubbleText 
+        
         bubbleView.backgroundColor = sent
         ? UIColor.userChatBubbleBackground    // User's messages: new light grey
         : UIColor.chatBubbleBackground      // Sage's messages: light green

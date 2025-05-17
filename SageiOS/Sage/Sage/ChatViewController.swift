@@ -131,6 +131,58 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         }
     }
     
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            // Update colors for layers and other UI elements that don't update automatically
+            updateColorsForCurrentTraitCollection()
+        }
+    }
+
+    private func updateColorsForCurrentTraitCollection() {
+        // Update CAGradientLayer
+        gradientLayer.colors = [
+            UIColor.appBackground.cgColor,
+            UIColor.primaryButtonBackground.cgColor
+        ]
+
+        // Update CAShapeLayer
+        timerCircle.strokeColor = UIColor.primaryButtonBackground.cgColor
+        // timerCircle.fillColor is already UIColor.clear.cgColor, so no need to update if it doesn't change
+
+        // Update view's background directly (though it should update if set with dynamic UIColor)
+        view.backgroundColor = UIColor.appBackground
+
+        // Update standard components (many of these should update automatically if set with dynamic UIColors from the palette initially,
+        // but explicitly re-setting them can ensure consistency, especially for more complex views or state-dependent colors).
+        settingsButton.tintColor = UIColor.statusLabelAndIcon
+        chatTableView.backgroundColor = UIColor.chatTableViewBackground
+        
+        // Mute button color depends on state, ensure it's re-evaluated
+        muteButton.tintColor = UIColor.primaryButtonText
+        muteButton.backgroundColor = isMuted ? .red : UIColor.primaryButtonBackground
+        
+        meditationButton.setTitleColor(UIColor.primaryButtonText, for: .normal)
+        meditationButton.backgroundColor = UIColor.primaryButtonBackground
+        
+        timerView.backgroundColor = UIColor.chatTableViewBackground
+        timerLabel.textColor = UIColor.primaryButtonText
+
+        // PandaView might have its own traitCollectionDidChange or need specific update methods
+        // If RedPandaView has its own complex drawing or sublayers, it should also implement traitCollectionDidChange.
+        // For now, if it relies on standard UIKit properties set with dynamic colors, it might update automatically.
+        // We can call a generic update method if it exists, or just let it be for now.
+        // pandaView.updateAppearanceForTraitCollection() // Example if such a method exists
+
+        // Reload table view to update cell colors
+        chatTableView.reloadData()
+
+        // Ensure layout and display are updated
+        view.setNeedsLayout() // In case any color changes affect layout
+        view.setNeedsDisplay() // Forces redraw of the view and its subviews if they have custom draw() methods
+    }
+    
     private func setupUI() {
         view.backgroundColor = UIColor.appBackground
         // Add subviews
