@@ -79,8 +79,19 @@ public class RedPandaView: UIView {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-        
+
     private var currentType: PandaType
+        
+    private func isHostedByChatViewController() -> Bool {
+        var responder: UIResponder? = self
+        while responder != nil {
+            if let viewController = responder as? UIViewController {
+                return viewController is ChatViewController
+            }
+            responder = responder?.next
+        }
+        return false
+    }
         
     init(frame: CGRect, type: PandaType) {
         self.currentType = type
@@ -162,8 +173,9 @@ public class RedPandaView: UIView {
 
     public func updateListeningState(isListening: Bool) {
         DispatchQueue.main.async {
+            let shouldShowListeningLabel = isListening && self.isHostedByChatViewController()
             UIView.transition(with: self.listeningLabel, duration: 0.3, options:.transitionCrossDissolve, animations: {
-                    self.listeningLabel.alpha = isListening ? 1.0 : 0.0
+                    self.listeningLabel.alpha = shouldShowListeningLabel ? 1.0 : 0.0
                 }, completion: nil)
         }
     }
@@ -186,8 +198,9 @@ public class RedPandaView: UIView {
 
     public func updateInitializingLabelState(isInitializing: Bool) {
         DispatchQueue.main.async {
+            let shouldShowInitializingLabel = isInitializing && self.isHostedByChatViewController()
             UIView.transition(with: self.initializingLabel, duration: 0.3, options: .transitionCrossDissolve, animations: {
-                self.initializingLabel.alpha = isInitializing ? 1.0 : 0.0
+                self.initializingLabel.alpha = shouldShowInitializingLabel ? 1.0 : 0.0
             }, completion: nil)
         }
     }
