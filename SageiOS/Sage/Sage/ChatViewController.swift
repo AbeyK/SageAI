@@ -415,6 +415,18 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             pandaView.updatePandaView(for: .happy) // Or .meditating, depending on desired initial animation
         }
     }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        UIApplication.shared.isIdleTimerDisabled = true
+        print("[LOG] ChatViewController appeared. Idle timer disabled.")
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        UIApplication.shared.isIdleTimerDisabled = false
+        print("[LOG] ChatViewController will disappear. Idle timer enabled.")
+    }
 }
 
 // MARK: - UITableViewDelegate & UITableViewDataSource
