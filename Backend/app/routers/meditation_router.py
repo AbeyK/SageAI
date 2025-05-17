@@ -10,6 +10,15 @@ logger = logging.getLogger("meditation_app")
 
 router = APIRouter()
 
+# --- Summarization Prompt --- (New)
+SUMMARIZATION_SYSTEM_PROMPT = (
+    "You are an expert at concisely summarizing text. Your task is to extract only the key takeaways and most important "
+    "emotional or situational points from the following message. Focus on what would be most relevant for a meditation guide "
+    "to understand about the user's current state or needs, or previous interactions. Aim for extreme brevity while retaining "
+    "essential meaning. Do not add any conversational fluff or introductory phrases. Directly provide the summarized essence."
+)
+MAX_TOKENS_SUMMARY = 60 # Max tokens for the summary
+
 # --- Meditation Phase Instructions --- 
 
 # Phase 0: Introduction, Settling, Personalized Connection (0% complete)
@@ -123,16 +132,48 @@ def get_meditation_guidance_for_phase(percent_complete: int) -> tuple[str, int, 
 async def run_meditation_session(request: MeditateRequest = Body(...)):
     """
     Provides a guided meditation session based on user messages and percent_complete (0-100).
+    Messages are summarized if they exceed a certain word count before being sent to the main LLM.
     Uses dynamically selected, phase-specific LLM instructions and TTS instructions.
     LLM instructions emphasize personalization and meditation best practices.
     """
     logger.info(f"Received /meditate request with {len(request.messages)} messages, percent_complete: {request.percent_complete}")
 
-    message_dicts: List[Dict[str, str]] = [msg.model_dump() for msg in request.messages]
+    # Summarize messages if they are too long
+    processed_message_dicts: List[Dict[str, str]] = []
+    for msg in request.messages:
+        word_count = len(msg.content.split())
+        if word_count < 10:
+            logger.info(f"Message from {msg.role} is short (words: {word_count}), using as is: {msg.content[:100]}...")
+            processed_message_dicts.append(msg.model_dump())
+        else:
+            logger.info(f"Message from {msg.role} is long (words: {word_count}), attempting summarization: {msg.content[:100]}...")
+            try:
+                summary_start_time = time.time()
+                # Present the content as a user message to the summarizer LLM
+                summary_text = await get_chat_completion(
+                    messages=[{"role": "user", "content": msg.content}], 
+                    system_prompt=SUMMARIZATION_SYSTEM_PROMPT,
+                    max_output_tokens=MAX_TOKENS_SUMMARY
+                )
+                summary_duration = time.time() - summary_start_time
+                logger.info(f"Summarization for message from {msg.role} took: {summary_duration:.3f}s. Original length: {len(msg.content)}, Summary length: {len(summary_text)}. Summary: {summary_text[:100]}...")
+
+                if summary_text.startswith("Error:"):
+                    logger.warning(f"Summarization LLM returned an error: {summary_text}. Using original message for {msg.role} instead.")
+                    processed_message_dicts.append(msg.model_dump())
+                else:
+                    # Use the original message's role for the summarized version
+                    processed_message_dicts.append({"role": msg.role, "content": summary_text})
+            except Exception as e_summary:
+                logger.error(f"Error during message summarization for {msg.role}: {e_summary}. Using original message instead.", exc_info=True)
+                processed_message_dicts.append(msg.model_dump())
+    
+    message_dicts = processed_message_dicts # Use the processed messages for the main flow
 
     current_llm_instructions, current_max_tokens, current_tts_instructions = get_meditation_guidance_for_phase(request.percent_complete)
     logger.info(f"Selected Phase based on {request.percent_complete}%: Max Tokens: {current_max_tokens}")
     logger.info(f"LLM Instructions for phase {request.percent_complete}% (first 300 chars): {current_llm_instructions[:300]}...")
+    logger.info(f"Context for main LLM (first message role: {message_dicts[0]['role'] if message_dicts else 'N/A'}, content: {message_dicts[0]['content'][:100] if message_dicts else 'N/A'}...)")
 
     try:
         llm_call_start_time = time.time()
