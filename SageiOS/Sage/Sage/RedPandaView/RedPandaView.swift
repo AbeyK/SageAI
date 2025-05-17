@@ -93,6 +93,19 @@ public class RedPandaView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
         
+    override public func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            // Ensure dynamic colors are reapplied
+            backgroundView.backgroundColor = UIColor.pandaCircleBackground
+            listeningLabel.textColor = UIColor.statusLabelAndIcon
+            thinkingLabel.textColor = UIColor.statusLabelAndIcon
+            speakingLabel.textColor = UIColor.statusLabelAndIcon
+            initializingLabel.textColor = UIColor.statusLabelAndIcon
+        }
+    }
+        
     private func setupView() {
         addSubview(backgroundView)
         addSubview(pandaView)
