@@ -27,7 +27,7 @@ else:
 async def get_chat_completion(
     messages: List[Dict[str, str]],
     system_prompt: str,
-    model: str = "gpt-4.1-nano",
+    model: str,
     max_output_tokens: Optional[int] = None
 ) -> str:
     """

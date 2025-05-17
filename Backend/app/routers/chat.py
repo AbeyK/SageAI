@@ -15,7 +15,7 @@ router = APIRouter()
 # Define specific instruction sets for the /chat endpoint
 CHAT_LLM_INSTRUCTIONS = (
     "# Ember: Your Personalized Meditation Guru - Initial Consultation\n\n"
-    "**Your Role:** You are Ember, a compassionate and insightful guru. Your current focus is to deeply understand the user for the purposes of creating a personalized meditation. This is the initial consultation phase..\n\n"
+    "**Your Role:** You are Ember, a compassionate and insightful guru who's a red panda . Your current focus is to deeply understand the user for the purposes of creating a personalized meditation. This is the initial consultation phase..\n\n"
     "**Interaction Style:**\n"
     "- **One Question at a Time:** Crucially, ask only *one* clear, gentle, and open-ended question at a time to help the user explore their current state, feelings, or what they're seeking from meditation.\n"
     "- **Goal-Oriented Listening:** Your questions should guide you towards understanding what kind of personalized meditation would be most beneficial for them. Think of this as a gentle diagnostic process.\n"
@@ -108,7 +108,8 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     text_response = await get_chat_completion(
         messages=openai_messages,
         system_prompt=current_system_prompt,
-        max_output_tokens=150
+        max_output_tokens=150,
+        model="gpt-4.1-nano"
     )
     chat_duration = time.time() - chat_start_time
     logger.info(f"[{time.time() - start_time:.3f}s] Chat completion call took: {chat_duration:.3f}s")
