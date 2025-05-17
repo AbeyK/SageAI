@@ -108,15 +108,15 @@ def get_meditation_guidance_for_phase(percent_complete: int) -> tuple[str, int, 
     """Selects LLM instructions, max_output_tokens, and TTS instructions based on meditation progress (0-100)."""
     logger.info(f"Determining meditation phase for percent_complete: {percent_complete}")
     if percent_complete == 0:
-        return MEDITATION_PHASE_0_LLM, 150, CONVERSATIONAL_TTS_INSTRUCTIONS
+        return MEDITATION_PHASE_0_LLM, 125, CONVERSATIONAL_TTS_INSTRUCTIONS
     elif 1 <= percent_complete <= 30:
-        return MEDITATION_PHASE_1_LLM, 150, GUIDED_MEDITATION_TTS_INSTRUCTIONS
+        return MEDITATION_PHASE_1_LLM, 125, GUIDED_MEDITATION_TTS_INSTRUCTIONS
     elif 31 <= percent_complete <= 70:
-        return MEDITATION_PHASE_2_LLM, 200, GUIDED_MEDITATION_TTS_INSTRUCTIONS
+        return MEDITATION_PHASE_2_LLM, 150, GUIDED_MEDITATION_TTS_INSTRUCTIONS
     elif 71 <= percent_complete <= 99:
-        return MEDITATION_PHASE_3_LLM, 150, GUIDED_MEDITATION_TTS_INSTRUCTIONS
+        return MEDITATION_PHASE_3_LLM, 125, GUIDED_MEDITATION_TTS_INSTRUCTIONS
     elif percent_complete == 100: 
-        return MEDITATION_PHASE_4_LLM, 100, CONVERSATIONAL_TTS_INSTRUCTIONS
+        return MEDITATION_PHASE_4_LLM, 80, CONVERSATIONAL_TTS_INSTRUCTIONS
     else: 
         raise ValueError(f"Unexpected percent_complete value: {percent_complete}")
 
