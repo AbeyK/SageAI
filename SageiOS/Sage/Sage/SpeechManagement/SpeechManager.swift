@@ -11,6 +11,7 @@ public class SpeechManager: SpeechRecognizerDelegate {
     }
 
     public func startSpeechRecognition() {
+        print("testing -> SpeechManager -> startSpeechRecognition")
         recognizer.delegate = self
         recognizer.onTranscriptUpdate = { newTranscript in
             self.handleTranscriptUpdate(newTranscript)
