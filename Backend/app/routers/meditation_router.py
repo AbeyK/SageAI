@@ -7,6 +7,8 @@ from app.services.rate_limiter import is_rate_limited
 from app.auth.firebase_auth import verify_firebase_token
 from app.models.chat_models import MeditateRequest, AudioResponse, Message
 import logging
+import base64
+import os
 
 logger = logging.getLogger("meditation_app")
 
@@ -47,6 +49,8 @@ MEDITATION_OUTRO = (
     "• Express gratitude: \"Thank you for sharing this space with me.\"\n"
     "• Transition back: \"When you feel ready, gently bring your awareness back to the room.\"\n"
 )
+
+STATIC_RATE_LIMITED_MP3_PATH = os.path.join("static", "rate-limited.mp3")
 
 def build_dynamic_prompt(progress, history_text=None):
     """Builds a dynamic meditation prompt based on the progress percentage and conversation history."""
@@ -92,8 +96,14 @@ async def run_meditation_session(request: MeditateRequest = Body(...), user: dic
 
     # Rate limiting check
     if await is_rate_limited(user["uid"]):
-        raise HTTPException(status_code=429, detail="Daily limit reached. Please try again tomorrow.")
-
+        with open(STATIC_RATE_LIMITED_MP3_PATH, "rb") as f:
+            audio_bytes = f.read()
+            audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
+            return AudioResponse(
+                text_response="It was fun chatting but Ember is feeling tired now. Come back tomorrow!",
+                audio_base64=audio_base64,
+                caption=""
+            )
     message_dicts: List[Dict[str, str]] = [msg.model_dump() for msg in request.messages]
 
     current_llm_instructions, current_max_tokens, current_tts_instructions = get_meditation_guidance_for_phase(request.percent_complete)
