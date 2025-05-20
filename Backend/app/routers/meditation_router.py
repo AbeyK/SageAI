@@ -1,8 +1,10 @@
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException, Body, Depends
 from typing import List, Dict
 import time
 
 from app.services.openai_service import get_chat_completion, tts_parallel_stitch
+from app.services.rate_limiter import is_rate_limited
+from app.auth.firebase_auth import verify_firebase_token
 from app.models.chat_models import MeditateRequest, AudioResponse, Message
 import logging
 
@@ -121,13 +123,17 @@ def get_meditation_guidance_for_phase(percent_complete: int) -> tuple[str, int, 
         raise ValueError(f"Unexpected percent_complete value: {percent_complete}")
 
 @router.post("/meditate", response_model=AudioResponse)
-async def run_meditation_session(request: MeditateRequest = Body(...)):
+async def run_meditation_session(request: MeditateRequest = Body(...), user: dict = Depends(verify_firebase_token)):
     """
     Provides a guided meditation session based on user messages and percent_complete (0-100).
     Uses dynamically selected, phase-specific LLM instructions and TTS instructions.
     LLM instructions emphasize personalization and meditation best practices.
     """
     logger.info(f"Received /meditate request with {len(request.messages)} messages, percent_complete: {request.percent_complete}")
+
+    # Rate limiting check
+    if await is_rate_limited(user["uid"]):
+        raise HTTPException(status_code=429, detail="Daily limit reached. Please try again tomorrow.")
 
     message_dicts: List[Dict[str, str]] = [msg.model_dump() for msg in request.messages]
 
