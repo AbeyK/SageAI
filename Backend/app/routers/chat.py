@@ -47,7 +47,8 @@ CHAT_TTS_INSTRUCTIONS = (
 )
 
 # Use a path relative to the working directory (which is /app in Docker)
-STATIC_MP3_PATH = os.path.join("static", "ember-intro.mp3")
+STATIC_INTRO_MP3_PATH = os.path.join("static", "ember-intro.mp3")
+STATIC_RATE_LIMITED_MP3_PATH = os.path.join("static", "rate-limited.mp3")
 
 @router.post("/chat", response_model=ChatResponse, tags=["Chat"])
 async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebase_token)):
@@ -63,10 +64,22 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     logger.info(f"[{time.time() - start_time:.3f}s] Authenticated user: {user.get('uid')}")
     logger.info(f"[{time.time() - start_time:.3f}s] Received messages: {request.messages}")
 
+    # Rate limiting check
+    if await is_rate_limited(user["uid"]):
+        with open(STATIC_RATE_LIMITED_MP3_PATH, "rb") as f:
+            audio_bytes = f.read()
+            audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
+            return ChatResponse(
+                text_response="It was fun chatting but Ember is feeling tired now. Come back tomorrow!",
+                audio_base64=audio_base64,
+                caption=""
+            )
+        raise HTTPException(status_code=429, detail="Daily limit reached. Please try again tomorrow.")
+
     # # If the first message is from the 'initializer' role, return the static mp3
     if request.messages and len(request.messages) == 1:
         try:
-            with open(STATIC_MP3_PATH, "rb") as f:
+            with open(STATIC_INTRO_MP3_PATH, "rb") as f:
                 audio_bytes = f.read()
             audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
             return ChatResponse(
@@ -77,10 +90,6 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
         except Exception as e:
             logger.error(f"Error reading static mp3: {e}")
             raise HTTPException(status_code=500, detail="Could not load intro audio.")
-
-    # Rate limiting check
-    if await is_rate_limited(user["uid"]):
-        raise HTTPException(status_code=429, detail="Daily limit reached. Please try again tomorrow.")
 
     # Simplified message preparation for OpenAI
     openai_messages = []
