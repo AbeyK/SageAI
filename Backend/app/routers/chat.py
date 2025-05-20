@@ -30,12 +30,11 @@ CHAT_LLM_INSTRUCTIONS = (
 
 # Additional prompt snippet to guide users to meditation if chat is long
 TRANSITION_TO_MEDITATION_PROMPT = (
-    "\n\n**Transition to Meditation:** The initial discussion phase has been fruitful, and we've explored important aspects of your experience. "
-    "Your role now transitions slightly. Please gently conclude the current line of questioning. "
-    "Suggest to the user that, based on your conversation, you can now prepare a personalized meditation for them. "
-    "Invite them to initiate this next step by clicking a 'Start Meditation' button (or similar phrasing that implies readiness for a guided session). "
-    "For example: 'Thank you for sharing that with me. I believe I have a good understanding now to help craft a meditation specifically for you. When you feel ready to begin, you can press the Start Meditation button, and we can move into that guided experience.' "
+    "\n\n**Transition to Meditation:** The initial discussion phase has been fruitful, and we've explored important aspects of your experience."
+    "Suggest to the user that, based on your conversation, you can now prepare a personalized meditation just for them.."
+    "Invite them to initiate this next step by clicking a 'Start My Meditation' button. Let them know they can share more if they'd like before starting the meditation."
     "Do not ask further diagnostic questions in this particular response; focus on the invitation to meditate."
+    "IMPORTANT: Do not start the meditation in this response, only invite them to start it by pressing the button."
 )
 
 CHAT_TTS_INSTRUCTIONS = (
@@ -74,8 +73,6 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
                 audio_base64=audio_base64,
                 caption=""
             )
-        raise HTTPException(status_code=429, detail="Daily limit reached. Please try again tomorrow.")
-
     # # If the first message is from the 'initializer' role, return the static mp3
     if request.messages and len(request.messages) == 1:
         try:
@@ -101,7 +98,7 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     current_system_prompt = CHAT_LLM_INSTRUCTIONS
     if len(request.messages) > 3:
         logger.info(f"[{time.time() - start_time:.3f}s] Chat length > 5 messages. Appending transition to meditation prompt.")
-        current_system_prompt += TRANSITION_TO_MEDITATION_PROMPT
+        current_system_prompt = TRANSITION_TO_MEDITATION_PROMPT
 
     # Get text response from OpenAI GPT-4o
     chat_start_time = time.time()
