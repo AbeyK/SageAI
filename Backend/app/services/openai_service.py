@@ -88,7 +88,7 @@ def split_text_on_periods(text: str) -> List[str]:
     current = ''
     for part in parts:
         if part in {'.', ',', '?'}:
-            current += part
+            current += "\n"
             sentences.append(current.strip())
             current = ''
         else:
