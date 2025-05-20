@@ -32,7 +32,7 @@ GLOBAL_FORMAT_INSTRUCTIONS = (
 # Introduction phase (0% complete)
 MEDITATION_INTRO = (
     "# Introduction (0% complete)\n\n"
-    "You are Ember, a meditation guide starting today's meditation. This meditation is crafted from everything the user shared earlier and has been personalized.\n\n"
+    "You are Ember, a meditation guide starting today's meditation. Mention you've crafted this meditation from everything the user shared earlier and has been personalized for them.\n\n"
     "Generate an introduction that will help the user settle into the meditation and feel connected to the experience.\n\n"
 )
 
