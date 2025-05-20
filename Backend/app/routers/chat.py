@@ -68,20 +68,20 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     logger.info(f"[{time.time() - start_time:.3f}s] Authenticated user: {user.get('uid')}")
     logger.info(f"[{time.time() - start_time:.3f}s] Received messages: {request.messages}")
 
-    # If the first message is from the 'initializer' role, return the static mp3
-    if request.messages and len(request.messages) == 1:
-        try:
-            with open(STATIC_MP3_PATH, "rb") as f:
-                audio_bytes = f.read()
-            audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
-            return ChatResponse(
-                text_response="Hey I'm Sage! Just say what’s on your mind and I’ll craft a meditation for you.",
-                audio_base64=audio_base64,
-                caption=""
-            )
-        except Exception as e:
-            logger.error(f"Error reading static mp3: {e}")
-            raise HTTPException(status_code=500, detail="Could not load intro audio.")
+    # # If the first message is from the 'initializer' role, return the static mp3
+    # if request.messages and len(request.messages) == 1:
+    #     try:
+    #         with open(STATIC_MP3_PATH, "rb") as f:
+    #             audio_bytes = f.read()
+    #         audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
+    #         return ChatResponse(
+    #             text_response="Hey I'm Sage! Just say what’s on your mind and I’ll craft a meditation for you.",
+    #             audio_base64=audio_base64,
+    #             caption=""
+    #         )
+    #     except Exception as e:
+    #         logger.error(f"Error reading static mp3: {e}")
+    #         raise HTTPException(status_code=500, detail="Could not load intro audio.")
 
     # Rate limiting check
     if await is_rate_limited(user["uid"]):
