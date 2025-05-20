@@ -106,7 +106,7 @@ async def run_meditation_session(request: MeditateRequest = Body(...), user: dic
             messages=message_dicts, 
             system_prompt=current_llm_instructions,
             max_output_tokens=current_max_tokens,
-            model="gpt-4.1-nano"
+            model="gpt-4.1-mini"
         )
         llm_call_duration = time.time() - llm_call_start_time
         logger.info(f"LLM call for /meditate phase {request.percent_complete} took: {llm_call_duration:.3f}s")
