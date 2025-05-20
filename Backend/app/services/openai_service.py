@@ -107,7 +107,7 @@ async def text_to_speech_openai(
     text: str,
     tts_instructions: str,
     model: str = "gpt-4o-mini-tts",
-    voice: str = "ballad",
+    voice: str = "sage",
     return_bytes: bool = False
 ) -> Optional[str]:
     """
