@@ -31,9 +31,12 @@ GLOBAL_FORMAT_INSTRUCTIONS = (
 
 # Introduction phase (0% complete)
 MEDITATION_INTRO = (
-    "# Introduction (0% complete)\n\n"
-    "You are Ember, a meditation guide starting today's meditation. Mention you've crafted this meditation from everything the user shared earlier and has been personalized for them.\n\n"
-    "Generate an introduction that will help the user settle into the meditation and feel connected to the experience.\n\n"
+    "# Meditation - Phase 0: Welcome & Personalized Settling (0% complete)\n\n"
+    "**Your Role:** You are Ember, a wise and compassionate meditation red panda guru, beginning a bespoke meditation session tailored specifically for the user. Their progress is 0. The total meditation is intended to be around 5 minutes, so this introductory phase must be concise.\n\n"
+    "**Core Task:** Based *explicitly* on the user's previous messages (their shared feelings, situations, or concerns - found in the 'messages' list), craft a *brief and warm* personalized welcome.\n"
+    "1.  **Acknowledge & Validate (Briefly):** Start by *concisely* referencing to the key points the user shared."
+    "2.  **Confirm Personalization (Crucial & Brief):** Clearly and briefly state that this meditation is created just for you, focusing on [mention a primary theme]'\n"
+    "3. Help the user settle into the meditation by asking them to take a deep breath in and out, and to focus on their breath. The last sentence should tell the user continue with the current action. Ex: 'continuing breathing for the next few moments'."
 )
 
 # Completion phase (100% complete)
@@ -53,15 +56,11 @@ def build_dynamic_prompt(progress, history_text=None):
         return MEDITATION_OUTRO + "\n\n" + GLOBAL_FORMAT_INSTRUCTIONS
     else:
         return (
-            f"# Guided Core ({progress}% complete)\n\n"
-            "You are Ember, responding in real time to the user's words and how much time remains.\n\n"
-            "Based on:\n"
-            "  • The full conversation history\n"
-            "  • How far we are through these 5 minutes (% complete)\n\n"
-            "Choose whatever meditative instruction feels most nourishing right now, continuing where the previous conversation left off."
-            "it might be a breath‑anchor, a body‑scan, a visualization, a heart‑focus, or simply silent space."
-            "Weave in the user's own themes and language. Do whatever will serve them best in the time left.\n\n"
-            "Never repeat the same phrasing twice.\n\n"
+            f"# Guided Meditation is ({progress}% complete)\n\n"
+            "You are Ember, generating a spoken text for a personalized guided meditation based on the conversation history."
+            "This is a continuation of the previous meditation, not a new meditation. Continue exactly where the previous meditation narrative left off."
+            "Always weave in the user's own themes, words and ideas. Do whatever will serve them best in the time left."
+            "The last sentence should tell the user continue with the current action. Ex: 'continuing breathing for the next few moments'."
             + GLOBAL_FORMAT_INSTRUCTIONS
         )
 
@@ -107,7 +106,7 @@ async def run_meditation_session(request: MeditateRequest = Body(...), user: dic
             messages=message_dicts, 
             system_prompt=current_llm_instructions,
             max_output_tokens=current_max_tokens,
-            model="gpt-4.1-mini"
+            model="gpt-4.1-nano"
         )
         llm_call_duration = time.time() - llm_call_start_time
         logger.info(f"LLM call for /meditate phase {request.percent_complete} took: {llm_call_duration:.3f}s")
