@@ -68,7 +68,36 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.alpha = 0 // Initially hide the meditation button
         return button
+    }()
+    
+    private let progressBarOutlineView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        view.layer.borderColor = UIColor.primaryButtonBackground.cgColor
+        view.layer.borderWidth = 2
+        view.layer.cornerRadius = 12
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
+    private let progressBarFillView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.primaryButtonBackground
+        view.layer.cornerRadius = 10 // Slightly less than outline to fit inside
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
+    private let progressBarLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Talk to create a meditation"
+        label.textColor = UIColor.primaryButtonBackground // Same color as meditationButton background
+        label.font = .systemFont(ofSize: 16, weight: .semibold)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
     
     private let timerView: UIView = {
@@ -102,6 +131,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     
     private var messages: [(content: String, isSentByUser: Bool)] = []
     private var isMuted: Bool = false
+    private var userMessageCount: Int = 0 // To track user messages for progress bar
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -192,6 +222,9 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         view.addSubview(muteButton)
         view.addSubview(settingsButton)
         view.addSubview(meditationButton)
+        view.addSubview(progressBarOutlineView)
+        progressBarOutlineView.addSubview(progressBarFillView)
+        progressBarOutlineView.addSubview(progressBarLabel)
         view.addSubview(timerView)
         timerView.addSubview(timerLabel)
         timerView.layer.addSublayer(timerCircle)
@@ -235,6 +268,24 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             meditationButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             meditationButton.bottomAnchor.constraint(equalTo: muteButton.topAnchor, constant: 0),
             meditationButton.heightAnchor.constraint(equalToConstant: 50),
+
+            // Progress Bar Outline View constraints (mirrors meditationButton)
+            progressBarOutlineView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            progressBarOutlineView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            progressBarOutlineView.bottomAnchor.constraint(equalTo: muteButton.topAnchor, constant: 0),
+            progressBarOutlineView.heightAnchor.constraint(equalToConstant: 50),
+
+            // Progress Bar Fill View constraints
+            progressBarFillView.leadingAnchor.constraint(equalTo: progressBarOutlineView.leadingAnchor, constant: 2),
+            progressBarFillView.topAnchor.constraint(equalTo: progressBarOutlineView.topAnchor, constant: 2),
+            progressBarFillView.bottomAnchor.constraint(equalTo: progressBarOutlineView.bottomAnchor, constant: -2),
+            // Width constraint will be added dynamically
+
+            // Progress Bar Label constraints
+            progressBarLabel.centerXAnchor.constraint(equalTo: progressBarOutlineView.centerXAnchor),
+            progressBarLabel.centerYAnchor.constraint(equalTo: progressBarOutlineView.centerYAnchor),
+            progressBarLabel.leadingAnchor.constraint(greaterThanOrEqualTo: progressBarOutlineView.leadingAnchor, constant: 8),
+            progressBarLabel.trailingAnchor.constraint(lessThanOrEqualTo: progressBarOutlineView.trailingAnchor, constant: -8),
             
             // Timer view
             timerView.heightAnchor.constraint(equalToConstant: 200),
@@ -373,6 +424,45 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         chatTableView.insertRows(at: [indexPath], with: .automatic)
         chatTableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
         print("[LOG] Message added to table. Content: \(message), isSentByUser: \(isSentByUser)")
+
+        if isSentByUser {
+            userMessageCount += 1
+            updateProgressBar()
+        } else {
+            // Check if the received message contains "Start My Meditation"
+            if message.localizedCaseInsensitiveContains("Start My Meditation") {
+                userMessageCount = 3 // Set to max messages to fill the bar
+                updateProgressBar()
+            }
+        }
+    }
+
+    private func updateProgressBar() {
+        let maxMessages = 3
+        let progress = min(CGFloat(userMessageCount) / CGFloat(maxMessages), 1.0)
+        let fullWidth = progressBarOutlineView.bounds.width - 4 // account for border/padding
+
+        // Remove existing width constraint if any
+        progressBarFillView.constraints.filter { $0.firstAttribute == .width }.forEach { $0.isActive = false }
+
+        let widthConstraint = progressBarFillView.widthAnchor.constraint(equalToConstant: fullWidth * progress)
+        widthConstraint.isActive = true
+
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded() // Animate constraint change
+        }
+
+        if userMessageCount >= maxMessages {
+            // Fade out progress bar, fade in meditation button
+            UIView.animate(withDuration: 0.5, delay: 0.3, options: [], animations: {
+                self.progressBarOutlineView.alpha = 0
+                self.progressBarLabel.alpha = 0 // Fade out the label as well
+                self.meditationButton.alpha = 1
+            }) { _ in
+                self.progressBarOutlineView.isHidden = true
+                self.progressBarLabel.isHidden = true // Hide the label as well
+            }
+        }
     }
 
     private func startRotatingSettingsButton() {
