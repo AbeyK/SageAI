@@ -77,6 +77,7 @@ class LoginViewController: UIViewController {
         button.setTitleColor(UIColor.statusLabelAndIcon, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.alpha = 0
         return button
     }()
 
