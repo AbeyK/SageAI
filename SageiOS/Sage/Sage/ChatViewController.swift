@@ -85,7 +85,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let progressBarFillView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor.primaryButtonBackground
-        view.layer.cornerRadius = 10 // Slightly less than outline to fit inside
+        view.layer.cornerRadius = 10
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -93,7 +93,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let progressBarLabel: UILabel = {
         let label = UILabel()
         label.text = "Talk to create a meditation"
-        label.textColor = UIColor.primaryButtonBackground // Same color as meditationButton background
+        label.textColor = UIColor.primaryButtonBackground
         label.font = .systemFont(ofSize: 16, weight: .semibold)
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -429,8 +429,10 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             userMessageCount += 1
             updateProgressBar()
         } else {
-            // Check if the received message contains "Start My Meditation"
-            if message.localizedCaseInsensitiveContains("Start My Meditation") {
+            // Check if the received message contains any of these phrases
+            if message.localizedCaseInsensitiveContains("Start My Meditation") 
+            || message.localizedCaseInsensitiveContains("personalized meditation")
+            || message.localizedCaseInsensitiveContains("would you like to try that") {
                 userMessageCount = 3 // Set to max messages to fill the bar
                 updateProgressBar()
             }
