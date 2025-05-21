@@ -77,31 +77,44 @@ async def get_chat_completion(
         logger.error(f"[{time.time() - start_time:.3f}s] Error calling OpenAI chat completion API: {e}")
         return f"Error: Could not get response from AI service. Details: {str(e)}"
 
-def split_text_on_periods(text: str) -> List[str]:
+def split_text_for_fast_tts(text: str) -> List[str]:
     """
-    Split text on '.', ',', and '?' and group every 2 split strings together for TTS chunks.
+    Split text into individual sentences or strong clauses for fastest TTS streaming.
+    This aims to maximize the number of small, independent chunks to reduce
+    Time To First Token (TTFT) for each segment.
     """
-    # Split on period, comma, or question mark (keep the delimiter)
-    parts = re.split(r'([.,?])', text)
-    # Recombine so each sentence/phrase includes its delimiter
-    sentences = []
-    current = ''
-    for part in parts:
-        if part in {'.', ',', '?'}:
-            current += "\n"
-            sentences.append(current.strip())
-            current = ''
+    # Use a regex that splits on common sentence-ending punctuation,
+    # and also on semicolons, while keeping the delimiters.
+    # It also handles cases like "Mr. Smith" or "U.S.A." by not splitting there.
+    # This regex is a more robust way to capture natural sentence boundaries.
+    # It looks for a punctuation mark (., ?, !) followed by a space or end of string,
+    # OR a semicolon followed by a space.
+    sentence_delimiters = r'(?<=[.!?])\s+|\s*(?<=;)\s*' # Keep the delimiter for natural pauses
+    sentences = re.split(sentence_delimiters, text)
+
+    # Clean up and filter out empty strings
+    cleaned_sentences = [s.strip() for s in sentences if s.strip()]
+
+    logger.info(f"Cleaned sentences: {cleaned_sentences}")
+
+    # If the last character of a sentence is a delimiter, move it to the end of the sentence
+    final_chunks = []
+    for s in cleaned_sentences:
+        if s and s[-1] not in ['.', '?', '!', ';']:
+            # Find the last punctuation that was used to split if it's missing
+            match = re.search(r'[.!?]$', s)
+            if not match: # Check for cases where the split might have removed it, e.g. if the original text was "Hello."
+                if s.endswith(','): # For clauses, the comma will be included
+                    final_chunks.append(s)
+                else:
+                    final_chunks.append(s + '.') # Add a period for natural ending if none
+            else:
+                final_chunks.append(s)
         else:
-            current += part
-    if current.strip():
-        sentences.append(current.strip())
-    # Group every 2 sentences/phrases together
-    chunks = []
-    for i in range(0, len(sentences), 2):
-        chunk = ' '.join(sentences[i:i+2]).strip()
-        if chunk:
-            chunks.append(chunk)
-    return chunks
+            final_chunks.append(s)
+
+
+    return final_chunks
 
 async def text_to_speech_openai(
     text: str,
@@ -149,7 +162,7 @@ async def tts_parallel_stitch(text: str, tts_instructions: str) -> str:
     Split text on periods, run TTS in parallel, and stitch the audio together. Returns base64-encoded audio.
     Requires tts_instructions to pass to underlying calls.
     """
-    chunks = split_text_on_periods(text)
+    chunks = split_text_for_fast_tts(text)
     logger.info(f"TTS will run in {len(chunks)} chunks using specific instructions.")
     # Pass mandatory tts_instructions to each text_to_speech_openai call
     tts_tasks = [text_to_speech_openai(chunk, return_bytes=True, tts_instructions=tts_instructions) for chunk in chunks]

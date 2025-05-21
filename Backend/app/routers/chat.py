@@ -31,10 +31,10 @@ CHAT_LLM_INSTRUCTIONS = (
 # Additional prompt snippet to guide users to meditation if chat is long
 TRANSITION_TO_MEDITATION_PROMPT = (
     "\n\n**Transition to Meditation:** The initial discussion phase has been fruitful, and we've explored important aspects of your experience."
-    "Suggest to the user that, based on your conversation, you can now prepare a personalized meditation just for them.."
+    "Briefly say you have enough information to now prepare a personalized meditation just for them."
     "Invite them to initiate this next step by clicking a 'Start My Meditation' button. Let them know they can share more if they'd like before starting the meditation."
     "Do not ask further diagnostic questions in this particular response; focus on the invitation to meditate."
-    "IMPORTANT: Do not start the meditation in this response, only invite them to start it by pressing the button."
+    "IMPORTANT: Do not start the meditation in this response, only invite them to start it by pressing the button. Keep the response concise."
 )
 
 CHAT_TTS_INSTRUCTIONS = (
@@ -96,7 +96,7 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     logger.info(f"[{time.time() - start_time:.3f}s] Message preparation complete")
 
     current_system_prompt = CHAT_LLM_INSTRUCTIONS
-    if len(request.messages) > 3:
+    if len(request.messages) == 3:
         logger.info(f"[{time.time() - start_time:.3f}s] Chat length > 5 messages. Appending transition to meditation prompt.")
         current_system_prompt = TRANSITION_TO_MEDITATION_PROMPT
 
