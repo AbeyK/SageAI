@@ -38,5 +38,7 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Sage AI uses speech recognition to understand your voice and personalize your meditation.</string>
 </dict>
 </plist>
