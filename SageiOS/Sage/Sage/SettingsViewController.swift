@@ -32,7 +32,7 @@ class SettingsViewController: UIViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Thanks for using Sage!"
+        label.text = "Thanks for using ZenPal"
         label.font = .boldSystemFont(ofSize: 28)
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
@@ -42,7 +42,7 @@ class SettingsViewController: UIViewController {
     
     private let blurbLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ember is your red panda meditation guide! Just share your story with Ember and she'll craft a custom meditation that's perfect for you."
+        label.text = "Ember is red panda meditation guru! Just share your story and she'll craft a custom meditation that's perfect for you."
         label.font = .systemFont(ofSize: 20)
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
