@@ -449,12 +449,40 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
 
 extension ChatViewController: ChatViewControllerDelegate {
     func didTapSignOut() {
-        print("[LOG] User tapped sign out")
-        conversationManager.stopConversationAndMeditation()
-        conversationManager.isSignedOut = true
+        print("[LOG] User tapped sign out in ChatViewController")
 
-        dismiss(animated: true) {
-            print("[LOG] ChatViewController dismissed. Auth sign out should occur now if not already handled by a coordinator.")
+        // Sign out from Firebase
+        authManager?.signOut()
+
+        conversationManager.stopConversationAndMeditation()
+        conversationManager.isSignedOut = true // Assuming this flag is still relevant
+
+        // Check if this ViewController is the root or was presented modally
+        if presentingViewController == nil && navigationController?.presentingViewController == nil {
+            // This VC is likely the root or part of the root navigation stack.
+            // Transition to LoginViewController by setting it as the new root.
+            print("[LOG] ChatViewController is root. Transitioning to LoginViewController as new root.")
+            let loginVC = LoginViewController()
+            
+            // Get the window scene and set the root view controller
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first {
+                window.rootViewController = loginVC
+                window.makeKeyAndVisible()
+                UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: {}, completion: nil)
+            } else {
+                // Fallback for older iOS or if window scene is not found (less likely for typical apps)
+                print("[ERROR] Could not get window scene to set new root. Dismissing as fallback.")
+                dismiss(animated: true, completion: nil)
+            }
+        } else {
+            // This VC was presented modally, so dismiss it.
+            print("[LOG] ChatViewController was presented. Dismissing self.")
+            dismiss(animated: true) {
+                print("[LOG] ChatViewController dismissed.")
+                // The presenting view controller (e.g., LoginViewController if it was a fresh login)
+                // should now be visible or handle its state appropriately.
+            }
         }
     }
 }
