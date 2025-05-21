@@ -161,8 +161,13 @@ public class ConversationManager: SpeechManagerDelegate {
         cancelAutoPrompt()
         if speechManager != nil {
             // Optionally stop speech recognition if it's continuously running
-            // speechManager?.stopSpeechRecognition()
+            speechManager?.stopSpeechRecognition()
         }
+
+        if ttsManager != nil {
+            ttsManager?.stopPlayback()
+        }
+
         currentPhase = .ended
     }
 
@@ -474,8 +479,9 @@ public class ConversationManager: SpeechManagerDelegate {
     private func updateMeditationProgress() {
         if remainingSeconds < 30 {
             meditationProgress = 100
+        } else {
+            meditationProgress = Int((Double(300 - remainingSeconds) / 300.0) * 100)
         }
-        meditationProgress = Int((Double(300 - remainingSeconds) / 300.0) * 100)
     }
     
     private func endMeditation() {
