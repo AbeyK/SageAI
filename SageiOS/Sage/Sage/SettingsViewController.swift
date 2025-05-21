@@ -42,7 +42,7 @@ class SettingsViewController: UIViewController {
     
     private let blurbLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ember is red panda meditation guru! Just share your story and she'll craft a custom meditation that's perfect for you."
+        label.text = "Ember is your personal red panda meditation guru! Just share your story and she'll craft a custom meditation that's perfect for you. Ember will adapt, evolve and grow with you with each meditation."
         label.font = .systemFont(ofSize: 20)
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
@@ -66,7 +66,7 @@ class SettingsViewController: UIViewController {
     
     private let feedbackButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Give Sage Feedback", for: .normal)
+        button.setTitle("Share Your Feedback", for: .normal)
         button.setTitleColor(UIColor.primaryButtonText, for: .normal)
         button.backgroundColor = UIColor.primaryButtonBackground
         button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
