@@ -33,7 +33,7 @@ public class SpeechManager: SpeechRecognizerDelegate {
 
     private func startSilenceTimer() {
         silenceTimer?.invalidate()
-        silenceTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
+        silenceTimer = Timer.scheduledTimer(withTimeInterval: 2.5, repeats: false) { [weak self] _ in
             print("testing -> SpeechManager 🛑 No transcript change in 2 seconds. Stopping recognition.")
             if let recognizer = self?.recognizer, recognizer.isRunning() {
                 recognizer.stopRecognition()

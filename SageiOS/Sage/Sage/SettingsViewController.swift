@@ -42,7 +42,7 @@ class SettingsViewController: UIViewController {
     
     private let blurbLabel: UILabel = {
         let label = UILabel()
-        label.text = "Sage is your mindful AI guide! Just talk, and Sage creates a custom meditation that's perfect for you. Wherever you are, whenever you need it, Sage listens and responds with calm, clarity, and care."
+        label.text = "Ember is your red panda meditation guide! Just share your story with Ember and she'll craft a custom meditation that's perfect for you."
         label.font = .systemFont(ofSize: 20)
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center

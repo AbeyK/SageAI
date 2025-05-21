@@ -92,7 +92,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
 
     private let progressBarLabel: UILabel = {
         let label = UILabel()
-        label.text = "Talk to create a meditation"
+        label.text = "Creating Your Meditation..."
         label.textColor = UIColor.primaryButtonBackground
         label.font = .systemFont(ofSize: 16, weight: .semibold)
         label.textAlignment = .center
@@ -425,22 +425,22 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         chatTableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
         print("[LOG] Message added to table. Content: \(message), isSentByUser: \(isSentByUser)")
 
-        if isSentByUser {
-            userMessageCount += 1
-            updateProgressBar()
-        } else {
+        userMessageCount += 1
+        updateProgressBar()
+        
+        if !isSentByUser{
             // Check if the received message contains any of these phrases
             if message.localizedCaseInsensitiveContains("Start My Meditation") 
             || message.localizedCaseInsensitiveContains("personalized meditation")
             || message.localizedCaseInsensitiveContains("would you like to try that") {
-                userMessageCount = 3 // Set to max messages to fill the bar
+                userMessageCount = 6 // Set to max messages to fill the bar
                 updateProgressBar()
             }
         }
     }
 
     private func updateProgressBar() {
-        let maxMessages = 3
+        let maxMessages = 6
         let progress = min(CGFloat(userMessageCount) / CGFloat(maxMessages), 1.0)
         let fullWidth = progressBarOutlineView.bounds.width - 4 // account for border/padding
 
@@ -450,13 +450,13 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         let widthConstraint = progressBarFillView.widthAnchor.constraint(equalToConstant: fullWidth * progress)
         widthConstraint.isActive = true
 
-        UIView.animate(withDuration: 0.3) {
+        UIView.animate(withDuration: 3) {
             self.view.layoutIfNeeded() // Animate constraint change
         }
 
         if userMessageCount >= maxMessages {
             // Fade out progress bar, fade in meditation button
-            UIView.animate(withDuration: 0.5, delay: 0.3, options: [], animations: {
+            UIView.animate(withDuration: 1, delay: 0.3, options: [], animations: {
                 self.progressBarOutlineView.alpha = 0
                 self.progressBarLabel.alpha = 0 // Fade out the label as well
                 self.meditationButton.alpha = 1
