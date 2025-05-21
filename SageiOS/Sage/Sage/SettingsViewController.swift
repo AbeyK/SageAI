@@ -32,7 +32,7 @@ class SettingsViewController: UIViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Thanks for using ZenPal"
+        label.text = "ZenPal"
         label.font = .boldSystemFont(ofSize: 28)
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center

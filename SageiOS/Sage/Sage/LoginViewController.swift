@@ -18,7 +18,7 @@ class LoginViewController: UIViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Sage"
+        label.text = "ZenPal"
         label.font = .systemFont(ofSize: 28, weight: .semibold)
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
