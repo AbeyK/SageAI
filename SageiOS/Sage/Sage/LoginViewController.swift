@@ -95,6 +95,7 @@ class LoginViewController: UIViewController {
         view.backgroundColor = UIColor.appBackground
         faceView.updateInitializingLabelState(isInitializing: true)
         setupUI()
+        setupSignUpLabelTap()
     }
     
     override func viewDidLayoutSubviews() {
@@ -154,6 +155,19 @@ class LoginViewController: UIViewController {
         loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
     }
     
+    private func setupSignUpLabelTap() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(signupLabelTapped))
+        signupLabel.isUserInteractionEnabled = true // Ensure interaction is enabled
+        signupLabel.addGestureRecognizer(tapGesture)
+    }
+
+    @objc private func signupLabelTapped() {
+        let signUpVC = SignUpViewController()
+        signUpVC.delegate = self // Set the delegate
+        signUpVC.modalPresentationStyle = .automatic // Changed from .fullScreen to enable swipe down dismissal
+        present(signUpVC, animated: true, completion: nil)
+    }
+    
     @objc private func loginButtonTapped() {
         guard let username = usernameTextField.text, !username.isEmpty,
               let password = passwordTextField.text, !password.isEmpty else {
@@ -182,5 +196,15 @@ class LoginViewController: UIViewController {
     @objc private func forgotPasswordTapped() {
         // Handle forgot password tap
         print("Forgot password tapped")
+    }
+}
+
+extension LoginViewController: SignUpViewControllerDelegate {
+    func didSignUpSuccessfully(from signUpViewController: SignUpViewController) {
+        // First, dismiss the SignUpViewController
+        signUpViewController.dismiss(animated: true) { [weak self] in
+            // Then, transition to ChatViewController
+            self?.transitionToChatViewController()
+        }
     }
 }
