@@ -60,14 +60,24 @@ class FirebaseAuthManager: ObservableObject {
         }
     }
 
-    func signUp(email: String, password: String) {
+    func signUp(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void) {
         Auth.auth().createUser(withEmail: email, password: password) { [weak self] (authResult, error) in
             if let error = error {
                 self?.authError = error
+                completion(.failure(error))
                 return
             }
-            // User is signed up and signed in
-            self?.authError = nil
+            if let user = authResult?.user {
+                // User is signed up and automatically signed in by Firebase
+                self?.authError = nil
+                completion(.success(user))
+            } else {
+                // This case should ideally not happen if error is nil and user is also nil,
+                // but good to handle it defensively.
+                let unknownError = NSError(domain: "FirebaseAuthManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "User creation succeeded but no user object was returned."])
+                self?.authError = unknownError
+                completion(.failure(unknownError))
+            }
         }
     }
 
