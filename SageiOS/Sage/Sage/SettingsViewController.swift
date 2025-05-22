@@ -148,6 +148,8 @@ class SettingsViewController: UIViewController {
 
     @objc private func feedbackButtonTapped() {
         print("[LOG] Feedback button tapped!")
-        // Implement feedback action here (e.g., open URL, present form)
+        if let url = URL(string: "https://docs.google.com/forms/d/e/1FAIpQLSfTqT-F24c0JRmCwJpi4a4zEQbhlJhmZxnLtmQAjTbUBfHd7w/viewform") {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
     }
 }
