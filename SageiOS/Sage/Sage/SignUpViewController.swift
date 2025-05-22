@@ -59,6 +59,17 @@ class SignUpViewController: UIViewController {
         return textField
     }()
 
+    private let errorLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = UIColor.systemRed
+        label.font = .systemFont(ofSize: 14)
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.isHidden = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
     private let signUpButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Sign Up", for: .normal)
@@ -94,6 +105,7 @@ class SignUpViewController: UIViewController {
         view.addSubview(emailTextField)
         view.addSubview(passwordTextField)
         view.addSubview(signUpButton)
+        view.addSubview(errorLabel)
         view.addSubview(loginLabel)
 
         NSLayoutConstraint.activate([
@@ -114,11 +126,16 @@ class SignUpViewController: UIViewController {
             passwordTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             passwordTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             passwordTextField.heightAnchor.constraint(equalToConstant: 50),
-
+            
             signUpButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 30),
             signUpButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             signUpButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             signUpButton.heightAnchor.constraint(equalToConstant: 50),
+            
+            // Error label constraints - now below the signup button
+            errorLabel.topAnchor.constraint(equalTo: signUpButton.bottomAnchor, constant: 16),
+            errorLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            errorLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
 
             loginLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
             loginLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
@@ -130,9 +147,12 @@ class SignUpViewController: UIViewController {
     }
 
     @objc private func signUpButtonTapped() {
+        // Hide any previous error
+        hideError()
+        
         guard let email = emailTextField.text, !email.isEmpty,
               let password = passwordTextField.text, !password.isEmpty else {
-            showErrorAlert(message: "Please enter both email and password")
+            showError(message: "Please enter both email and password")
             print("Email or password is empty")
             return
         }
@@ -144,22 +164,27 @@ class SignUpViewController: UIViewController {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let user):
+                    self.hideError()
                     print("Sign up successful for user: \(user.uid)")
                     // Notify delegate (LoginViewController) to handle transition
                     self.delegate?.didSignUpSuccessfully(from: self)
                 case .failure(let error):
-                    self.showErrorAlert(message: "Sign up error: \(error.localizedDescription)")
+                    self.showError(message: "Sign up error: \(error.localizedDescription)")
                     print("Sign up error: \(error.localizedDescription)")
                 }
             }
         }
     }
     
-    // Helper method to display error alerts
-    private func showErrorAlert(message: String) {
-        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+    // Show error message in the UI
+    private func showError(message: String) {
+        errorLabel.text = message
+        errorLabel.isHidden = false
+    }
+    
+    // Hide the error message
+    private func hideError() {
+        errorLabel.isHidden = true
     }
 
     @objc private func loginLabelTapped() {
