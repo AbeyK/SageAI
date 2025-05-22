@@ -19,7 +19,7 @@ class LoginViewController: UIViewController {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "ZenPal"
-        label.font = .systemFont(ofSize: 28, weight: .semibold)
+        label.font = .systemFont(ofSize: 50, weight: .semibold)
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -58,6 +58,17 @@ class LoginViewController: UIViewController {
         textField.leftViewMode = .always
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
+    }()
+    
+    private let errorLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = UIColor.systemRed
+        label.font = .systemFont(ofSize: 14)
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.isHidden = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
     
     private let loginButton: UIButton = {
@@ -110,8 +121,9 @@ class LoginViewController: UIViewController {
         view.addSubview(usernameTextField)
         view.addSubview(passwordTextField)
         view.addSubview(loginButton)
-        view.addSubview(forgotPasswordButton)
         view.addSubview(signupButton)
+        view.addSubview(errorLabel)
+        view.addSubview(forgotPasswordButton)
         
         // Set up constraints
         NSLayoutConstraint.activate([
@@ -148,8 +160,13 @@ class LoginViewController: UIViewController {
             signupButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             signupButton.heightAnchor.constraint(equalToConstant: 50),
             
+            // Error label constraints - now below the signup button
+            errorLabel.topAnchor.constraint(equalTo: signupButton.bottomAnchor, constant: 16),
+            errorLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            errorLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            
             // Forgot password button constraints
-            forgotPasswordButton.topAnchor.constraint(equalTo: signupButton.bottomAnchor, constant: 16),
+            forgotPasswordButton.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 8),
             forgotPasswordButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30)
         ])
         
@@ -167,10 +184,13 @@ class LoginViewController: UIViewController {
     }
     
     @objc private func loginButtonTapped() {
+        // Hide any previous error
+        hideError()
+        
         guard let username = usernameTextField.text, !username.isEmpty,
               let password = passwordTextField.text, !password.isEmpty else {
             // Show error message for empty fields
-            showErrorAlert(message: "Please enter both email and password")
+            showError(message: "Please enter both email and password")
             return
         }
         
@@ -178,21 +198,26 @@ class LoginViewController: UIViewController {
             DispatchQueue.main.async {
                 switch result {
                 case .success:
+                    self?.hideError()
                     self?.transitionToChatViewController()
                 case .failure(let error):
-                    // Show error alert to the user
-                    self?.showErrorAlert(message: "Login error: \(error.localizedDescription)")
+                    // Show error message to the user
+                    self?.showError(message: "Login error: \(error.localizedDescription)")
                     print("Login error: \(error.localizedDescription)")
                 }
             }
         }
     }
     
-    // Helper method to display error alerts
-    private func showErrorAlert(message: String) {
-        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+    // Show error message in the UI
+    private func showError(message: String) {
+        errorLabel.text = message
+        errorLabel.isHidden = false
+    }
+    
+    // Hide the error message
+    private func hideError() {
+        errorLabel.isHidden = true
     }
     
     private func transitionToChatViewController() {
