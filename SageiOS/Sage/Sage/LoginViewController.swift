@@ -81,14 +81,15 @@ class LoginViewController: UIViewController {
         return button
     }()
 
-    private let signupLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Don't have an account? Sign Up"
-        label.font = .systemFont(ofSize: 14)
-        label.textColor = UIColor.statusLabelAndIcon
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
+    private let signupButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Sign Up", for: .normal)
+        button.backgroundColor = UIColor.pandaCircleBackground
+        button.setTitleColor(UIColor.statusLabelAndIcon, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
+        button.layer.cornerRadius = 8
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
     }()
     
     override func viewDidLoad() {
@@ -96,7 +97,6 @@ class LoginViewController: UIViewController {
         view.backgroundColor = UIColor.appBackground
         faceView.updateInitializingLabelState(isInitializing: true)
         setupUI()
-        setupSignUpLabelTap()
     }
     
     override func viewDidLayoutSubviews() {
@@ -111,7 +111,7 @@ class LoginViewController: UIViewController {
         view.addSubview(passwordTextField)
         view.addSubview(loginButton)
         view.addSubview(forgotPasswordButton)
-        view.addSubview(signupLabel)
+        view.addSubview(signupButton)
         
         // Set up constraints
         NSLayoutConstraint.activate([
@@ -142,27 +142,24 @@ class LoginViewController: UIViewController {
             loginButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             loginButton.heightAnchor.constraint(equalToConstant: 50),
             
-            // Forgot password button constraints
-            forgotPasswordButton.topAnchor.constraint(equalTo: loginButton.bottomAnchor, constant: 16),
-            forgotPasswordButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            // Signup button constraints
+            signupButton.topAnchor.constraint(equalTo: loginButton.bottomAnchor, constant: 16),
+            signupButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            signupButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            signupButton.heightAnchor.constraint(equalToConstant: 50),
             
-            // Sign up label constraints
-            signupLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
-            signupLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            // Forgot password button constraints
+            forgotPasswordButton.topAnchor.constraint(equalTo: signupButton.bottomAnchor, constant: 16),
+            forgotPasswordButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30)
         ])
         
         // Add button actions
         forgotPasswordButton.addTarget(self, action: #selector(forgotPasswordTapped), for: .touchUpInside)
         loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
+        signupButton.addTarget(self, action: #selector(signupButtonTapped), for: .touchUpInside)
     }
     
-    private func setupSignUpLabelTap() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(signupLabelTapped))
-        signupLabel.isUserInteractionEnabled = true // Ensure interaction is enabled
-        signupLabel.addGestureRecognizer(tapGesture)
-    }
-
-    @objc private func signupLabelTapped() {
+    @objc private func signupButtonTapped() {
         let signUpVC = SignUpViewController()
         signUpVC.delegate = self // Set the delegate
         signUpVC.modalPresentationStyle = .automatic // Changed from .fullScreen to enable swipe down dismissal
@@ -172,19 +169,30 @@ class LoginViewController: UIViewController {
     @objc private func loginButtonTapped() {
         guard let username = usernameTextField.text, !username.isEmpty,
               let password = passwordTextField.text, !password.isEmpty else {
-            // Show error message
+            // Show error message for empty fields
+            showErrorAlert(message: "Please enter both email and password")
             return
         }
         
         authManager.signIn(email: username, password: password) { [weak self] result in
-            switch result {
-            case .success:
-                self?.transitionToChatViewController()
-            case .failure(let error):
-                // Handle error (e.g., show alert)
-                print("Login error: \(error.localizedDescription)")
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    self?.transitionToChatViewController()
+                case .failure(let error):
+                    // Show error alert to the user
+                    self?.showErrorAlert(message: "Login error: \(error.localizedDescription)")
+                    print("Login error: \(error.localizedDescription)")
+                }
             }
         }
+    }
+    
+    // Helper method to display error alerts
+    private func showErrorAlert(message: String) {
+        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
     
     private func transitionToChatViewController() {

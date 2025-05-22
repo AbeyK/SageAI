@@ -132,7 +132,7 @@ class SignUpViewController: UIViewController {
     @objc private func signUpButtonTapped() {
         guard let email = emailTextField.text, !email.isEmpty,
               let password = passwordTextField.text, !password.isEmpty else {
-            // TODO: Show error message (e.g., alert) for empty fields
+            showErrorAlert(message: "Please enter both email and password")
             print("Email or password is empty")
             return
         }
@@ -148,11 +148,18 @@ class SignUpViewController: UIViewController {
                     // Notify delegate (LoginViewController) to handle transition
                     self.delegate?.didSignUpSuccessfully(from: self)
                 case .failure(let error):
-                    // TODO: Show error message to the user (e.g., alert)
+                    self.showErrorAlert(message: "Sign up error: \(error.localizedDescription)")
                     print("Sign up error: \(error.localizedDescription)")
                 }
             }
         }
+    }
+    
+    // Helper method to display error alerts
+    private func showErrorAlert(message: String) {
+        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 
     @objc private func loginLabelTapped() {
