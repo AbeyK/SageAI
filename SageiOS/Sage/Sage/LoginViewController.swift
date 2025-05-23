@@ -208,7 +208,7 @@ class LoginViewController: UIViewController {
                 switch result {
                 case .success:
                     self?.hideError()
-                    self?.transitionToChatViewController()
+                    self?.transitionToHomeViewController()
                 case .failure(let error):
                     // Show error message to the user
                     self?.showError(message: "Login error: \(error.localizedDescription)")
@@ -229,11 +229,11 @@ class LoginViewController: UIViewController {
         errorLabel.isHidden = true
     }
     
-    private func transitionToChatViewController() {
-        let chatViewController = ChatViewController()
-        chatViewController.modalPresentationStyle = .fullScreen
-        chatViewController.authManager = authManager
-        present(chatViewController, animated: true)
+    private func transitionToHomeViewController() {
+        let homeViewController = HomeViewController()
+        homeViewController.modalPresentationStyle = .fullScreen
+        homeViewController.authManager = authManager
+        present(homeViewController, animated: true)
     }
     
     @objc private func forgotPasswordTapped() {
@@ -250,8 +250,8 @@ extension LoginViewController: SignUpViewControllerDelegate {
     func didSignUpSuccessfully(from signUpViewController: SignUpViewController) {
         // First, dismiss the SignUpViewController
         signUpViewController.dismiss(animated: true) { [weak self] in
-            // Then, transition to ChatViewController
-            self?.transitionToChatViewController()
+            // Then, transition to HomeViewController
+            self?.transitionToHomeViewController()
         }
     }
 }
