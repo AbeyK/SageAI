@@ -422,7 +422,10 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         print("[LOG] Message added to table. Content: \(message), isSentByUser: \(isSentByUser)")
 
         userMessageCount += 1
-        updateProgressBar()
+
+        if userMessageCount <= 6 {
+            return
+        }
         
         if !isSentByUser{
             // Check if the received message contains any of these phrases
