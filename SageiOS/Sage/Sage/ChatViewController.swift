@@ -23,8 +23,8 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let interruptButton: UIButton = {
         let button = UIButton(type: .custom) // Use .custom for more control
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.alpha = 0 // Start fully transparent
-        button.backgroundColor = .clear
+        button.alpha = 1 // Start fully transparent
+        button.backgroundColor = .black
 
         // Label setup
         let label = UILabel()
@@ -547,7 +547,9 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             pandaView.updatePandaView(for: .talking)
             interruptButton.isUserInteractionEnabled = true
             // Animate interrupt button
-            animateInterruptButton()
+            DispatchQueue.main.async { // Ensure UI updates are on the main thread
+                self.animateInterruptButton()
+            }
         case .isThinking:
             pandaView.updateThinkingLabelState(isThinking: true)
             pandaView.updatePandaView(for: .meditating)
@@ -561,12 +563,12 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
 
     private func animateInterruptButton() {
         // Ensure shadow is visible during animation
-        interruptButton.layer.shadowOpacity = 0.5 
+        interruptButton.layer.shadowOpacity = 0.8 
 
-        UIView.animate(withDuration: 0.3, animations: {
-            self.interruptButton.alpha = 1
+        UIView.animate(withDuration: 0.6, animations: {
+            self.interruptButton.alpha = 0.8
         }) { _ in
-            UIView.animate(withDuration: 0.3, delay: 1.0, options: [], animations: {
+            UIView.animate(withDuration: 0.6, delay: 1.0, options: [], animations: {
                 self.interruptButton.alpha = 0
             }) { _ in
                 // Hide shadow after animation
