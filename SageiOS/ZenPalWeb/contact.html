@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - ZenPal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">ZenPal</div>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="contact.html">Feedback & Contact</a></li>
+                <li><a href="privacy.html">Privacy Policy</a></li>
+                <li><a href="terms.html">Terms & Conditions</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="content-page">
+        <h1>Feedback & Contact Us</h1>
+        <p>We'd love to hear from you! Whether you have feedback on ZenPal, a question, or just want to say hello, please feel free to reach out.</p>
+
+        <section id="feedback-form">
+            <h2>Send Us a Message</h2>
+            <form action="#" method="POST"> <!-- Replace # with your form processing endpoint -->
+                <div>
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div>
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div>
+                    <label for="subject">Subject:</label>
+                    <input type="text" id="subject" name="subject">
+                </div>
+                <div>
+                    <label for="message">Message:</label>
+                    <textarea id="message" name="message" rows="6" required></textarea>
+                </div>
+                <button type="submit">Send Message</button>
+            </form>
+        </section>
+
+        <section id="contact-info">
+            <h2>Other Ways to Reach Us</h2>
+            <p><strong>Email:</strong> <a href="mailto:[Your Contact Email Address]">[Your Contact Email Address]</a></p>
+            <!-- Add other contact methods if you have them, e.g., social media links -->
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 ZenPal. All rights reserved.</p>
+    </footer>
+</body>
+</html> 
