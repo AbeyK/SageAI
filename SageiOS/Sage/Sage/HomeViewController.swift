@@ -1,0 +1,211 @@
+import UIKit
+import FirebaseAuth
+
+// Assuming SettingsViewController uses a delegate like this, which ChatViewController also conforms to.
+// If ChatViewControllerDelegate is defined elsewhere and accessible, this re-definition isn't strictly needed
+// but it clarifies the interface HomeViewController must adhere to for SettingsViewController.
+protocol HomeViewControllerDelegate: AnyObject {
+    func didTapSignOut()
+}
+
+class HomeViewController: UIViewController {
+
+    var authManager: FirebaseAuthManager? // Injected by SceneDelegate
+
+    private let settingsButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "gearshape.fill"), for: .normal)
+        button.tintColor = UIColor.statusLabelAndIcon
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(settingsButtonTapped), for: .touchUpInside)
+        return button
+    }()
+
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "ZenPal"
+        label.font = .systemFont(ofSize: 34, weight: .bold)
+        label.textColor = UIColor.chatBubbleText // Ensure this color is suitable for appBackground
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private func createActionButton(title: String, systemImageName: String? = nil, customContentView: UIView? = nil) -> UIButton {
+        let button = UIButton(type: .custom)
+        button.backgroundColor = UIColor.pandaCircleBackground
+        button.layer.cornerRadius = 16
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.clipsToBounds = true
+
+        let mainStackView = UIStackView()
+        mainStackView.axis = .vertical
+        mainStackView.alignment = .center
+        mainStackView.spacing = 10 // Space between image/content and label
+        mainStackView.translatesAutoresizingMaskIntoConstraints = false
+        mainStackView.isUserInteractionEnabled = false
+
+        if let contentView = customContentView {
+            contentView.translatesAutoresizingMaskIntoConstraints = false
+            mainStackView.addArrangedSubview(contentView)
+            // Example fixed size for RedPandaView container
+            NSLayoutConstraint.activate([
+                contentView.widthAnchor.constraint(equalToConstant: 70),
+                contentView.heightAnchor.constraint(equalToConstant: 70)
+            ])
+        } else if let imageName = systemImageName, let image = UIImage(systemName: imageName) {
+            let imageView = UIImageView(image: image)
+            imageView.contentMode = .scaleAspectFit
+            imageView.tintColor = UIColor.primaryButtonBackground // Or a more neutral icon color like chatBubbleText
+            imageView.translatesAutoresizingMaskIntoConstraints = false
+            mainStackView.addArrangedSubview(imageView)
+            NSLayoutConstraint.activate([
+                imageView.widthAnchor.constraint(equalToConstant: 44),
+                imageView.heightAnchor.constraint(equalToConstant: 44)
+            ])
+        }
+
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.font = .systemFont(ofSize: 18, weight: .semibold)
+        titleLabel.textColor = UIColor.chatBubbleText // Ensure contrast with pandaCircleBackground
+        titleLabel.textAlignment = .center
+        titleLabel.numberOfLines = 0
+        mainStackView.addArrangedSubview(titleLabel)
+        
+        button.addSubview(mainStackView)
+        NSLayoutConstraint.activate([
+            mainStackView.centerXAnchor.constraint(equalTo: button.centerXAnchor),
+            mainStackView.centerYAnchor.constraint(equalTo: button.centerYAnchor),
+            mainStackView.leadingAnchor.constraint(equalTo: button.leadingAnchor, constant: 16),
+            mainStackView.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -16)
+        ])
+        
+        return button
+    }
+
+    private lazy var meditationButton: UIButton = {
+        let pandaContainer = UIView() // Container for the panda view
+        let pandaView = RedPandaView(frame: .zero, type: .happy)
+        pandaView.translatesAutoresizingMaskIntoConstraints = false
+        pandaContainer.addSubview(pandaView)
+        NSLayoutConstraint.activate([
+            pandaView.centerXAnchor.constraint(equalTo: pandaContainer.centerXAnchor),
+            pandaView.centerYAnchor.constraint(equalTo: pandaContainer.centerYAnchor),
+            pandaView.widthAnchor.constraint(equalTo: pandaContainer.widthAnchor),
+            pandaView.heightAnchor.constraint(equalTo: pandaContainer.heightAnchor)
+        ])
+
+        let button = createActionButton(title: "Start My Meditation", customContentView: pandaContainer)
+        button.addTarget(self, action: #selector(meditationButtonTapped), for: .touchUpInside)
+        return button
+    }()
+
+    private lazy var journalButton: UIButton = {
+        let button = createActionButton(title: "Journal", systemImageName: "pencil.and.scribble")
+        button.addTarget(self, action: #selector(journalButtonTapped), for: .touchUpInside)
+        return button
+    }()
+
+    private lazy var sleepButton: UIButton = {
+        let button = createActionButton(title: "Start My Sleep Meditation", systemImageName: "moon.zzz.fill")
+        button.addTarget(self, action: #selector(sleepButtonTapped), for: .touchUpInside)
+        return button
+    }()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = UIColor.appBackground
+        setupUI()
+        
+        if authManager == nil {
+            authManager = FirebaseAuthManager()
+        }
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if Auth.auth().currentUser == nil {
+            presentLoginViewController(animated: false) // Present immediately if no user
+        }
+    }
+
+    private func setupUI() {
+        view.addSubview(settingsButton)
+        view.addSubview(titleLabel)
+        
+        let buttonsStackView = UIStackView(arrangedSubviews: [meditationButton, journalButton, sleepButton])
+        buttonsStackView.axis = .vertical
+        buttonsStackView.spacing = 20
+        buttonsStackView.distribution = .fillEqually
+        buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(buttonsStackView)
+
+        NSLayoutConstraint.activate([
+            settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            settingsButton.widthAnchor.constraint(equalToConstant: 40),
+            settingsButton.heightAnchor.constraint(equalToConstant: 40),
+
+            titleLabel.topAnchor.constraint(equalTo: settingsButton.bottomAnchor, constant: 20),
+            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 20),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -20),
+            
+            buttonsStackView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 30),
+            buttonsStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            buttonsStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            buttonsStackView.bottomAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+
+            meditationButton.heightAnchor.constraint(equalToConstant: 140), // Example height
+            // journalButton and sleepButton will also be this height due to fillEqually
+        ])
+    }
+
+    @objc private func settingsButtonTapped() {
+        let settingsVC = SettingsViewController() // Ensure SettingsViewController is available
+        settingsVC.modalPresentationStyle = .formSheet
+        settingsVC.delegate = self // HomeViewController conforms to ChatViewControllerDelegate
+        present(settingsVC, animated: true)
+    }
+
+    @objc private func meditationButtonTapped() {
+        let chatVC = ChatViewController()
+        chatVC.authManager = self.authManager
+        chatVC.modalPresentationStyle = .fullScreen
+        present(chatVC, animated: true, completion: nil)
+    }
+
+    @objc private func journalButtonTapped() {
+        print("Journal button tapped - To be implemented")
+        // Example: Present a JournalViewController
+        // let journalVC = JournalViewController()
+        // journalVC.modalPresentationStyle = .fullScreen
+        // present(journalVC, animated: true, completion: nil)
+    }
+
+    @objc private func sleepButtonTapped() {
+        print("Sleep meditation button tapped - To be implemented")
+        // Example: Present a SleepMeditationViewController
+        // let sleepVC = SleepMeditationViewController()
+        // sleepVC.modalPresentationStyle = .fullScreen
+        // present(sleepVC, animated: true, completion: nil)
+    }
+    
+    private func presentLoginViewController(animated: Bool = true) {
+        // Ensure no other presentations are in progress if called multiple times
+        if self.presentedViewController == nil || self.presentedViewController is LoginViewController {
+            let loginVC = LoginViewController()
+            loginVC.modalPresentationStyle = .fullScreen
+            present(loginVC, animated: animated, completion: nil)
+        }
+    }
+} 
+extension HomeViewController: HomeViewControllerDelegate {
+    func didTapSignOut() {
+        authManager?.signOut()
+        // After sign out, present the LoginViewController.
+        // This will cover the case where HomeVC is root.
+        presentLoginViewController()
+    }
+}

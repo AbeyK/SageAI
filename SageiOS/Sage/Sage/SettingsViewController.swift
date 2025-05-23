@@ -12,7 +12,7 @@ protocol ChatViewControllerDelegate: AnyObject {
 }
 
 class SettingsViewController: UIViewController {
-    public weak var delegate: ChatViewControllerDelegate?
+    public weak var delegate: HomeViewControllerDelegate?
 
     private let pandaImageView: UIImageView = {
         let image = UIImage(named: "PandaHappy") ?? UIImage(contentsOfFile: Bundle.main.path(forResource: "PandaHappy", ofType: "png", inDirectory: "Resources") ?? "")

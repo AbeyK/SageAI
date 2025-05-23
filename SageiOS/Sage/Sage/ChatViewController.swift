@@ -30,14 +30,6 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         return layer
     }()
 
-    private let settingsButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setImage(UIImage(systemName: "gearshape.fill"), for: .normal)
-        button.tintColor = UIColor.statusLabelAndIcon
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
-    
     private let chatTableView: UITableView = {
         let tableView = UITableView()
         tableView.separatorStyle = .none
@@ -129,6 +121,15 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         return layer
     }()
     
+    private let backButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "chevron.left"), for: .normal)
+        button.tintColor = UIColor.statusLabelAndIcon // Or another suitable color
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
+        return button
+    }()
+    
     private var messages: [(content: String, isSentByUser: Bool)] = []
     private var isMuted: Bool = false
     private var userMessageCount: Int = 0 // To track user messages for progress bar
@@ -183,10 +184,10 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
 
         // Update view's background directly (though it should update if set with dynamic UIColor)
         view.backgroundColor = UIColor.appBackground
+        backButton.tintColor = UIColor.statusLabelAndIcon // Ensure back button color updates
 
         // Update standard components (many of these should update automatically if set with dynamic UIColors from the palette initially,
         // but explicitly re-setting them can ensure consistency, especially for more complex views or state-dependent colors).
-        settingsButton.tintColor = UIColor.statusLabelAndIcon
         chatTableView.backgroundColor = UIColor.chatTableViewBackground
         
         // Mute button color depends on state, ensure it's re-evaluated
@@ -216,11 +217,11 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private func setupUI() {
         view.backgroundColor = UIColor.appBackground
         // Add subviews
+        view.addSubview(backButton)
         view.addSubview(pandaView)
         view.addSubview(pandaView)
         view.addSubview(chatTableView)
         view.addSubview(muteButton)
-        view.addSubview(settingsButton)
         view.addSubview(meditationButton)
         view.addSubview(progressBarOutlineView)
         progressBarOutlineView.addSubview(progressBarFillView)
@@ -251,11 +252,11 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         
         // Set up constraints
         NSLayoutConstraint.activate([
-            // Settings button
-            settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-            settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
-            settingsButton.widthAnchor.constraint(equalToConstant: 40),
-            settingsButton.heightAnchor.constraint(equalToConstant: 40),
+            // Back button
+            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
+            backButton.widthAnchor.constraint(equalToConstant: 40),
+            backButton.heightAnchor.constraint(equalToConstant: 40),
 
             // Chat table
             chatTableView.heightAnchor.constraint(equalToConstant: 240),
@@ -305,12 +306,8 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         ])
         
         // Add button actions
-        settingsButton.addTarget(self, action: #selector(settingsButtonTapped), for: .touchUpInside)
         muteButton.addTarget(self, action: #selector(muteButtonTapped), for: .touchUpInside)
         meditationButton.addTarget(self, action: #selector(meditationButtonTapped), for: .touchUpInside)
-
-        // Start occasional rotation
-        // startRotatingSettingsButton()
     }
     
     private func setupTableView() {
@@ -319,18 +316,17 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         chatTableView.register(ChatMessageCell.self, forCellReuseIdentifier: "ChatMessageCell")
     }
     
+    @objc private func backButtonTapped() {
+        print("[LOG] Back button tapped.")
+        conversationManager.stopConversationAndMeditation() // Stop all activities
+        conversationManager.stopAllAudioAndRecording()
+        dismiss(animated: true, completion: nil)
+    }
+
     @objc private func muteButtonTapped() {
         isMuted.toggle()
         muteButton.backgroundColor = isMuted ? .red : UIColor.primaryButtonBackground
         print("[LOG] Mute button tapped. isMuted: \(isMuted)")
-    }
-
-    @objc private func settingsButtonTapped() {
-        let settingsVC = SettingsViewController()
-        settingsVC.modalPresentationStyle = .formSheet
-        settingsVC.delegate = self
-        present(settingsVC, animated: true)
-        print("[LOG] Settings button tapped. SettingsViewController presented.")
     }
 
     @objc private func meditationButtonTapped() {
@@ -466,14 +462,6 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             }
         }
     }
-
-    private func startRotatingSettingsButton() {
-        Timer.scheduledTimer(withTimeInterval: 8.0, repeats: true) { _ in
-            UIView.animate(withDuration: 1.0) {
-                self.settingsButton.transform = self.settingsButton.transform.rotated(by: CGFloat.pi)
-            }
-        }
-    }
     
     // MARK: - ConversationManagerDelegate
 
@@ -539,42 +527,3 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
-extension ChatViewController: ChatViewControllerDelegate {
-    func didTapSignOut() {
-        print("[LOG] User tapped sign out in ChatViewController")
-
-        // Sign out from Firebase
-        authManager?.signOut()
-
-        conversationManager.stopConversationAndMeditation()
-        conversationManager.isSignedOut = true // Assuming this flag is still relevant
-
-        // Check if this ViewController is the root or was presented modally
-        if presentingViewController == nil && navigationController?.presentingViewController == nil {
-            // This VC is likely the root or part of the root navigation stack.
-            // Transition to LoginViewController by setting it as the new root.
-            print("[LOG] ChatViewController is root. Transitioning to LoginViewController as new root.")
-            let loginVC = LoginViewController()
-            
-            // Get the window scene and set the root view controller
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let window = windowScene.windows.first {
-                window.rootViewController = loginVC
-                window.makeKeyAndVisible()
-                UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: {}, completion: nil)
-            } else {
-                // Fallback for older iOS or if window scene is not found (less likely for typical apps)
-                print("[ERROR] Could not get window scene to set new root. Dismissing as fallback.")
-                dismiss(animated: true, completion: nil)
-            }
-        } else {
-            // This VC was presented modally, so dismiss it.
-            print("[LOG] ChatViewController was presented. Dismissing self.")
-            dismiss(animated: true) {
-                print("[LOG] ChatViewController dismissed.")
-                // The presenting view controller (e.g., LoginViewController if it was a fresh login)
-                // should now be visible or handle its state appropriately.
-            }
-        }
-    }
-}
