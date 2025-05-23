@@ -424,9 +424,11 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
 
         userMessageCount += 1
 
-        // if userMessageCount <= 1 {
-        //     return
-        // }
+        if userMessageCount <= 1 {
+            return
+        }
+        
+        updateProgressBar()
         
         if !isSentByUser{
             // Check if the received message contains any of these phrases
