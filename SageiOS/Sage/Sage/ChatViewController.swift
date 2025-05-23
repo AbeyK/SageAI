@@ -20,6 +20,42 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         return view
     }()
 
+    private let interruptButton: UIButton = {
+        let button = UIButton(type: .custom) // Use .custom for more control
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.alpha = 0 // Start fully transparent
+        button.backgroundColor = .clear
+
+        // Label setup
+        let label = UILabel()
+        label.text = "Tap to interrupt"
+        label.textColor = .white
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        button.addSubview(label)
+
+        // Center label, slightly offset downwards
+        NSLayoutConstraint.activate([
+            label.centerXAnchor.constraint(equalTo: button.centerXAnchor),
+            label.centerYAnchor.constraint(equalTo: button.centerYAnchor, constant: 20), // Adjust constant for "slightly below"
+            label.leadingAnchor.constraint(greaterThanOrEqualTo: button.leadingAnchor, constant: 8),
+            label.trailingAnchor.constraint(lessThanOrEqualTo: button.trailingAnchor, constant: -8)
+        ])
+
+        // Shadow properties (will be applied conditionally)
+        button.layer.shadowOpacity = 0.5
+        button.layer.shadowRadius = 5
+        button.layer.shadowOffset = CGSize(width: 0, height: 2)
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shouldRasterize = true // For performance
+        button.layer.rasterizationScale = UIScreen.main.scale
+        button.layer.masksToBounds = false // Important for shadow to be visible
+
+        button.addTarget(self, action: #selector(interruptButtonTapped), for: .touchUpInside)
+
+        return button
+    }()
 
     private let gradientLayer: CAGradientLayer = {
         let layer = CAGradientLayer()
@@ -157,6 +193,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         super.viewDidLayoutSubviews()
         gradientLayer.frame = view.bounds
         muteButton.layer.cornerRadius = muteButton.bounds.width / 2
+        interruptButton.layer.cornerRadius = interruptButton.bounds.width / 2 // Make it circular
         
         // Update timer circle if it's visible
         if !timerView.isHidden {
@@ -231,6 +268,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         view.addSubview(timerView)
         timerView.addSubview(timerLabel)
         timerView.layer.addSublayer(timerCircle)
+        view.addSubview(interruptButton)
     
         // Calculate pandaView dimensions
         let screenWidth = UIScreen.main.bounds.width
@@ -249,7 +287,13 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             faceMaxWidthConstraint,
             faceMaxHeightConstraint,
             pandaView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            pandaView.bottomAnchor.constraint(equalTo: chatTableView.topAnchor, constant: -60)
+            pandaView.bottomAnchor.constraint(equalTo: chatTableView.topAnchor, constant: -60),
+
+            // Interrupt Button constraints (to match pandaView)
+            interruptButton.centerXAnchor.constraint(equalTo: pandaView.centerXAnchor),
+            interruptButton.centerYAnchor.constraint(equalTo: pandaView.centerYAnchor),
+            interruptButton.widthAnchor.constraint(equalTo: pandaView.widthAnchor),
+            interruptButton.heightAnchor.constraint(equalTo: pandaView.heightAnchor)
         ])
         
         // Set up constraints
@@ -497,16 +541,43 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         case .isListening:
             pandaView.updateListeningState(isListening: true)
             pandaView.updatePandaView(for: .meditating)
+            interruptButton.isUserInteractionEnabled = false
         case .isTalking:
             pandaView.updateSpeakingLabelState(isSpeaking: true) // Use speaking label
             pandaView.updatePandaView(for: .talking)
+            interruptButton.isUserInteractionEnabled = true
+            // Animate interrupt button
+            animateInterruptButton()
         case .isThinking:
             pandaView.updateThinkingLabelState(isThinking: true)
             pandaView.updatePandaView(for: .meditating)
+            interruptButton.isUserInteractionEnabled = false
         case .isInitializing: // Handle new initializing state
             pandaView.updateInitializingLabelState(isInitializing: true)
             pandaView.updatePandaView(for: .happy) // Or .meditating, depending on desired initial animation
+            interruptButton.isUserInteractionEnabled = false
         }
+    }
+
+    private func animateInterruptButton() {
+        // Ensure shadow is visible during animation
+        interruptButton.layer.shadowOpacity = 0.5 
+
+        UIView.animate(withDuration: 0.3, animations: {
+            self.interruptButton.alpha = 1
+        }) { _ in
+            UIView.animate(withDuration: 0.3, delay: 1.0, options: [], animations: {
+                self.interruptButton.alpha = 0
+            }) { _ in
+                // Hide shadow after animation
+                self.interruptButton.layer.shadowOpacity = 0 
+            }
+        }
+    }
+
+    @objc private func interruptButtonTapped() {
+        print("[LOG] Interrupt button tapped.")
+        conversationManager.userInterrupted() // Call the new method
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -556,16 +627,16 @@ extension ChatViewController: MeditationFeedbackViewDelegate {
         }
         
         let userName = Auth.auth().currentUser?.displayName ?? "Anonymous"
-        let conversationHistory = conversationManager.getConversationHistory() // Get conversation history
+        let conversationHistory = conversationManager.getConversationHistory()
         
         let db = Firestore.firestore()
         db.collection("meditationFeedback").addDocument(data: [
             "userID": userID,
             "userName": userName,
-            "rating": rating, // This is already 0-5 as per MeditationFeedbackView
+            "rating": rating,
             "feedbackText": feedback ?? "",
             "timestamp": FieldValue.serverTimestamp(),
-            "conversationHistory": conversationHistory // Add conversation history
+            "conversationHistory": conversationHistory
         ]) { err in
             if let err = err {
                 print("[ERROR] Error adding document: \(err)")
