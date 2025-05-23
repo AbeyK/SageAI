@@ -98,27 +98,11 @@ public class ConversationManager: SpeechManagerDelegate {
     }
     
     public func speechManagerTranscriptCompleted(_ transcript: String) {
-        // Check for interruption: if AI is speaking (TTS active) and a transcript comes in.
-        if self.isAISpeaking {
-            log("testing -> ConversationManager: User interrupted AI. Stopping TTS.")
-            self.ttsManager?.stopPlayback() // Stop the TTS
-            self.isAISpeaking = false      // Mark AI as no longer speaking
-            
-            // Since TTS is stopped, ensure we transition to a listening state if needed,
-            // and cancel any auto-prompts that were scheduled assuming TTS would finish.
-            self.updateConversationStatus(to: .isListening)
-            self.cancelAutoPrompt()
+        if !isSendingChat {
+            log("testing -> ConversationManager: User transcript completed", fields: ["transcript": transcript])
+            lastUserInteractionTime = Date() // Update user interaction time
+            handleTranscript(transcript)
         }
-
-        // Proceed with handling the transcript.
-        // The !isSendingChat check was originally to avoid processing a new transcript
-        // if a backend request for a *previous* turn was still in flight.
-        // For an interruption, we generally want to process it.
-        // Consider if this 'isSendingChat' check is still perfectly applicable or needs refinement for barge-in.
-        // For now, we'll assume if a transcript arrives, it should be handled.
-        log("testing -> ConversationManager: User transcript completed (isSendingChat: \(isSendingChat))", fields: ["transcript": transcript])
-        lastUserInteractionTime = Date() // Update user interaction time
-        handleTranscript(transcript) // Process the transcript (sends to backend)
     }
 
     private func handleTranscript(_ transcript: String) {
@@ -352,45 +336,25 @@ public class ConversationManager: SpeechManagerDelegate {
                         self.log("testing -> ConversationManager: isAISpeaking = true (before TTS play)")
                        
                         self.updateConversationStatus(to: .isTalking)
-
-                        // Attempt to start speech recognition for barge-in before TTS starts
-                        if self.currentPhase == .initialDiscussion { // Or any other phase where barge-in is desired
-                            self.log("testing -> ConversationManager: Starting speech recognition for barge-in capability.")
-                            self.startSpeechRecognition()
-                        }
                          
                         self.ttsManager?.playAudioData(audioData) {
                             DispatchQueue.main.async {
-                                self.log("testing -> ConversationManager: TTS Audio playback completed (or was interrupted).")
-                                // Only set isAISpeaking to false if it wasn't already cleared by an interruption.
-                                if self.isAISpeaking {
-                                    self.isAISpeaking = false
-                                    self.log("testing -> ConversationManager: isAISpeaking = false (after TTS completion, no prior interruption)")
-                                }
+                                self.log("testing -> ConversationManager: TTS Audio playback completed")
+                                self.isAISpeaking = false
+                                 self.log("testing -> ConversationManager: isAISpeaking = false (after TTS completion)")
                                 
                                 if self.currentPhase != .ended {
-                                    self.log("testing -> ConversationManager: TTS completed/stopped, current phase not .ended.")
+                                    self.log("testing -> ConversationManager: TTS completed, current phase not .ended. Starting speech recognition and scheduling auto-prompt.")
                                     
-                                    // If TTS completed normally (wasn't interrupted) and we need to ensure SR is running.
-                                    // If an interruption happened, SR should already be active.
-                                    // The startSpeechRecognition method should ideally be idempotent or handle being called if already running.
-                                    if self.currentPhase == .initialDiscussion { // Check if SR is needed
-                                         // We already attempted to start SR for barge-in.
-                                         // If it stopped or didn't start, this is a fallback.
-                                         // Or, if TTS completed fully, ensure SR is active for the next turn.
-                                        self.log("testing -> ConversationManager: Ensuring speech recognition is active post-TTS for initialDiscussion.")
+                                    if self.currentPhase == .initialDiscussion {
                                         self.startSpeechRecognition()
                                     } else if self.currentPhase == .meditating {
-                                        // Auto-prompt logic for meditation phase
-                                        self.log("testing -----> scheduleAutoPromptCheck (TTS completion - meditating)")
+                                        // Note: This reschedules auto-prompt but doesn't immediately send one
+                                        self.log("testing -----> scheduleAutoPromptCheck 355")
                                         self.scheduleAutoPromptCheck()
                                     }
-                                    // If not meditating and not initialDiscussion, consider if other phases need SR or auto-prompt here.
-                                    // General auto-prompt if not meditating.
-                                    if self.currentPhase != .meditating {
-                                       self.log("testing -----> scheduleAutoPromptCheck (TTS completion - non-meditating)")
-                                       self.scheduleAutoPromptCheck()
-                                    }
+                                    
+                                    
 
                                 } else {
                                     self.log("testing -> ConversationManager: TTS completed, but current phase is .ended. Not starting speech recognition or auto-prompt.")
@@ -461,29 +425,19 @@ public class ConversationManager: SpeechManagerDelegate {
     // speech recognition
 
     private func startSpeechRecognition() {
-        log("testing -> ConversationManager: Attempting to start speech recognition.")
-        if currentPhase == .meditating {
+        log("testing -> ConversationManager: startSpeechRecognition called.")
+        if  currentPhase == .meditating {
             log("testing -> ConversationManager: Not starting speech recognition because user is meditating.")
             return
         }
             
-        // REMOVED: The check `if isAISpeaking || ttsManager?.isPlaying ?? false`
-        // This removal is to allow SpeechManager to attempt recognition even during TTS playback (for barge-in).
-        // The effectiveness of this relies heavily on Acoustic Echo Cancellation (AEC)
-        // being properly implemented and effective within SpeechManager.swift.
-        // If speechManager.startSpeechRecognition() is called while already recognizing,
-        // it should ideally handle this gracefully (e.g., be a no-op or restart cleanly).
-
-        log("testing -> ConversationManager: Requesting SpeechManager to start recognition. Current isAISpeaking: \(isAISpeaking), TTS playing: \(ttsManager?.isPlaying ?? false)")
-        self.speechManager?.startSpeechRecognition()
-        
-        // Only update status to .isListening if AI is NOT currently speaking.
-        // If AI is speaking, status should remain .isTalking while SR runs in background for barge-in.
-        if !self.isAISpeaking {
-            self.updateConversationStatus(to: .isListening)
-        } else {
-            log("testing -> ConversationManager: Speech recognition started for barge-in, but status remains .isTalking as AI is speaking.")
+        if isAISpeaking || ttsManager?.isPlaying ?? false {
+            log("testing -> ConversationManager: Not starting speech recognition because isAISpeaking.")
+            return
         }
+            
+        self.speechManager?.startSpeechRecognition()
+        self.updateConversationStatus(to: .isListening)
     }
     
     
