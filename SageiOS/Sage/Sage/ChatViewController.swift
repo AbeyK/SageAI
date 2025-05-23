@@ -423,7 +423,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
 
         userMessageCount += 1
 
-        if userMessageCount <= 6 {
+        if userMessageCount <= 1 {
             return
         }
         
