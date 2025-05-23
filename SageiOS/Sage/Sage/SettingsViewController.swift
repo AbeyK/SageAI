@@ -7,10 +7,6 @@
 
 import UIKit
 
-protocol ChatViewControllerDelegate: AnyObject {
-    func didTapSignOut()
-}
-
 class SettingsViewController: UIViewController {
     public weak var delegate: HomeViewControllerDelegate?
 

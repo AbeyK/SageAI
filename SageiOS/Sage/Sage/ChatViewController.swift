@@ -8,6 +8,7 @@
 import UIKit
 import AVKit
 import FirebaseAuth
+import FirebaseFirestore
 
 class ChatViewController: UIViewController, ConversationManagerDelegate {
     var authManager: FirebaseAuthManager?
@@ -430,7 +431,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         
         updateProgressBar()
         
-        if !isSentByUser{
+        if !isSentByUser {
             // Check if the received message contains any of these phrases
             if message.localizedCaseInsensitiveContains("Start My Meditation") 
             || message.localizedCaseInsensitiveContains("personalized meditation")
@@ -543,7 +544,35 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
 extension ChatViewController: MeditationFeedbackViewDelegate {
     func meditationFeedbackViewDidSubmit(rating: Int, feedback: String?) {
         print("[LOG] Meditation Feedback: Rating - \(rating) stars, Feedback - \(feedback ?? "None")")
-        // Here you could send the feedback to your backend if desired
+        
+        // Firebase logic
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("[ERROR] User not logged in, cannot save feedback.")
+            // Dismiss view even if feedback isn't saved, or handle error as appropriate
+            feedbackView?.removeFromSuperview()
+            feedbackView = nil
+            dismiss(animated: true, completion: nil)
+            return
+        }
+        
+        let userName = Auth.auth().currentUser?.displayName ?? "Anonymous"
+        let conversationHistory = conversationManager.getConversationHistory() // Get conversation history
+        
+        let db = Firestore.firestore()
+        db.collection("meditationFeedback").addDocument(data: [
+            "userID": userID,
+            "userName": userName,
+            "rating": rating, // This is already 0-5 as per MeditationFeedbackView
+            "feedbackText": feedback ?? "",
+            "timestamp": FieldValue.serverTimestamp(),
+            "conversationHistory": conversationHistory // Add conversation history
+        ]) { err in
+            if let err = err {
+                print("[ERROR] Error adding document: \(err)")
+            } else {
+                print("[LOG] Meditation feedback successfully saved to Firestore.")
+            }
+        }
         
         feedbackView?.removeFromSuperview()
         feedbackView = nil

@@ -61,6 +61,10 @@ public class ConversationManager: SpeechManagerDelegate {
         ttsManager = TTSManager()
     }
 
+    public func getConversationHistory() -> [[String: String]] {
+        return self.conversationHistory
+    }
+
     public func startConversation() {
         // Ensure speechManager is re-initialized if called multiple times or if it can be nilled elsewhere
         if self.speechManager == nil {
