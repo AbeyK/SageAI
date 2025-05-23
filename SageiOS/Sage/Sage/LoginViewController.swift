@@ -108,6 +108,15 @@ class LoginViewController: UIViewController {
         view.backgroundColor = UIColor.appBackground
         faceView.updateInitializingLabelState(isInitializing: true)
         setupUI()
+
+        // Add tap gesture recognizer to dismiss keyboard
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tapGesture)
+
+        // Add swipe gesture recognizer to dismiss keyboard
+        let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        swipeGesture.direction = .down
+        view.addGestureRecognizer(swipeGesture)
     }
     
     override func viewDidLayoutSubviews() {
@@ -230,6 +239,10 @@ class LoginViewController: UIViewController {
     @objc private func forgotPasswordTapped() {
         // Handle forgot password tap
         print("Forgot password tapped")
+    }
+
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
     }
 }
 
