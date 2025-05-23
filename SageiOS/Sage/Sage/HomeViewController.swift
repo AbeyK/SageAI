@@ -177,19 +177,64 @@ class HomeViewController: UIViewController {
     }
 
     @objc private func journalButtonTapped() {
-        print("Journal button tapped - To be implemented")
+        print("Journal button tapped - Showing Coming Soon")
+        showComingSoonPopup(message: "Journaling Coming Soon!")
         // Example: Present a JournalViewController
         // let journalVC = JournalViewController()
-        // journalVC.modalPresentationStyle = .fullScreen
-        // present(journalVC, animated: true, completion: nil)
     }
 
     @objc private func sleepButtonTapped() {
-        print("Sleep meditation button tapped - To be implemented")
+        print("Sleep meditation button tapped - Showing Coming Soon")
+        showComingSoonPopup(message: "Sleep Meditations Coming Soon!")
         // Example: Present a SleepMeditationViewController
         // let sleepVC = SleepMeditationViewController()
-        // sleepVC.modalPresentationStyle = .fullScreen
-        // present(sleepVC, animated: true, completion: nil)
+    }
+    
+    private func showComingSoonPopup(message: String) {
+        let popupLabel = UILabel()
+        popupLabel.text = message
+        popupLabel.textColor = UIColor.white
+        popupLabel.backgroundColor = UIColor.black.withAlphaComponent(0.75)
+        popupLabel.textAlignment = .center
+        popupLabel.numberOfLines = 0 // Allow multiple lines if needed
+        popupLabel.layer.cornerRadius = 12
+        popupLabel.layer.masksToBounds = true // Essential for cornerRadius with background
+        popupLabel.font = .systemFont(ofSize: 17, weight: .semibold)
+        popupLabel.translatesAutoresizingMaskIntoConstraints = false
+        popupLabel.alpha = 0 // Start transparent
+
+        // Determine the size needed for the text
+        popupLabel.preferredMaxLayoutWidth = view.bounds.width * 0.7 // Max width for the label
+        let textSize = popupLabel.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
+
+        // Define padding
+        let horizontalPadding: CGFloat = 25
+        let verticalPadding: CGFloat = 15
+
+        // Add to the key window's view or HomeViewController's view
+        // Using HomeViewController's view is generally safer and simpler.
+        view.addSubview(popupLabel)
+
+        NSLayoutConstraint.activate([
+            popupLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            popupLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            popupLabel.widthAnchor.constraint(equalToConstant: textSize.width + 2 * horizontalPadding),
+            popupLabel.heightAnchor.constraint(equalToConstant: textSize.height + 2 * verticalPadding)
+        ])
+
+        // Enhanced Animation
+        popupLabel.transform = CGAffineTransform(scaleX: 0.8, y: 0.8) // Start slightly smaller
+        UIView.animate(withDuration: 0.35, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.2, options: .curveEaseOut, animations: {
+            popupLabel.alpha = 1
+            popupLabel.transform = .identity // Animate to normal size
+        }) { _ in
+            UIView.animate(withDuration: 0.35, delay: 1.8, options: .curveEaseIn, animations: {
+                popupLabel.alpha = 0
+                popupLabel.transform = CGAffineTransform(scaleX: 0.8, y: 0.8) // Shrink out
+            }) { _ in
+                popupLabel.removeFromSuperview()
+            }
+        }
     }
     
     private func presentLoginViewController(animated: Bool = true) {
