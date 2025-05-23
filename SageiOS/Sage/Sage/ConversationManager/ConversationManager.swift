@@ -150,6 +150,14 @@ public class ConversationManager: SpeechManagerDelegate {
         autoPromptTimer?.cancel()
         autoPromptTimer = nil
     }
+
+    public func userInterrupted() {
+        log("testing -> ConversationManager: User interruption received.")
+        ttsManager?.stopPlayback() // Stop any ongoing TTS
+        isAISpeaking = false // Reflect that AI is no longer speaking
+        log("testing -> ConversationManager: isAISpeaking = false (due to user interruption)")
+        startSpeechRecognition() // Immediately start listening to the user
+    }
     
     private func sendContinuationPrompt() {
         DispatchQueue.global(qos: .background).async {
