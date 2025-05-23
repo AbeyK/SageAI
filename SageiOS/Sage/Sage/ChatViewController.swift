@@ -548,7 +548,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
             interruptButton.isUserInteractionEnabled = true
             // Animate interrupt button
             DispatchQueue.main.async { // Ensure UI updates are on the main thread
-                self.animateInterruptButton()
+                // self.animateInterruptButton() removing for now this needs to be fixed. Tap not working 
             }
         case .isThinking:
             pandaView.updateThinkingLabelState(isThinking: true)
@@ -563,7 +563,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
 
     private func animateInterruptButton() {
         // Ensure shadow is visible during animation
-        interruptButton.layer.shadowOpacity = 0.8 
+        interruptButton.layer.shadowOpacity = 0.4 
 
         UIView.animate(withDuration: 0.6, animations: {
             self.interruptButton.alpha = 0.8
