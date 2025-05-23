@@ -22,20 +22,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
         let window = UIWindow(windowScene: windowScene)
-        let chatViewController = ChatViewController()
+        let homeViewController = HomeViewController()
         let authManager = FirebaseAuthManager()
-        chatViewController.authManager = authManager
-        window.rootViewController = chatViewController
+        homeViewController.authManager = authManager
+        
+        window.rootViewController = homeViewController
         window.backgroundColor = UIColor.appBackground
         
         self.window = window
         window.makeKeyAndVisible()
-        
-        if Auth.auth().currentUser == nil {
-            DispatchQueue.main.async {
-                window.rootViewController = LoginViewController()
-            }
-        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
