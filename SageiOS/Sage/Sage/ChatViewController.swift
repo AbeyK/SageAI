@@ -23,7 +23,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let interruptButton: UIButton = {
         let button = UIButton(type: .custom) // Use .custom for more control
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.alpha = 1 // Start fully transparent
+        button.alpha = 0 // Start fully transparent
         button.backgroundColor = .black
 
         // Label setup
