@@ -632,7 +632,7 @@ extension ChatViewController: MeditationFeedbackViewDelegate {
         let conversationHistory = conversationManager.getConversationHistory()
         
         let db = Firestore.firestore()
-        db.collection("meditationFeedback").addDocument(data: [
+        db.collection("meditation_feedback").addDocument(data: [
             "userID": userID,
             "userName": userName,
             "rating": rating,
