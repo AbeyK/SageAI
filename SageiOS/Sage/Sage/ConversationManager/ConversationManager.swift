@@ -337,12 +337,20 @@ public class ConversationManager: SpeechManagerDelegate {
                        
                         self.updateConversationStatus(to: .isTalking)
                          
-                        self.ttsManager?.playAudioData(audioData) {
+                        self.ttsManager?.playAudioData(audioData) { [weak self] in
                             DispatchQueue.main.async {
+                                guard let self = self else { return }
                                 self.log("testing -> ConversationManager: TTS Audio playback completed")
                                 self.isAISpeaking = false
                                  self.log("testing -> ConversationManager: isAISpeaking = false (after TTS completion)")
                                 
+                                // Check if meditation ended while TTS was playing
+                                if self.currentPhase == .meditating && self.remainingSeconds <= 0 {
+                                    self.log("testing -> TTS completed, meditation timer had already finished. Ending meditation.")
+                                    self.endMeditation()
+                                    return // EndMeditation will handle the phase change to .ended
+                                }
+
                                 if self.currentPhase != .ended {
                                     self.log("testing -> ConversationManager: TTS completed, current phase not .ended. Starting speech recognition and scheduling auto-prompt.")
                                     
@@ -454,8 +462,9 @@ public class ConversationManager: SpeechManagerDelegate {
     public func startMeditationTimer() {
         remainingSeconds = 300 // Reset to 5 minutes
         meditationProgress = 0
+        currentPhase = .meditating // Ensure phase is set when timer starts
         
-        sendToBackend()
+        // sendToBackend() // Send initial meditation state to backend. This might not be needed if phase dictates meditation content
         
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
@@ -471,7 +480,15 @@ public class ConversationManager: SpeechManagerDelegate {
             } else {
                 self.timer?.invalidate()
                 self.timer = nil
-                self.endMeditation()
+                
+                // Check if TTS is playing. If not, end meditation.
+                // If TTS is playing, the completion handler in sendToBackend will call endMeditation.
+                if !(self.ttsManager?.isPlaying ?? false) {
+                    self.log("testing -> Meditation timer ended, TTS not playing. Ending meditation directly.")
+                    self.endMeditation()
+                } else {
+                    self.log("testing -> Meditation timer ended, TTS is playing. endMeditation will be called upon TTS completion.")
+                }
             }
         }
     }
@@ -485,8 +502,12 @@ public class ConversationManager: SpeechManagerDelegate {
     }
     
     private func endMeditation() {
-        currentPhase = .initialDiscussion
-        sendToBackend()
+        log("testing -> Ending meditation. Calling delegate.")
+        currentPhase = .ended // Set phase to ended
+        stopMeditationTimer() // Ensure timer is stopped and resources cleaned up
+        stopAllAudioAndRecording()
+        stopConversationAndMeditation()
+        delegate?.conversationManagerDidEndMeditation() 
     }
     
     public func stopMeditationTimer() {
