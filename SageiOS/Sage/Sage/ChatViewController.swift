@@ -133,6 +133,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private var messages: [(content: String, isSentByUser: Bool)] = []
     private var isMuted: Bool = false
     private var userMessageCount: Int = 0 // To track user messages for progress bar
+    private var feedbackView: MeditationFeedbackView?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -423,9 +424,9 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
 
         userMessageCount += 1
 
-        if userMessageCount <= 1 {
-            return
-        }
+        // if userMessageCount <= 1 {
+        //     return
+        // }
         
         if !isSentByUser{
             // Check if the received message contains any of these phrases
@@ -472,6 +473,12 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         print("[LOG] New message from ConversationManager: \(message.content), sentByUser: \(isSentByUser)")
         DispatchQueue.main.async {
             self.addMessage(message.content, isSentByUser: isSentByUser)
+        }
+    }
+
+    func conversationManagerDidEndMeditation() {
+        DispatchQueue.main.async {
+            self.showMeditationFeedbackPopup()
         }
     }
 
@@ -527,6 +534,45 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
+    }
+}
+
+// MARK: - MeditationFeedbackViewDelegate
+extension ChatViewController: MeditationFeedbackViewDelegate {
+    func meditationFeedbackViewDidSubmit(rating: Int, feedback: String?) {
+        print("[LOG] Meditation Feedback: Rating - \(rating) stars, Feedback - \(feedback ?? "None")")
+        // Here you could send the feedback to your backend if desired
+        
+        feedbackView?.removeFromSuperview()
+        feedbackView = nil
+        
+        // Dismiss ChatViewController after feedback submission
+        dismiss(animated: true, completion: nil)
+    }
+    
+    private func showMeditationFeedbackPopup() {
+        if feedbackView == nil {
+            feedbackView = MeditationFeedbackView(frame: view.bounds)
+            feedbackView!.delegate = self
+            feedbackView!.translatesAutoresizingMaskIntoConstraints = false // Important for manual layout
+            view.addSubview(feedbackView!)
+            
+            NSLayoutConstraint.activate([
+                feedbackView!.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                feedbackView!.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                feedbackView!.topAnchor.constraint(equalTo: view.topAnchor),
+                feedbackView!.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+            
+            feedbackView!.alpha = 0
+            UIView.animate(withDuration: 0.3) {
+                self.feedbackView!.alpha = 1
+            }
+        } else {
+            // Ensure it's visible if somehow already created but hidden
+            feedbackView?.alpha = 1
+            view.bringSubviewToFront(feedbackView!)
+        }
     }
 }
 
