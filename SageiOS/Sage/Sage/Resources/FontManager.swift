@@ -22,14 +22,13 @@ struct FontManager {
     
     /// App title and main branding - warm serif for elegance
     static func appTitle(size: CGFloat = 36) -> UIFont {
-        return createFont(name: sourceSerif, size: size, weight: .bold) ??
-               createFont(name: comfortaa, size: size, weight: .bold) ??
+        return createFont(name: comfortaa, size: size, weight: .bold) ??
                .boldSystemFont(ofSize: size)
     }
     
     /// Large headings (like screen titles) - serif for warmth
     static func heading1(size: CGFloat = 28) -> UIFont {
-        return createFont(name: sourceSerif, size: size, weight: .semibold) ??
+        return createFont(name: comfortaa, size: size, weight: .semibold) ??
                createFont(name: nunitoSans, size: size, weight: .semibold) ??
                .systemFont(ofSize: size, weight: .semibold)
     }
@@ -49,7 +48,7 @@ struct FontManager {
     }
     
     /// Body text and descriptions - highly readable sans serif
-    static func body(size: CGFloat = 16) -> UIFont {
+    static func body(size: CGFloat = 18) -> UIFont {
         return createFont(name: nunitoSans, size: size, weight: .regular) ??
                createFont(name: inter, size: size, weight: .regular) ??
                .systemFont(ofSize: size)
@@ -84,7 +83,7 @@ struct FontManager {
     }
     
     /// Special accent text (like meditation status labels) - rounded and friendly
-    static func accent(size: CGFloat = 16) -> UIFont {
+    static func accent(size: CGFloat = 18) -> UIFont {
         return createFont(name: comfortaa, size: size, weight: .medium) ??
                createFont(name: nunitoSans, size: size, weight: .medium) ??
                .systemFont(ofSize: size, weight: .medium)
