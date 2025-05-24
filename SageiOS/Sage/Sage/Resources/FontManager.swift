@@ -21,9 +21,9 @@ struct FontManager {
     // MARK: - Typography Scale
     
     /// App title and main branding - warm serif for elegance
-    static func appTitle(size: CGFloat = 36) -> UIFont {
-        return createFont(name: comfortaa, size: size, weight: .bold) ??
-               .boldSystemFont(ofSize: size)
+    static func appTitle(size: CGFloat = 42) -> UIFont {
+        return createFont(name: comfortaa, size: size, weight: .black) ??
+               .systemFont(ofSize: size, weight: .black)
     }
     
     /// Large headings (like screen titles) - serif for warmth
@@ -83,10 +83,10 @@ struct FontManager {
     }
     
     /// Special accent text (like meditation status labels) - rounded and friendly
-    static func accent(size: CGFloat = 20) -> UIFont {
-        return createFont(name: comfortaa, size: size, weight: .medium) ??
-               createFont(name: nunitoSans, size: size, weight: .medium) ??
-               .systemFont(ofSize: size, weight: .medium)
+    static func accent(size: CGFloat = 24) -> UIFont {
+        return createFont(name: comfortaa, size: size, weight: .bold) ??
+               createFont(name: nunitoSans, size: size, weight: .bold) ??
+               .systemFont(ofSize: size, weight: .bold)
     }
     
     /// Large timer/countdown text - clean and bold
