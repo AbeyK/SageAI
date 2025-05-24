@@ -115,6 +115,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         let view = UIView()
         view.backgroundColor = UIColor.primaryButtonBackground
         view.layer.cornerRadius = 10
+        view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMinXMaxYCorner] // Only round left corners
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -123,7 +124,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         let label = UILabel()
         label.text = "Creating Your Meditation..."
         label.textColor = UIColor.progressBarText // Progress bar text color with light/dark mode support
-        label.font = .systemFont(ofSize: 16, weight: .bold) // Explicitly bold font
+        label.font = FontManager.appTitle(size: 16) // Same font as title but size 16
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -515,7 +516,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
 
         if userMessageCount >= maxMessages {
             // Fade out progress bar, fade in meditation button
-            UIView.animate(withDuration: 1, delay: 0.3, options: [], animations: {
+            UIView.animate(withDuration: 0.5, delay: 0.1, options: [], animations: {
                 self.progressBarOutlineView.alpha = 0
                 self.progressBarLabel.alpha = 0 // Fade out the label as well
                 self.meditationButton.alpha = 1
