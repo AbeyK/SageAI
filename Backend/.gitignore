@@ -69,13 +69,6 @@ dmypy.json
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Audio files (since this is an audio processing project)
-*.mp3
-*.wav
-*.ogg
-*.m4a
-*.aac
-
 # Temporary files
 tmp/
 temp/ 
