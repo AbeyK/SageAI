@@ -122,8 +122,8 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let progressBarLabel: UILabel = {
         let label = UILabel()
         label.text = "Creating Your Meditation..."
-        label.textColor = UIColor.primaryButtonBackground
-        label.font = .zenBodyMedium
+        label.textColor = UIColor.progressBarText // Progress bar text color with light/dark mode support
+        label.font = .systemFont(ofSize: 16, weight: .bold) // Explicitly bold font
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -236,6 +236,11 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         meditationButton.setTitleColor(UIColor.primaryButtonText, for: .normal)
         meditationButton.backgroundColor = UIColor.primaryButtonBackground
         
+        // Update progress bar colors
+        progressBarOutlineView.layer.borderColor = UIColor.primaryButtonBackground.cgColor
+        progressBarFillView.backgroundColor = UIColor.primaryButtonBackground
+        progressBarLabel.textColor = UIColor.progressBarText
+        
         timerView.backgroundColor = UIColor.chatTableViewBackground
         timerLabel.textColor = UIColor.primaryButtonText
 
@@ -265,6 +270,10 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         view.addSubview(progressBarOutlineView)
         progressBarOutlineView.addSubview(progressBarFillView)
         progressBarOutlineView.addSubview(progressBarLabel)
+        
+        // Ensure the label is always on top of the fill view
+        progressBarOutlineView.bringSubviewToFront(progressBarLabel)
+        
         view.addSubview(timerView)
         timerView.addSubview(timerLabel)
         timerView.layer.addSublayer(timerCircle)
@@ -469,9 +478,9 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
 
         userMessageCount += 1
 
-        if userMessageCount <= 1 {
-            return
-        }
+        // if userMessageCount <= 1 { We want to show that its a progress bar 
+        //     return // we want this because its more clear to the user that this is a progress bar
+        // }
         
         updateProgressBar()
         
@@ -499,6 +508,9 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
 
         UIView.animate(withDuration: 3) {
             self.view.layoutIfNeeded() // Animate constraint change
+        } completion: { _ in
+            // Ensure the label stays on top after layout updates
+            self.progressBarOutlineView.bringSubviewToFront(self.progressBarLabel)
         }
 
         if userMessageCount >= maxMessages {

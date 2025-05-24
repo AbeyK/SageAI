@@ -51,12 +51,12 @@ extension UIColor {
 
     /// AI/Sage messages - soft blue-gray for wisdom in dark mode
     static var aiChatBubbleBackground: UIColor {
-        return isDarkMode ? UIColor(hex: 0x284B65) : UIColor(hex: 0xC1C7A5)
+        return isDarkMode ? UIColor(hex: 0x2F3644) : UIColor(hex: 0xC1C7A5)
     }
 
-    /// Light mode: #718e96, Dark mode: #2F3644 — User messages using muted blue-gray.
+    /// Light mode: #718e96, Dark mode: #284B65 — User messages using muted blue-gray.
     static var userChatBubbleBackground: UIColor {
-        return isDarkMode ? UIColor(hex: 0x2F3644) : UIColor(hex: 0x718e96)
+        return isDarkMode ? UIColor(hex: 0x284B65) : UIColor(hex: 0x8e756e)
     }
 
     // MARK: - Text & Icons
@@ -73,11 +73,11 @@ extension UIColor {
 
     /// #6B7B8C — neutral dusky gray for status labels and icons, matching the app title.
     static var statusLabelAndIcon: UIColor {
-        return isDarkMode ? UIColor(hex: 0x6B7B8C) : UIColor(hex: 0x81665e)
+        return isDarkMode ? UIColor(hex: 0x6B7B8C) : UIColor(hex: 0x8e756e)
     }
     /// Always dusky blue for ZenPal app title - distinctive and calming
     static var appTitleBlue: UIColor {
-        return isDarkMode ? UIColor(hex: 0x6B7B8C) : UIColor(hex: 0x718e96)
+        return isDarkMode ? UIColor(hex: 0x6B7B8C) : UIColor(hex: 0x8e756e)
     }
     // MARK: - Primary CTA
 
@@ -93,6 +93,11 @@ extension UIColor {
 
     /// Pure white for legibility atop the earthy button colors.
     static let primaryButtonText = UIColor.white
+
+    /// Progress bar text - muted brown for progress indicators
+    static var progressBarText: UIColor {
+        return isDarkMode ? UIColor(hex: 0xFDF5EB) : UIColor(hex: 0x4f362f)
+    }
 
     // MARK: - Warm Earth Accents
 
