@@ -13,7 +13,7 @@ class ChatMessageCell: UITableViewCell {
     
     private let bubbleView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor.chatBubbleBackground
+        view.backgroundColor = UIColor.aiChatBubbleBackground
         view.layer.cornerRadius = 16
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -37,12 +37,14 @@ class ChatMessageCell: UITableViewCell {
     func configure(with text: String, sent: Bool) {
         messageLabel.text = text
         
-        // Ensure the text color is updated based on the current trait collection
-        messageLabel.textColor = UIColor.chatBubbleText 
+        // Use different text colors for user vs AI messages
+        messageLabel.textColor = sent 
+            ? UIColor.userChatBubbleText    // User messages: dusky blue
+            : UIColor.chatBubbleText        // AI messages: neutral gray
         
         bubbleView.backgroundColor = sent
-        ? UIColor.userChatBubbleBackground    // User's messages: new light grey
-        : UIColor.chatBubbleBackground      // Sage's messages: light green
+        ? UIColor.userChatBubbleBackground    // User's messages: bright green
+        : UIColor.aiChatBubbleBackground      // Sage's messages: sage green
         
         messageLabel.textAlignment = .left
         

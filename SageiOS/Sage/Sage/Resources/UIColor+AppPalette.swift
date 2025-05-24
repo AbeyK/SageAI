@@ -37,24 +37,26 @@ extension UIColor {
         // return isDarkMode ? UIColor(hex: 0x374050) : UIColor(hex: 0xc4d1bc)
         // The line below was commented out in the user's previous change. I'm keeping it commented.
         // static let pandaCircleBackground = UIColor(hex: 0x374050)
-        return isDarkMode ? UIColor(hex: 0x374050) : UIColor(hex: 0xB8CCB3)
+        return isDarkMode ? UIColor(hex: 0x374050) : UIColor(hex: 0x8ea185)
     }
     
     // static let pandaCircleBackground = UIColor(hex: 0x374050) // This line was commented out by user, I'm keeping it that way
 
-    /// Light mode: #E8F0F5, Dark mode: #284B65 — AI/Sage messages with soft blue-gray for wisdom.
-    static var chatBubbleBackground: UIColor {
-        return aiChatBubbleBackground
-    }
-
-    /// Light mode: #F5F5F0, Dark mode: #2F3644 — User messages in warm cream for better contrast.
-    static var userChatBubbleBackground: UIColor {
-        return isDarkMode ? UIColor(hex: 0x2F3644) : UIColor(hex: 0xF2F0E8)
-    }
-
-    /// Light mode: #DCE1C8, Dark mode: #374050 — Subtle sage background for chat area that harmonizes with main background.
+    // MARK: - Chat Colors
+    
+    /// Light mode: #D4D9C0, Dark mode: #374050 — Slightly darker sage background for chat area with better contrast.
     static var chatTableViewBackground: UIColor {
-        return isDarkMode ? UIColor(hex: 0x374050) : UIColor(hex: 0xDCE1C8)
+        return isDarkMode ? UIColor(hex: 0x374050) : UIColor(hex: 0x8ea185)
+    }
+
+    /// AI/Sage messages - soft blue-gray for wisdom in dark mode
+    static var aiChatBubbleBackground: UIColor {
+        return isDarkMode ? UIColor(hex: 0x284B65) : UIColor(hex: 0xC1C7A5)
+    }
+
+    /// Light mode: #718e96, Dark mode: #2F3644 — User messages using muted blue-gray.
+    static var userChatBubbleBackground: UIColor {
+        return isDarkMode ? UIColor(hex: 0x2F3644) : UIColor(hex: 0x718e96)
     }
 
     // MARK: - Text & Icons
@@ -64,12 +66,19 @@ extension UIColor {
         return isDarkMode ? UIColor(hex: 0xFDF5EB) : UIColor(hex: 0x4A4A4A)
     }
 
+    /// User chat text - white text for readability on dusky blue background
+    static var userChatBubbleText: UIColor {
+        return UIColor.white
+    }
+
     /// #6B7B8C — neutral dusky gray for status labels and icons, matching the app title.
-    static let statusLabelAndIcon = UIColor(hex: 0x6B7B8C)
-
+    static var statusLabelAndIcon: UIColor {
+        return isDarkMode ? UIColor(hex: 0x6B7B8C) : UIColor(hex: 0x81665e)
+    }
     /// Always dusky blue for ZenPal app title - distinctive and calming
-    static let appTitleBlue = UIColor(hex: 0x6B7B8C)
-
+    static var appTitleBlue: UIColor {
+        return isDarkMode ? UIColor(hex: 0x6B7B8C) : UIColor(hex: 0x718e96)
+    }
     // MARK: - Primary CTA
 
     /// Light mode: #6B8E5A, Dark mode: #4A9B5E — always green for primary actions and consistency
@@ -118,12 +127,5 @@ extension UIColor {
     /// Voice Journal button - muted gray to indicate not implemented  
     static var journalButtonBackground: UIColor {
         return isDarkMode ? UIColor(hex: 0x4A4A4A) : UIColor(hex: 0xD3D3D3)
-    }
-
-    // MARK: - Distinct Chat Colors
-    
-    /// AI/Sage messages - soft sage tone that harmonizes with the earth palette
-    static var aiChatBubbleBackground: UIColor {
-        return isDarkMode ? UIColor(hex: 0x284B65) : UIColor(hex: 0xE5E8DC)
     }
 }
