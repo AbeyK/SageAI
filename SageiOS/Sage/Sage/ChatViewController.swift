@@ -103,7 +103,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     
     private let progressBarOutlineView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor.systemGray5.withAlphaComponent(0.3) // Light background with opacity for text visibility
+        view.backgroundColor = UIColor.systemGray5.withAlphaComponent(0.1) // Light background with opacity for text visibility
         view.layer.borderColor = UIColor.primaryButtonBackground.cgColor
         view.layer.borderWidth = 2
         view.layer.cornerRadius = 12
