@@ -25,92 +25,135 @@ class HomeViewController: UIViewController {
         let label = UILabel()
         label.text = "ZenPal"
         label.font = .zenAppTitle
-        label.textColor = UIColor.statusLabelAndIcon
+        label.textColor = UIColor.appTitleBlue
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
-    private func createActionButton(title: String, systemImageName: String? = nil, customContentView: UIView? = nil) -> UIButton {
+    private func createHeroCard(title: String, subtitle: String, backgroundColor: UIColor, textColor: UIColor, customContentView: UIView? = nil) -> UIButton {
         let button = UIButton(type: .custom)
-        button.backgroundColor = UIColor.pandaCircleBackground
-        button.layer.cornerRadius = 8 // Smaller radius for more square appearance
+        button.backgroundColor = backgroundColor
+        button.layer.cornerRadius = 16
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowOffset = CGSize(width: 0, height: 2)
+        button.layer.shadowOpacity = 0.1
+        button.layer.shadowRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.clipsToBounds = true
+        button.clipsToBounds = false
 
         let mainStackView = UIStackView()
-        mainStackView.axis = .vertical
+        mainStackView.axis = .horizontal
         mainStackView.alignment = .center
-        mainStackView.spacing = 8 // Reduced spacing
+        mainStackView.spacing = 24
         mainStackView.translatesAutoresizingMaskIntoConstraints = false
         mainStackView.isUserInteractionEnabled = false
 
+        // Left side - panda
         if let contentView = customContentView {
             contentView.translatesAutoresizingMaskIntoConstraints = false
             mainStackView.addArrangedSubview(contentView)
-            // Larger size for panda views to be more prominent
             NSLayoutConstraint.activate([
-                contentView.widthAnchor.constraint(equalToConstant: 85),
-                contentView.heightAnchor.constraint(equalToConstant: 85)
-            ])
-        } else if let imageName = systemImageName, let image = UIImage(systemName: imageName) {
-            let imageView = UIImageView(image: image)
-            imageView.contentMode = .scaleAspectFit
-            imageView.tintColor = UIColor.primaryButtonBackground
-            imageView.translatesAutoresizingMaskIntoConstraints = false
-            mainStackView.addArrangedSubview(imageView)
-            NSLayoutConstraint.activate([
-                imageView.widthAnchor.constraint(equalToConstant: 44),
-                imageView.heightAnchor.constraint(equalToConstant: 44)
+                contentView.widthAnchor.constraint(equalToConstant: 70),
+                contentView.heightAnchor.constraint(equalToConstant: 70)
             ])
         }
 
-        // Split title if it contains "Coming Soon"
-        if title.contains("(Coming Soon)") {
-            let parts = title.components(separatedBy: " (Coming Soon)")
-            let mainTitle = parts.first ?? title
-            
-            // Main title
-            let titleLabel = UILabel()
-            titleLabel.text = mainTitle
-            titleLabel.font = .zenHeading3
-            titleLabel.textColor = UIColor.chatBubbleText
-            titleLabel.textAlignment = .center
-            titleLabel.numberOfLines = 0
-            mainStackView.addArrangedSubview(titleLabel)
-            
-            // Coming Soon label - smaller and at bottom
-            let comingSoonLabel = UILabel()
-            comingSoonLabel.text = "Coming Soon"
-            comingSoonLabel.font = .zenFootnote
-            comingSoonLabel.textColor = UIColor.statusLabelAndIcon
-            comingSoonLabel.textAlignment = .center
-            comingSoonLabel.numberOfLines = 0
-            mainStackView.addArrangedSubview(comingSoonLabel)
-        } else {
-            // Regular title for buttons without "Coming Soon"
-            let titleLabel = UILabel()
-            titleLabel.text = title
-            titleLabel.font = .zenHeading3
-            titleLabel.textColor = UIColor.chatBubbleText
-            titleLabel.textAlignment = .center
-            titleLabel.numberOfLines = 0
-            mainStackView.addArrangedSubview(titleLabel)
-        }
+        // Right side - text content
+        let textStackView = UIStackView()
+        textStackView.axis = .vertical
+        textStackView.alignment = .leading
+        textStackView.spacing = 4
+        
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.font = .zenHeading2
+        titleLabel.textColor = textColor
+        titleLabel.numberOfLines = 0
+        
+        let subtitleLabel = UILabel()
+        subtitleLabel.text = subtitle
+        subtitleLabel.font = .zenBodyMedium
+        subtitleLabel.textColor = textColor.withAlphaComponent(0.8)
+        subtitleLabel.numberOfLines = 0
+        
+        textStackView.addArrangedSubview(titleLabel)
+        textStackView.addArrangedSubview(subtitleLabel)
+        mainStackView.addArrangedSubview(textStackView)
         
         button.addSubview(mainStackView)
         NSLayoutConstraint.activate([
-            mainStackView.centerXAnchor.constraint(equalTo: button.centerXAnchor),
-            mainStackView.centerYAnchor.constraint(equalTo: button.centerYAnchor),
-            mainStackView.leadingAnchor.constraint(equalTo: button.leadingAnchor, constant: 16),
-            mainStackView.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -16)
+            mainStackView.leadingAnchor.constraint(equalTo: button.leadingAnchor, constant: 20),
+            mainStackView.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -20),
+            mainStackView.topAnchor.constraint(equalTo: button.topAnchor, constant: 20),
+            mainStackView.bottomAnchor.constraint(equalTo: button.bottomAnchor, constant: -20)
+        ])
+        
+        return button
+    }
+    
+    private func createComingSoonCard(title: String, customContentView: UIView? = nil) -> UIButton {
+        let button = UIButton(type: .custom)
+        button.backgroundColor = UIColor.pandaCircleBackground.withAlphaComponent(0.7) // Higher opacity
+        button.layer.cornerRadius = 12
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.clipsToBounds = true
+        button.isEnabled = false // Make it non-interactive
+
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.spacing = 12
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.isUserInteractionEnabled = false
+
+        // Panda icon with circle
+        if let contentView = customContentView {
+            contentView.translatesAutoresizingMaskIntoConstraints = false
+            contentView.alpha = 0.8 // Slightly transparent but visible
+            stackView.addArrangedSubview(contentView)
+            NSLayoutConstraint.activate([
+                contentView.widthAnchor.constraint(equalToConstant: 50),
+                contentView.heightAnchor.constraint(equalToConstant: 50)
+            ])
+        }
+        
+        // Text
+        let textStackView = UIStackView()
+        textStackView.axis = .vertical
+        textStackView.alignment = .leading
+        textStackView.spacing = 2
+        
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.font = .zenBodyMedium
+        titleLabel.textColor = UIColor.chatBubbleText.withAlphaComponent(0.7) // Higher opacity
+        titleLabel.numberOfLines = 0
+        
+        let comingSoonLabel = UILabel()
+        comingSoonLabel.text = "Coming Soon"
+        comingSoonLabel.font = .zenCaption
+        comingSoonLabel.textColor = UIColor.statusLabelAndIcon.withAlphaComponent(0.8) // Higher opacity
+        comingSoonLabel.numberOfLines = 0
+        
+        textStackView.addArrangedSubview(titleLabel)
+        textStackView.addArrangedSubview(comingSoonLabel)
+        
+        stackView.addArrangedSubview(textStackView)
+        
+        button.addSubview(stackView)
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: button.leadingAnchor, constant: 16),
+            stackView.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -16),
+            stackView.topAnchor.constraint(equalTo: button.topAnchor, constant: 16),
+            stackView.bottomAnchor.constraint(equalTo: button.bottomAnchor, constant: -16)
         ])
         
         return button
     }
 
-    private lazy var meditationButton: UIButton = {
-        let pandaContainer = UIView() // Container for the panda view
+    private lazy var meditationHeroCard: UIButton = {
+        let pandaContainer = UIView()
         let pandaView = RedPandaView(frame: .zero, type: .meditating)
         pandaView.translatesAutoresizingMaskIntoConstraints = false
         pandaContainer.addSubview(pandaView)
@@ -121,30 +164,19 @@ class HomeViewController: UIViewController {
             pandaView.heightAnchor.constraint(equalTo: pandaContainer.heightAnchor)
         ])
 
-        let button = createActionButton(title: "Guided Meditation", customContentView: pandaContainer)
+        let button = createHeroCard(
+            title: "Guided Meditation", 
+            subtitle: "Start your personalized meditation", 
+            backgroundColor: UIColor.primaryButtonBackground, 
+            textColor: UIColor.white,
+            customContentView: pandaContainer
+        )
         button.addTarget(self, action: #selector(meditationButtonTapped), for: .touchUpInside)
         return button
     }()
 
-    private lazy var journalButton: UIButton = {
-        let pandaContainer = UIView() // Container for the panda view
-        let pandaView = RedPandaView(frame: .zero, type: .talking)
-        pandaView.translatesAutoresizingMaskIntoConstraints = false
-        pandaContainer.addSubview(pandaView)
-        NSLayoutConstraint.activate([
-            pandaView.centerXAnchor.constraint(equalTo: pandaContainer.centerXAnchor),
-            pandaView.centerYAnchor.constraint(equalTo: pandaContainer.centerYAnchor),
-            pandaView.widthAnchor.constraint(equalTo: pandaContainer.widthAnchor),
-            pandaView.heightAnchor.constraint(equalTo: pandaContainer.heightAnchor)
-        ])
-
-        let button = createActionButton(title: "Voice Journal (Coming Soon)", customContentView: pandaContainer)
-        button.addTarget(self, action: #selector(journalButtonTapped), for: .touchUpInside)
-        return button
-    }()
-
-    private lazy var sleepButton: UIButton = {
-        let pandaContainer = UIView() // Container for the panda view
+    private lazy var sleepCard: UIButton = {
+        let pandaContainer = UIView()
         let pandaView = RedPandaView(frame: .zero, type: .sleeping)
         pandaView.translatesAutoresizingMaskIntoConstraints = false
         pandaContainer.addSubview(pandaView)
@@ -155,14 +187,31 @@ class HomeViewController: UIViewController {
             pandaView.heightAnchor.constraint(equalTo: pandaContainer.heightAnchor)
         ])
 
-        let button = createActionButton(title: "Sleep Meditation(Coming Soon)", customContentView: pandaContainer)
+        let button = createComingSoonCard(title: "Sleep Meditation", customContentView: pandaContainer)
         button.addTarget(self, action: #selector(sleepButtonTapped), for: .touchUpInside)
+        return button
+    }()
+
+    private lazy var journalCard: UIButton = {
+        let pandaContainer = UIView()
+        let pandaView = RedPandaView(frame: .zero, type: .talking)
+        pandaView.translatesAutoresizingMaskIntoConstraints = false
+        pandaContainer.addSubview(pandaView)
+        NSLayoutConstraint.activate([
+            pandaView.centerXAnchor.constraint(equalTo: pandaContainer.centerXAnchor),
+            pandaView.centerYAnchor.constraint(equalTo: pandaContainer.centerYAnchor),
+            pandaView.widthAnchor.constraint(equalTo: pandaContainer.widthAnchor),
+            pandaView.heightAnchor.constraint(equalTo: pandaContainer.heightAnchor)
+        ])
+
+        let button = createComingSoonCard(title: "Voice Journal", customContentView: pandaContainer)
+        button.addTarget(self, action: #selector(journalButtonTapped), for: .touchUpInside)
         return button
     }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor.appBackground
+        view.backgroundColor = UIColor.appBackground // Back to original beige background
         setupUI()
         
         if authManager == nil {
@@ -173,20 +222,16 @@ class HomeViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         if Auth.auth().currentUser == nil {
-            presentLoginViewController(animated: false) // Present immediately if no user
+            presentLoginViewController(animated: false)
         }
     }
 
     private func setupUI() {
         view.addSubview(settingsButton)
         view.addSubview(titleLabel)
-        
-        let buttonsStackView = UIStackView(arrangedSubviews: [meditationButton, sleepButton, journalButton])
-        buttonsStackView.axis = .vertical
-        buttonsStackView.spacing = 20
-        buttonsStackView.distribution = .fillEqually
-        buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(buttonsStackView)
+        view.addSubview(meditationHeroCard)
+        view.addSubview(sleepCard)
+        view.addSubview(journalCard)
 
         NSLayoutConstraint.activate([
             settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
@@ -199,13 +244,23 @@ class HomeViewController: UIViewController {
             titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 20),
             titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -20),
             
-            buttonsStackView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 30),
-            buttonsStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            buttonsStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            buttonsStackView.bottomAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
-
-            meditationButton.heightAnchor.constraint(equalToConstant: 160), // Taller for better proportions
-            // journalButton and sleepButton will also be this height due to fillEqually
+            // Hero meditation card
+            meditationHeroCard.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 40),
+            meditationHeroCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            meditationHeroCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            meditationHeroCard.heightAnchor.constraint(equalToConstant: 120),
+            
+            // Coming soon cards
+            sleepCard.topAnchor.constraint(equalTo: meditationHeroCard.bottomAnchor, constant: 20),
+            sleepCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            sleepCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            sleepCard.heightAnchor.constraint(equalToConstant: 70),
+            
+            journalCard.topAnchor.constraint(equalTo: sleepCard.bottomAnchor, constant: 12),
+            journalCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            journalCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            journalCard.heightAnchor.constraint(equalToConstant: 70),
+            journalCard.bottomAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
         ])
     }
 
@@ -301,3 +356,32 @@ extension HomeViewController: HomeViewControllerDelegate {
         presentLoginViewController()
     }
 }
+
+// MARK: - SwiftUI Preview
+#if DEBUG
+import SwiftUI
+
+struct HomeViewController_Previews: PreviewProvider {
+    static var previews: some View {
+        HomeViewControllerRepresentable()
+            .previewDisplayName("Home - Light Mode")
+            .preferredColorScheme(.light)
+        
+        HomeViewControllerRepresentable()
+            .previewDisplayName("Home - Dark Mode")
+            .preferredColorScheme(.dark)
+    }
+}
+
+struct HomeViewControllerRepresentable: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> HomeViewController {
+        let homeVC = HomeViewController()
+        homeVC.authManager = FirebaseAuthManager()
+        return homeVC
+    }
+    
+    func updateUIViewController(_ uiViewController: HomeViewController, context: Context) {
+        // Update the view controller if needed
+    }
+}
+#endif

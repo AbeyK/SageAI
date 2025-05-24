@@ -30,7 +30,7 @@ class SettingsViewController: UIViewController {
         let label = UILabel()
         label.text = "ZenPal"
         label.font = .zenAppTitle
-        label.textColor = UIColor.statusLabelAndIcon
+        label.textColor = UIColor.appTitleBlue
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -38,7 +38,7 @@ class SettingsViewController: UIViewController {
     
     private let blurbLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ember is your personal red panda meditation guru! Just share your story and she'll craft a custom meditation that's perfect for you. Ember will adapt, evolve and grow with you with each meditation."
+        label.text = "Meet Ember, your delightful red panda meditation companion! Simply share what's on your heart and she'll craft a personalized meditation just for you.\n\nEmber learns and grows with you, becoming your wise, gentle friend who's always ready to help you find peace and clarity. ✨"
         label.font = .zenBody
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
@@ -100,13 +100,13 @@ class SettingsViewController: UIViewController {
 
             pandaImageView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 50),
             pandaImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            pandaImageView.widthAnchor.constraint(equalToConstant: 220),
-            pandaImageView.heightAnchor.constraint(equalToConstant: 220),
+            pandaImageView.widthAnchor.constraint(equalToConstant: view.bounds.width * 0.5),
+            pandaImageView.heightAnchor.constraint(equalToConstant: view.bounds.width * 0.5),
 
             pandaBackgroundCircleView.centerXAnchor.constraint(equalTo: pandaImageView.centerXAnchor),
             pandaBackgroundCircleView.centerYAnchor.constraint(equalTo: pandaImageView.centerYAnchor),
-            pandaBackgroundCircleView.widthAnchor.constraint(equalTo: pandaImageView.heightAnchor, multiplier: 1.15),
-            pandaBackgroundCircleView.heightAnchor.constraint(equalTo: pandaImageView.heightAnchor, multiplier: 1.15),
+            pandaBackgroundCircleView.widthAnchor.constraint(equalTo: pandaImageView.heightAnchor, multiplier: 1.3),
+            pandaBackgroundCircleView.heightAnchor.constraint(equalTo: pandaImageView.heightAnchor, multiplier: 1.3),
 
             blurbLabel.topAnchor.constraint(equalTo: pandaImageView.bottomAnchor, constant: 30),
             blurbLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),

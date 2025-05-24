@@ -249,3 +249,74 @@ public class RedPandaView: UIView {
         backgroundView.layer.cornerRadius = backgroundView.frame.height / 2
     }
 }
+
+// MARK: - SwiftUI Preview
+#if DEBUG
+import SwiftUI
+
+struct RedPandaView_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: 20) {
+            Group {
+                RedPandaViewRepresentable(type: .happy)
+                    .frame(width: 120, height: 120)
+                    .previewDisplayName("Happy Panda")
+                
+                RedPandaViewRepresentable(type: .meditating)
+                    .frame(width: 120, height: 120)
+                    .previewDisplayName("Meditating Panda")
+                
+                RedPandaViewRepresentable(type: .talking)
+                    .frame(width: 120, height: 120)
+                    .previewDisplayName("Talking Panda")
+                
+                RedPandaViewRepresentable(type: .sleeping)
+                    .frame(width: 120, height: 120)
+                    .previewDisplayName("Sleeping Panda")
+            }
+        }
+        .padding()
+        .previewLayout(.sizeThatFits)
+        .preferredColorScheme(.light)
+        
+        VStack(spacing: 20) {
+            Group {
+                RedPandaViewRepresentable(type: .happy)
+                    .frame(width: 120, height: 120)
+                
+                RedPandaViewRepresentable(type: .meditating)
+                    .frame(width: 120, height: 120)
+                
+                RedPandaViewRepresentable(type: .talking)
+                    .frame(width: 120, height: 120)
+                
+                RedPandaViewRepresentable(type: .sleeping)
+                    .frame(width: 120, height: 120)
+            }
+        }
+        .padding()
+        .previewLayout(.sizeThatFits)
+        .preferredColorScheme(.dark)
+        .previewDisplayName("All Pandas - Dark Mode")
+    }
+}
+
+struct RedPandaViewRepresentable: UIViewRepresentable {
+    let type: PandaType
+    
+    func makeUIView(context: Context) -> RedPandaView {
+        let pandaView = RedPandaView(frame: .zero, type: type)
+        // Simulate listening state for preview
+        if type == .meditating {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                pandaView.updateListeningState(isListening: true)
+            }
+        }
+        return pandaView
+    }
+    
+    func updateUIView(_ uiView: RedPandaView, context: Context) {
+        // Update the view if needed
+    }
+}
+#endif

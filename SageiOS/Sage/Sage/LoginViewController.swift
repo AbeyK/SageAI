@@ -20,7 +20,7 @@ class LoginViewController: UIViewController {
         let label = UILabel()
         label.text = "ZenPal"
         label.font = .zenAppTitle
-        label.textColor = UIColor.statusLabelAndIcon
+        label.textColor = UIColor.appTitleBlue
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
