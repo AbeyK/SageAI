@@ -48,7 +48,7 @@ struct FontManager {
     }
     
     /// Body text and descriptions - highly readable sans serif
-    static func body(size: CGFloat = 18) -> UIFont {
+    static func body(size: CGFloat = 16) -> UIFont {
         return createFont(name: nunitoSans, size: size, weight: .regular) ??
                createFont(name: inter, size: size, weight: .regular) ??
                .systemFont(ofSize: size)
