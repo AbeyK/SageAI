@@ -27,9 +27,9 @@ extension UIColor {
 
     // MARK: - Foundations (major surfaces)
 
-    /// Light mode: #fff8df, Dark mode: #22262F — rich midnight slate that blankets the entire root view.
+    /// Light mode: #FFF3C4, Dark mode: #22262F — rich midnight slate that blankets the entire root view.
     static var appBackground: UIColor {
-        return isDarkMode ? UIColor(hex: 0x22262F) : UIColor(hex: 0xfff8df)
+        return isDarkMode ? UIColor(hex: 0x22262F) : UIColor(hex: 0xFFF3C4)
     }
 
     /// Light mode:#e0e8d8, Dark mode: #374050 — subtly lighter slate ring behind the panda avatar.
@@ -72,6 +72,11 @@ extension UIColor {
     /// Light mode: #7A9F82, Dark mode: #4A9B5E — consistent greenish primary button color for both modes
     static var primaryButtonBackground: UIColor {
         return isDarkMode ? UIColor(hex: 0x4A9B5E) : UIColor(hex: 0x7A9F82)
+    }
+
+    /// Light mode: #5FB669, Dark mode: #66D17A — brighter green for listening indicator, more noticeable than buttons
+    static var brightListeningIndicator: UIColor {
+        return isDarkMode ? UIColor(hex: 0x66D17A) : UIColor(hex: 0x5FB669)
     }
 
     /// Pure white for legibility atop the orange button.

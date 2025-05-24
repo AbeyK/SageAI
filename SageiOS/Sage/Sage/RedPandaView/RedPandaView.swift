@@ -31,11 +31,27 @@ public class RedPandaView: UIView {
     
     private let listeningLabel: UILabel = {
         let label = UILabel()
-        label.text = "🟢 Listening..."
-        label.textColor = UIColor.statusLabelAndIcon
+        
+        // Create attributed string with custom green indicator
+        let attributedText = NSMutableAttributedString()
+        
+        // Add larger, brighter green bullet point
+        let bulletAttributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: UIColor.brightListeningIndicator,
+            .font: UIFont.systemFont(ofSize: 20, weight: .bold) // Larger bullet
+        ]
+        attributedText.append(NSAttributedString(string: "● ", attributes: bulletAttributes))
+        
+        // Add regular text
+        let textAttributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: UIColor.statusLabelAndIcon,
+            .font: UIFont.zenAccent
+        ]
+        attributedText.append(NSAttributedString(string: "Listening...", attributes: textAttributes))
+        
+        label.attributedText = attributedText
         label.textAlignment = .center
         label.alpha = 0.0 // Initially hidden
-        label.font = .zenAccent
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -110,11 +126,34 @@ public class RedPandaView: UIView {
         if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
             // Ensure dynamic colors are reapplied
             backgroundView.backgroundColor = UIColor.pandaCircleBackground
-            listeningLabel.textColor = UIColor.statusLabelAndIcon
+            
+            // Update listening label attributed text colors
+            updateListeningLabelColors()
+            
             thinkingLabel.textColor = UIColor.statusLabelAndIcon
             speakingLabel.textColor = UIColor.statusLabelAndIcon
             initializingLabel.textColor = UIColor.statusLabelAndIcon
         }
+    }
+    
+    private func updateListeningLabelColors() {
+        let attributedText = NSMutableAttributedString()
+        
+        // Add larger, brighter green bullet point
+        let bulletAttributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: UIColor.brightListeningIndicator,
+            .font: UIFont.systemFont(ofSize: 20, weight: .bold) // Larger bullet
+        ]
+        attributedText.append(NSAttributedString(string: "● ", attributes: bulletAttributes))
+        
+        // Add regular text
+        let textAttributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: UIColor.statusLabelAndIcon,
+            .font: UIFont.zenAccent
+        ]
+        attributedText.append(NSAttributedString(string: "Listening...", attributes: textAttributes))
+        
+        listeningLabel.attributedText = attributedText
     }
         
     private func setupView() {
