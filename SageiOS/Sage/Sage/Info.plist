@@ -19,6 +19,13 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>NunitoSans-Regular.ttf</string>
+		<string>SourceSerif4-Regular.ttf</string>
+		<string>Comfortaa-Regular.ttf</string>
+		<string>Inter-Regular.ttf</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

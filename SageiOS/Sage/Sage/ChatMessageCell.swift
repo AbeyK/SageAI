@@ -22,7 +22,7 @@ class ChatMessageCell: UITableViewCell {
     private let messageLabel: UILabel = {
         let label = UILabel()
         label.textColor = UIColor.chatBubbleText
-        label.font = UIFont.systemFont(ofSize: 18)
+        label.font = .zenBody
         label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
         return label

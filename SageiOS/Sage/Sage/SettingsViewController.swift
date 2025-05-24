@@ -29,7 +29,7 @@ class SettingsViewController: UIViewController {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "ZenPal"
-        label.font = .boldSystemFont(ofSize: 28)
+        label.font = .zenAppTitle
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -39,7 +39,7 @@ class SettingsViewController: UIViewController {
     private let blurbLabel: UILabel = {
         let label = UILabel()
         label.text = "Ember is your personal red panda meditation guru! Just share your story and she'll craft a custom meditation that's perfect for you. Ember will adapt, evolve and grow with you with each meditation."
-        label.font = .systemFont(ofSize: 20)
+        label.font = .zenBody
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.numberOfLines = 0
@@ -55,7 +55,7 @@ class SettingsViewController: UIViewController {
         button.setTitle("Sign Out", for: .normal)
         button.setTitleColor(UIColor.pandaAccentOrange, for: .normal)
         button.backgroundColor = .clear
-        button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+        button.titleLabel?.font = .zenButton
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -65,7 +65,7 @@ class SettingsViewController: UIViewController {
         button.setTitle("Share Your Feedback", for: .normal)
         button.setTitleColor(UIColor.primaryButtonText, for: .normal)
         button.backgroundColor = UIColor.primaryButtonBackground
-        button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+        button.titleLabel?.font = .zenButton
         button.layer.cornerRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false
         return button

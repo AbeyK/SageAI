@@ -28,7 +28,7 @@ class MeditationFeedbackView: UIView {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Meditation Complete!"
-        label.font = .systemFont(ofSize: 20, weight: .semibold)
+        label.font = .zenHeading2
         label.textColor = UIColor.chatBubbleText // Ensure this contrasts with contentView background
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -46,7 +46,7 @@ class MeditationFeedbackView: UIView {
 
     private let feedbackTextView: UITextView = {
         let textView = UITextView()
-        textView.font = .systemFont(ofSize: 16)
+        textView.font = .zenBody
         textView.textColor = UIColor.chatBubbleText
         textView.backgroundColor = UIColor.pandaCircleBackground // Or a slightly different shade
         textView.layer.cornerRadius = 8
@@ -59,7 +59,7 @@ class MeditationFeedbackView: UIView {
     private let placeholderLabel: UILabel = {
         let label = UILabel()
         label.text = "Share your thoughts (optional)..."
-        label.font = .systemFont(ofSize: 16)
+        label.font = .zenBody
         label.textColor = UIColor.statusLabelAndIcon
         label.sizeToFit()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -71,7 +71,7 @@ class MeditationFeedbackView: UIView {
         button.setTitle("Done", for: .normal)
         button.backgroundColor = UIColor.primaryButtonBackground
         button.setTitleColor(UIColor.primaryButtonText, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+        button.titleLabel?.font = .zenButton
         button.layer.cornerRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)

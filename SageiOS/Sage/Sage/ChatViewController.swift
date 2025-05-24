@@ -30,7 +30,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         let label = UILabel()
         label.text = "Tap to interrupt"
         label.textColor = .white
-        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.font = .zenBody
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         button.addSubview(label)
@@ -94,7 +94,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         button.setTitle("Start My Meditation", for: .normal)
         button.setTitleColor(UIColor.primaryButtonText, for: .normal)
         button.backgroundColor = UIColor.primaryButtonBackground
-        button.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+        button.titleLabel?.font = .zenButton
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
         button.alpha = 0 // Initially hide the meditation button
@@ -123,7 +123,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         let label = UILabel()
         label.text = "Creating Your Meditation..."
         label.textColor = UIColor.primaryButtonBackground
-        label.font = .systemFont(ofSize: 16, weight: .semibold)
+        label.font = .zenBodyMedium
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -143,7 +143,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         let label = UILabel()
         label.text = "5:00"
         label.textColor = UIColor.primaryButtonText
-        label.font = .systemFont(ofSize: 48, weight: .bold)
+        label.font = .zenTimer
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label

@@ -35,7 +35,7 @@ public class RedPandaView: UIView {
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.alpha = 0.0 // Initially hidden
-        label.font = UIFont(name: "AvenirNext-Medium", size: 26) ?? UIFont.systemFont(ofSize: 26, weight: .medium)
+        label.font = .zenAccent
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -53,7 +53,7 @@ public class RedPandaView: UIView {
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.alpha = 0.0 // Initially hidden
-        label.font = UIFont(name: "AvenirNext-Medium", size: 26) ?? UIFont.systemFont(ofSize: 26, weight: .medium)
+        label.font = .zenAccent
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -64,7 +64,7 @@ public class RedPandaView: UIView {
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.alpha = 0.0 // Initially hidden
-        label.font = UIFont(name: "AvenirNext-Medium", size: 26) ?? UIFont.systemFont(ofSize: 26, weight: .medium)
+        label.font = .zenAccent
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -75,7 +75,7 @@ public class RedPandaView: UIView {
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.alpha = 0.0 // Initially hidden
-        label.font = UIFont(name: "AvenirNext-Medium", size: 26) ?? UIFont.systemFont(ofSize: 26, weight: .medium)
+        label.font = .zenAccent
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
