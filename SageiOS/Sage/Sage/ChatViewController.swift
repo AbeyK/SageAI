@@ -103,7 +103,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     
     private let progressBarOutlineView: UIView = {
         let view = UIView()
-        view.backgroundColor = .clear
+        view.backgroundColor = UIColor.systemGray5.withAlphaComponent(0.3) // Light background with opacity for text visibility
         view.layer.borderColor = UIColor.primaryButtonBackground.cgColor
         view.layer.borderWidth = 2
         view.layer.cornerRadius = 12
@@ -123,7 +123,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
     private let progressBarLabel: UILabel = {
         let label = UILabel()
         label.text = "Creating Your Meditation..."
-        label.textColor = UIColor.progressBarText // Progress bar text color with light/dark mode support
+        label.textColor = UIColor.white // White text for visibility against both backgrounds
         label.font = FontManager.appTitle(size: 16) // Same font as title but size 16
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -238,9 +238,10 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         meditationButton.backgroundColor = UIColor.primaryButtonBackground
         
         // Update progress bar colors
+        progressBarOutlineView.backgroundColor = UIColor.systemGray5.withAlphaComponent(0.6)
         progressBarOutlineView.layer.borderColor = UIColor.primaryButtonBackground.cgColor
         progressBarFillView.backgroundColor = UIColor.primaryButtonBackground
-        progressBarLabel.textColor = UIColor.progressBarText
+        progressBarLabel.textColor = UIColor.white
         
         timerView.backgroundColor = UIColor.chatTableViewBackground
         timerLabel.textColor = UIColor.primaryButtonText
