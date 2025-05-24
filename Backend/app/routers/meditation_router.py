@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Body, Depends
 from typing import List, Dict
 import time
 
-from app.services.openai_service import get_chat_completion, tts_parallel_stitch
+from app.services.openai_service import get_chat_completion, text_to_speech_openai, tts_parallel_stitch
 from app.services.rate_limiter import is_rate_limited
 from app.auth.firebase_auth import verify_firebase_token
 from app.models.chat_models import MeditateRequest, AudioResponse, Message
@@ -130,18 +130,29 @@ async def run_meditation_session(request: MeditateRequest = Body(...), user: dic
         logger.info(f"Using selected TTS_INSTRUCTIONS for /meditate endpoint (phase {request.percent_complete}).")
         logger.info(f"Selected TTS_INSTRUCTIONS (first 300 chars): {current_tts_instructions[:300]}...")
         tts_call_start_time = time.time()
-        base64_audio = await tts_parallel_stitch(
-            text=llm_response_text,
-            tts_instructions=current_tts_instructions
-        )
+        
+        # Only use tts_parallel_stitch (which includes split_text_for_fast_tts) for the first call
+        if request.percent_complete == 0:
+            logger.info(f"Using tts_parallel_stitch for initial meditation call (percent_complete = 0)")
+            base64_audio = await tts_parallel_stitch(
+                text=llm_response_text,
+                tts_instructions=current_tts_instructions
+            )
+        else:
+            logger.info(f"Using simple text_to_speech_openai for non-initial meditation call (percent_complete = {request.percent_complete})")
+            base64_audio = await text_to_speech_openai(
+                text=llm_response_text,
+                tts_instructions=current_tts_instructions
+            )
+        
         tts_call_duration = time.time() - tts_call_start_time
-        logger.info(f"TTS call (tts_parallel_stitch) for /meditate phase {request.percent_complete} took: {tts_call_duration:.3f}s")
+        logger.info(f"TTS call for /meditate phase {request.percent_complete} took: {tts_call_duration:.3f}s")
 
-        if base64_audio.startswith("Error:"):
+        if base64_audio and base64_audio.startswith("Error:"):
             logger.error(f"TTS error in /meditate phase {request.percent_complete}: {base64_audio}")
             raise HTTPException(status_code=500, detail=base64_audio)
         
-        logger.info(f"/meditate phase {request.percent_complete} TTS audio generated. Base64 length: {len(base64_audio)}")
+        logger.info(f"/meditate phase {request.percent_complete} TTS audio generated. Base64 length: {len(base64_audio) if base64_audio else 0}")
 
         return AudioResponse(audio_base64=base64_audio, text_response=llm_response_text)
 
