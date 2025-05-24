@@ -17,7 +17,7 @@ class SignUpViewController: UIViewController {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Create Account"
-        label.font = .systemFont(ofSize: 28, weight: .semibold)
+        label.font = .zenHeading1
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -62,7 +62,7 @@ class SignUpViewController: UIViewController {
     private let errorLabel: UILabel = {
         let label = UILabel()
         label.textColor = UIColor.systemRed
-        label.font = .systemFont(ofSize: 14)
+        label.font = .zenCaption
         label.textAlignment = .center
         label.numberOfLines = 0
         label.isHidden = true
@@ -75,7 +75,7 @@ class SignUpViewController: UIViewController {
         button.setTitle("Sign Up", for: .normal)
         button.backgroundColor = UIColor.primaryButtonBackground
         button.setTitleColor(UIColor.primaryButtonText, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
+        button.titleLabel?.font = .zenButton
         button.layer.cornerRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -84,7 +84,7 @@ class SignUpViewController: UIViewController {
     private let loginLabel: UILabel = {
         let label = UILabel()
         label.text = "Already have an account? Log In"
-        label.font = .systemFont(ofSize: 14)
+        label.font = .zenCaption
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.isUserInteractionEnabled = true // Enable for tap gesture

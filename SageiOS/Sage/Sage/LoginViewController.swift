@@ -19,7 +19,7 @@ class LoginViewController: UIViewController {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "ZenPal"
-        label.font = .systemFont(ofSize: 50, weight: .semibold)
+        label.font = .zenAppTitle
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -63,7 +63,7 @@ class LoginViewController: UIViewController {
     private let errorLabel: UILabel = {
         let label = UILabel()
         label.textColor = UIColor.systemRed
-        label.font = .systemFont(ofSize: 14)
+        label.font = .zenCaption
         label.textAlignment = .center
         label.numberOfLines = 0
         label.isHidden = true
@@ -76,7 +76,7 @@ class LoginViewController: UIViewController {
         button.setTitle("Log In", for: .normal)
         button.backgroundColor = UIColor.primaryButtonBackground
         button.setTitleColor(UIColor.primaryButtonText, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
+        button.titleLabel?.font = .zenButton
         button.layer.cornerRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -86,7 +86,7 @@ class LoginViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle("Forgot Password?", for: .normal)
         button.setTitleColor(UIColor.statusLabelAndIcon, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 14)
+        button.titleLabel?.font = .zenCaption
         button.translatesAutoresizingMaskIntoConstraints = false
         button.alpha = 0
         return button
@@ -97,7 +97,7 @@ class LoginViewController: UIViewController {
         button.setTitle("Sign Up", for: .normal)
         button.backgroundColor = UIColor.pandaCircleBackground
         button.setTitleColor(UIColor.statusLabelAndIcon, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
+        button.titleLabel?.font = .zenButton
         button.layer.cornerRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false
         return button

@@ -17,6 +17,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if FirebaseApp.app() == nil {
             FirebaseApp.configure()
         }
+        
+        // Initialize custom fonts for better typography
+        FontManager.initialize()
+        
         return true
     }
 

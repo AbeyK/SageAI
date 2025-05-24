@@ -24,7 +24,7 @@ class HomeViewController: UIViewController {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "ZenPal"
-        label.font = .systemFont(ofSize: 34, weight: .bold)
+        label.font = .zenAppTitle
         label.textColor = UIColor.chatBubbleText // Ensure this color is suitable for appBackground
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -67,7 +67,7 @@ class HomeViewController: UIViewController {
 
         let titleLabel = UILabel()
         titleLabel.text = title
-        titleLabel.font = .systemFont(ofSize: 18, weight: .semibold)
+        titleLabel.font = .zenHeading3
         titleLabel.textColor = UIColor.chatBubbleText // Ensure contrast with pandaCircleBackground
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 0
@@ -96,19 +96,19 @@ class HomeViewController: UIViewController {
             pandaView.heightAnchor.constraint(equalTo: pandaContainer.heightAnchor)
         ])
 
-        let button = createActionButton(title: "Start My Meditation", customContentView: pandaContainer)
+        let button = createActionButton(title: "Meditation", customContentView: pandaContainer)
         button.addTarget(self, action: #selector(meditationButtonTapped), for: .touchUpInside)
         return button
     }()
 
     private lazy var journalButton: UIButton = {
-        let button = createActionButton(title: "Journal", systemImageName: "pencil.and.scribble")
+        let button = createActionButton(title: "Journal (Coming Soon)", systemImageName: "pencil.and.scribble")
         button.addTarget(self, action: #selector(journalButtonTapped), for: .touchUpInside)
         return button
     }()
 
     private lazy var sleepButton: UIButton = {
-        let button = createActionButton(title: "Start My Sleep Meditation", systemImageName: "moon.zzz.fill")
+        let button = createActionButton(title: "Sleep (Coming Soon)", systemImageName: "moon.zzz.fill")
         button.addTarget(self, action: #selector(sleepButtonTapped), for: .touchUpInside)
         return button
     }()
@@ -199,7 +199,7 @@ class HomeViewController: UIViewController {
         popupLabel.numberOfLines = 0 // Allow multiple lines if needed
         popupLabel.layer.cornerRadius = 12
         popupLabel.layer.masksToBounds = true // Essential for cornerRadius with background
-        popupLabel.font = .systemFont(ofSize: 17, weight: .semibold)
+        popupLabel.font = .zenBodyMedium
         popupLabel.translatesAutoresizingMaskIntoConstraints = false
         popupLabel.alpha = 0 // Start transparent
 
