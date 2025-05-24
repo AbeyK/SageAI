@@ -124,7 +124,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         let label = UILabel()
         label.text = "Creating Your Meditation..."
         label.textColor = UIColor.progressBarText // Dark brown in light mode, light cream in dark mode
-        label.font = .systemFont(ofSize: 16) // System font instead of custom font
+        label.font = UIFont.systemFont(ofSize: 16, weight: .bold) // Bold system font
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label

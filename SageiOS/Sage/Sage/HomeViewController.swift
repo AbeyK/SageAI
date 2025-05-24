@@ -67,13 +67,13 @@ class HomeViewController: UIViewController {
         
         let titleLabel = UILabel()
         titleLabel.text = title
-        titleLabel.font = .zenHeading2
+        titleLabel.font = .zenButton
         titleLabel.textColor = textColor
         titleLabel.numberOfLines = 0
         
         let subtitleLabel = UILabel()
         subtitleLabel.text = subtitle
-        subtitleLabel.font = .zenBodyMedium
+        subtitleLabel.font = .zenButton
         subtitleLabel.textColor = textColor.withAlphaComponent(0.8)
         subtitleLabel.numberOfLines = 0
         
@@ -94,7 +94,7 @@ class HomeViewController: UIViewController {
     
     private func createComingSoonCard(title: String, customContentView: UIView? = nil) -> UIButton {
         let button = UIButton(type: .custom)
-        button.backgroundColor = UIColor.pandaCircleBackground.withAlphaComponent(0.7) // Higher opacity
+        button.backgroundColor = UIColor.homeScreenCardViewBackground.withAlphaComponent(0.2) // Neutral background for coming soon
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
@@ -126,14 +126,14 @@ class HomeViewController: UIViewController {
         
         let titleLabel = UILabel()
         titleLabel.text = title
-        titleLabel.font = .zenBodyMedium
-        titleLabel.textColor = UIColor.chatBubbleText.withAlphaComponent(0.7) // Higher opacity
+        titleLabel.font = .zenButton
+        titleLabel.textColor = UIColor.chatBubbleText.withAlphaComponent(0.8) // Better contrast
         titleLabel.numberOfLines = 0
         
         let comingSoonLabel = UILabel()
         comingSoonLabel.text = "Coming Soon"
         comingSoonLabel.font = .zenCaption
-        comingSoonLabel.textColor = UIColor.statusLabelAndIcon.withAlphaComponent(0.8) // Higher opacity
+        comingSoonLabel.textColor = UIColor.statusLabelAndIcon.withAlphaComponent(0.9) // Higher contrast
         comingSoonLabel.numberOfLines = 0
         
         textStackView.addArrangedSubview(titleLabel)
@@ -167,7 +167,7 @@ class HomeViewController: UIViewController {
         let button = createHeroCard(
             title: "Guided Meditation", 
             subtitle: "Start your personalized meditation", 
-            backgroundColor: UIColor.primaryButtonBackground, 
+            backgroundColor: UIColor.homeScreenCardViewBackground.withAlphaComponent(0.5),
             textColor: UIColor.white,
             customContentView: pandaContainer
         )

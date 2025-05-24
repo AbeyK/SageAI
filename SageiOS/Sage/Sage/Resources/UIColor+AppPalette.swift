@@ -49,6 +49,9 @@ extension UIColor {
         return isDarkMode ? UIColor(hex: 0x374050): UIColor(hex: 0x8e756e).withAlphaComponent(0.2)
     }
 
+    static var homeScreenCardViewBackground: UIColor {
+        return isDarkMode ? UIColor(hex: 0x374050): UIColor(hex: 0x8e756e)
+    }
     /// AI/Sage messages - soft blue-gray for wisdom in dark mode
     static var aiChatBubbleBackground: UIColor {
         return isDarkMode ? UIColor(hex: 0x2F3644) : UIColor(hex: 0xC1C7A5)
@@ -96,7 +99,7 @@ extension UIColor {
 
     /// Progress bar text - muted brown for progress indicators
     static var progressBarText: UIColor {
-        return isDarkMode ? UIColor(hex: 0xFDF5EB) : UIColor(hex: 0x4f362f)
+        return isDarkMode ? UIColor(hex: 0xFDF5EB) : UIColor(hex: 0x8e756e)
     }
 
     // MARK: - Warm Earth Accents
@@ -119,9 +122,9 @@ extension UIColor {
 
     // MARK: - Distinct Button Colors
 
-    /// Meditation button - vibrant sage green to stand out as the main implemented feature
+    /// Meditation button - warm plum/mauve for calm, meditative feeling
     static var meditationButtonBackground: UIColor {
-        return isDarkMode ? UIColor(hex: 0x4A9B5E) : UIColor(hex: 0x8DB88A)
+        return isDarkMode ? UIColor(hex: 0x8B7B8B) : UIColor(hex: 0xA08DA0)
     }
     
     /// Sleep button - muted gray to indicate not implemented
