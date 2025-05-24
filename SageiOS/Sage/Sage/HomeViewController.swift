@@ -98,7 +98,6 @@ class HomeViewController: UIViewController {
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
-        button.isEnabled = false // Make it non-interactive
 
         let stackView = UIStackView()
         stackView.axis = .horizontal
