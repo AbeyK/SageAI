@@ -16,9 +16,9 @@ class SignUpViewController: UIViewController {
 
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Join ZenPal"
+        label.text = "ZenPal"
         label.font = .zenAppTitle
-        label.textColor = UIColor.loginFormText
+        label.textColor = UIColor.appTitleBlue
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -27,7 +27,7 @@ class SignUpViewController: UIViewController {
     private let emailTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Email"
-        textField.backgroundColor = UIColor.pandaCircleBackground
+        textField.backgroundColor = UIColor.pandaCircleBackground.withAlphaComponent(0.4)
         textField.textColor = UIColor.loginFormText
         textField.attributedPlaceholder = NSAttributedString(
             string: "Email",
@@ -45,7 +45,7 @@ class SignUpViewController: UIViewController {
     private let passwordTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Password"
-        textField.backgroundColor = UIColor.pandaCircleBackground
+        textField.backgroundColor = UIColor.pandaCircleBackground.withAlphaComponent(0.4)
         textField.textColor = UIColor.loginFormText
         textField.attributedPlaceholder = NSAttributedString(
             string: "Password",
