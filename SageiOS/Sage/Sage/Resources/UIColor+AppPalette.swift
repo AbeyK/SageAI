@@ -99,7 +99,7 @@ extension UIColor {
 
     /// Progress bar text - muted brown for progress indicators
     static var progressBarText: UIColor {
-        return isDarkMode ? UIColor(hex: 0xFDF5EB) : UIColor(hex: 0x8e756e)
+        return isDarkMode ? UIColor(hex: 0xFDF5EB) : UIColor(hex: 0xFDF5EB)
     }
 
     // MARK: - Warm Earth Accents
