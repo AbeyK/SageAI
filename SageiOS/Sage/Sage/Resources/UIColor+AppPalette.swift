@@ -32,12 +32,12 @@ extension UIColor {
         return isDarkMode ? UIColor(hex: 0x22262F) : UIColor(hex: 0xe3bb77)
     }
 
-    /// Light mode: #B8CCB3, Dark mode: #374050 — light sage green that complements the earth tone palette.
+    /// Light mode:#5e9e79, Dark mode:rgb(231, 215, 177) — light sage green that complements the earth tone palette.
     static var pandaCircleBackground: UIColor {
         // return isDarkMode ? UIColor(hex: 0x374050) : UIColor(hex: 0xc4d1bc)
         // The line below was commented out in the user's previous change. I'm keeping it commented.
         // static let pandaCircleBackground = UIColor(hex: 0x374050)
-        return isDarkMode ? UIColor(hex: 0x374050): UIColor(hex: 0x8ea185).withAlphaComponent(0.7)
+        return isDarkMode ? UIColor(hex: 0x374050): UIColor(hex: 0xa7a981)
     }
     
     // static let pandaCircleBackground = UIColor(hex: 0x374050) // This line was commented out by user, I'm keeping it that way
@@ -46,7 +46,7 @@ extension UIColor {
     
     /// Light mode: #D4D9C0, Dark mode: #374050 — Slightly darker sage background for chat area with better contrast.
     static var chatTableViewBackground: UIColor {
-        return isDarkMode ? UIColor(hex: 0x374050): UIColor(hex: 0x8ea185).withAlphaComponent(0.3)
+        return isDarkMode ? UIColor(hex: 0x374050): UIColor(hex: 0x8e756e).withAlphaComponent(0.3)
     }
 
     /// AI/Sage messages - soft blue-gray for wisdom in dark mode
