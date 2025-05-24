@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import AVKit
 import FirebaseAuth
 import FirebaseFirestore
 
@@ -124,7 +123,7 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         let label = UILabel()
         label.text = "Creating Your Meditation..."
         label.textColor = UIColor.progressBarText // Dark brown in light mode, light cream in dark mode
-        label.font = UIFont.systemFont(ofSize: 18, weight: .regular) // Bold system font
+        label.font = UIFont.systemFont(ofSize: 18, weight: .regular) // Regular system font
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -246,12 +245,6 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         timerView.backgroundColor = UIColor.chatTableViewBackground
         timerLabel.textColor = UIColor.primaryButtonText
 
-        // PandaView might have its own traitCollectionDidChange or need specific update methods
-        // If RedPandaView has its own complex drawing or sublayers, it should also implement traitCollectionDidChange.
-        // For now, if it relies on standard UIKit properties set with dynamic colors, it might update automatically.
-        // We can call a generic update method if it exists, or just let it be for now.
-        // pandaView.updateAppearanceForTraitCollection() // Example if such a method exists
-
         // Reload table view to update cell colors
         chatTableView.reloadData()
 
@@ -264,7 +257,6 @@ class ChatViewController: UIViewController, ConversationManagerDelegate {
         view.backgroundColor = UIColor.appBackground
         // Add subviews
         view.addSubview(backButton)
-        view.addSubview(pandaView)
         view.addSubview(pandaView)
         view.addSubview(chatTableView)
         view.addSubview(muteButton)

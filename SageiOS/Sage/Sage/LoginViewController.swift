@@ -29,7 +29,7 @@ class LoginViewController: UIViewController {
     private let usernameTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Username"
-        textField.backgroundColor = UIColor.pandaCircleBackground
+        textField.backgroundColor = UIColor.pandaCircleBackground.withAlphaComponent(0.4)
         textField.textColor = UIColor.loginFormText
         textField.attributedPlaceholder = NSAttributedString(
             string: "Username",
@@ -46,7 +46,7 @@ class LoginViewController: UIViewController {
     private let passwordTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Password"
-        textField.backgroundColor = UIColor.pandaCircleBackground
+        textField.backgroundColor = UIColor.pandaCircleBackground.withAlphaComponent(0.4)
         textField.textColor = UIColor.loginFormText
         textField.attributedPlaceholder = NSAttributedString(
             string: "Password",
