@@ -16,8 +16,8 @@ class SignUpViewController: UIViewController {
 
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Create Account"
-        label.font = .zenHeading1
+        label.text = "Join ZenPal"
+        label.font = .zenAppTitle
         label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false

@@ -25,7 +25,7 @@ class HomeViewController: UIViewController {
         let label = UILabel()
         label.text = "ZenPal"
         label.font = .zenAppTitle
-        label.textColor = UIColor.chatBubbleText // Ensure this color is suitable for appBackground
+        label.textColor = UIColor.statusLabelAndIcon
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -77,8 +77,8 @@ class HomeViewController: UIViewController {
         NSLayoutConstraint.activate([
             mainStackView.centerXAnchor.constraint(equalTo: button.centerXAnchor),
             mainStackView.centerYAnchor.constraint(equalTo: button.centerYAnchor),
-            mainStackView.leadingAnchor.constraint(equalTo: button.leadingAnchor, constant: 16),
-            mainStackView.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -16)
+            mainStackView.leadingAnchor.constraint(equalTo: button.leadingAnchor, constant: 20),
+            mainStackView.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -20)
         ])
         
         return button

@@ -69,9 +69,9 @@ extension UIColor {
 
     // MARK: - Primary CTA
 
-    /// Light mode: #93b59b, Dark mode: #cb631b — primary button color
+    /// Light mode: #7A9F82, Dark mode: #4A9B5E — consistent greenish primary button color for both modes
     static var primaryButtonBackground: UIColor {
-        return isDarkMode ? UIColor(hex: 0xcb631b) : UIColor(hex: 0x93b59b)
+        return isDarkMode ? UIColor(hex: 0x4A9B5E) : UIColor(hex: 0x7A9F82)
     }
 
     /// Pure white for legibility atop the orange button.
@@ -79,8 +79,10 @@ extension UIColor {
 
     // MARK: - Panda accents (rarely used)
 
-    /// Same panda orange for any future live voice indicators / badges.
-    static let pandaAccentOrange = UIColor(hex: 0xE36A3B)
+    /// Light mode: #DC3545, Dark mode: #FF6B6B — reddish warning color for sign out and destructive actions.
+    static var pandaAccentOrange: UIColor {
+        return isDarkMode ? UIColor(hex: 0xFF6B6B) : UIColor(hex: 0xDC3545)
+    }
 
     /// #6B3A1E — solid brown for hairline dividers or subtle shadows.
     static let pandaAccentBrown = UIColor(hex: 0x6B3A1E)
