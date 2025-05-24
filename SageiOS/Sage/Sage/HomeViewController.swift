@@ -34,7 +34,7 @@ class HomeViewController: UIViewController {
     private func createHeroCard(title: String, subtitle: String, backgroundColor: UIColor, textColor: UIColor, customContentView: UIView? = nil) -> UIButton {
         let button = UIButton(type: .custom)
         button.backgroundColor = backgroundColor
-        button.layer.cornerRadius = 16
+        button.layer.cornerRadius = 12 // Match coming soon cards corner radius
         button.layer.shadowColor = UIColor.black.cgColor
         button.layer.shadowOffset = CGSize(width: 0, height: 2)
         button.layer.shadowOpacity = 0.1
@@ -45,48 +45,48 @@ class HomeViewController: UIViewController {
         let mainStackView = UIStackView()
         mainStackView.axis = .horizontal
         mainStackView.alignment = .center
-        mainStackView.spacing = 24
+        mainStackView.spacing = 16
         mainStackView.translatesAutoresizingMaskIntoConstraints = false
         mainStackView.isUserInteractionEnabled = false
 
-        // Left side - panda
-        if let contentView = customContentView {
-            contentView.translatesAutoresizingMaskIntoConstraints = false
-            mainStackView.addArrangedSubview(contentView)
-            NSLayoutConstraint.activate([
-                contentView.widthAnchor.constraint(equalToConstant: 70),
-                contentView.heightAnchor.constraint(equalToConstant: 70)
-            ])
-        }
-
-        // Right side - text content
+        // Left side - text content
         let textStackView = UIStackView()
         textStackView.axis = .vertical
         textStackView.alignment = .leading
-        textStackView.spacing = 4
+        textStackView.spacing = 6 // Increased spacing between title and subtitle
         
         let titleLabel = UILabel()
         titleLabel.text = title
-        titleLabel.font = .zenButton
-        titleLabel.textColor = textColor
+        titleLabel.font = .zenAccent // Comfortaa font
+        titleLabel.textColor = UIColor.sectionTitleText
         titleLabel.numberOfLines = 0
         
         let subtitleLabel = UILabel()
         subtitleLabel.text = subtitle
-        subtitleLabel.font = .zenButton
-        subtitleLabel.textColor = textColor.withAlphaComponent(0.8)
+        subtitleLabel.font = .zenCaption // Keep consistent with coming soon cards
+        subtitleLabel.textColor = UIColor.sectionSubtitleText
         subtitleLabel.numberOfLines = 0
         
         textStackView.addArrangedSubview(titleLabel)
         textStackView.addArrangedSubview(subtitleLabel)
         mainStackView.addArrangedSubview(textStackView)
-        
+
+        // Right side - panda
+        if let contentView = customContentView {
+            contentView.translatesAutoresizingMaskIntoConstraints = false
+            mainStackView.addArrangedSubview(contentView)
+            NSLayoutConstraint.activate([
+                contentView.widthAnchor.constraint(equalToConstant: 60),
+                contentView.heightAnchor.constraint(equalToConstant: 60)
+            ])
+        }
+
         button.addSubview(mainStackView)
         NSLayoutConstraint.activate([
-            mainStackView.leadingAnchor.constraint(equalTo: button.leadingAnchor, constant: 20),
-            mainStackView.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -20),
-            mainStackView.topAnchor.constraint(equalTo: button.topAnchor, constant: 20),
-            mainStackView.bottomAnchor.constraint(equalTo: button.bottomAnchor, constant: -20)
+            mainStackView.leadingAnchor.constraint(equalTo: button.leadingAnchor, constant: 16),
+            mainStackView.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -16),
+            mainStackView.topAnchor.constraint(equalTo: button.topAnchor, constant: 16),
+            mainStackView.bottomAnchor.constraint(equalTo: button.bottomAnchor, constant: -16)
         ])
         
         return button
@@ -102,43 +102,42 @@ class HomeViewController: UIViewController {
         let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.alignment = .center
-        stackView.spacing = 12
+        stackView.spacing = 16 // Match hero card spacing for consistency
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.isUserInteractionEnabled = false
 
-        // Panda icon with circle
-        if let contentView = customContentView {
-            contentView.translatesAutoresizingMaskIntoConstraints = false
-            contentView.alpha = 0.8 // Slightly transparent but visible
-            stackView.addArrangedSubview(contentView)
-            NSLayoutConstraint.activate([
-                contentView.widthAnchor.constraint(equalToConstant: 50),
-                contentView.heightAnchor.constraint(equalToConstant: 50)
-            ])
-        }
-        
-        // Text
+        // Left side - text
         let textStackView = UIStackView()
         textStackView.axis = .vertical
         textStackView.alignment = .leading
-        textStackView.spacing = 2
+        textStackView.spacing = 6 // Increased spacing to match hero card
         
         let titleLabel = UILabel()
         titleLabel.text = title
-        titleLabel.font = .zenButton
-        titleLabel.textColor = UIColor.chatBubbleText.withAlphaComponent(0.8) // Better contrast
+        titleLabel.font = .zenAccent // Comfortaa font - same as hero card
+        titleLabel.textColor = UIColor.sectionTitleText // White in dark mode, blue in light mode
         titleLabel.numberOfLines = 0
         
         let comingSoonLabel = UILabel()
         comingSoonLabel.text = "Coming Soon"
         comingSoonLabel.font = .zenCaption
-        comingSoonLabel.textColor = UIColor.statusLabelAndIcon.withAlphaComponent(0.9) // Higher contrast
+        comingSoonLabel.textColor = UIColor.sectionSubtitleText
         comingSoonLabel.numberOfLines = 0
         
         textStackView.addArrangedSubview(titleLabel)
         textStackView.addArrangedSubview(comingSoonLabel)
-        
         stackView.addArrangedSubview(textStackView)
+
+        // Right side - panda
+        if let contentView = customContentView {
+            contentView.translatesAutoresizingMaskIntoConstraints = false
+            contentView.alpha = 0.8 // Slightly transparent but visible
+            stackView.addArrangedSubview(contentView)
+            NSLayoutConstraint.activate([
+                contentView.widthAnchor.constraint(equalToConstant: 60),
+                contentView.heightAnchor.constraint(equalToConstant: 60)
+            ])
+        }
         
         button.addSubview(stackView)
         NSLayoutConstraint.activate([
@@ -164,10 +163,10 @@ class HomeViewController: UIViewController {
         ])
 
         let button = createHeroCard(
-            title: "Guided Meditation", 
-            subtitle: "Start your personalized meditation", 
-            backgroundColor: UIColor.homeScreenCardViewBackground.withAlphaComponent(0.5),
-            textColor: UIColor.white,
+            title: "Meditations", 
+            subtitle: "Crafted just for you", 
+            backgroundColor: UIColor.homeScreenCardViewBackground.withAlphaComponent(0.2),
+            textColor: UIColor.sectionTitleText,
             customContentView: pandaContainer
         )
         button.addTarget(self, action: #selector(meditationButtonTapped), for: .touchUpInside)
@@ -250,15 +249,15 @@ class HomeViewController: UIViewController {
             meditationHeroCard.heightAnchor.constraint(equalToConstant: 120),
             
             // Coming soon cards
-            sleepCard.topAnchor.constraint(equalTo: meditationHeroCard.bottomAnchor, constant: 20),
+            sleepCard.topAnchor.constraint(equalTo: meditationHeroCard.bottomAnchor, constant: 16),
             sleepCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             sleepCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            sleepCard.heightAnchor.constraint(equalToConstant: 70),
+            sleepCard.heightAnchor.constraint(equalToConstant: 100),
             
-            journalCard.topAnchor.constraint(equalTo: sleepCard.bottomAnchor, constant: 12),
+            journalCard.topAnchor.constraint(equalTo: sleepCard.bottomAnchor, constant: 16),
             journalCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             journalCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            journalCard.heightAnchor.constraint(equalToConstant: 70),
+            journalCard.heightAnchor.constraint(equalToConstant: 100),
             journalCard.bottomAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
         ])
     }
@@ -295,7 +294,7 @@ class HomeViewController: UIViewController {
         let popupLabel = UILabel()
         popupLabel.text = message
         popupLabel.textColor = UIColor.white
-        popupLabel.backgroundColor = UIColor.black.withAlphaComponent(0.75)
+        popupLabel.backgroundColor = UIColor.appTitleBlue.withAlphaComponent(0.9)
         popupLabel.textAlignment = .center
         popupLabel.numberOfLines = 0 // Allow multiple lines if needed
         popupLabel.layer.cornerRadius = 12

@@ -30,10 +30,10 @@ class LoginViewController: UIViewController {
         let textField = UITextField()
         textField.placeholder = "Username"
         textField.backgroundColor = UIColor.pandaCircleBackground
-        textField.textColor = UIColor.chatBubbleText
+        textField.textColor = UIColor.loginFormText
         textField.attributedPlaceholder = NSAttributedString(
             string: "Username",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor.statusLabelAndIcon]
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor.loginFormPlaceholder]
         )
         textField.layer.cornerRadius = 8
         textField.autocapitalizationType = .none
@@ -47,10 +47,10 @@ class LoginViewController: UIViewController {
         let textField = UITextField()
         textField.placeholder = "Password"
         textField.backgroundColor = UIColor.pandaCircleBackground
-        textField.textColor = UIColor.chatBubbleText
+        textField.textColor = UIColor.loginFormText
         textField.attributedPlaceholder = NSAttributedString(
             string: "Password",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor.statusLabelAndIcon]
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor.loginFormPlaceholder]
         )
         textField.layer.cornerRadius = 8
         textField.isSecureTextEntry = true
@@ -85,7 +85,7 @@ class LoginViewController: UIViewController {
     private let forgotPasswordButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Forgot Password?", for: .normal)
-        button.setTitleColor(UIColor.statusLabelAndIcon, for: .normal)
+        button.setTitleColor(UIColor.loginFormText, for: .normal)
         button.titleLabel?.font = .zenCaption
         button.translatesAutoresizingMaskIntoConstraints = false
         button.alpha = 0
@@ -96,7 +96,7 @@ class LoginViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle("Sign Up", for: .normal)
         button.backgroundColor = UIColor.pandaCircleBackground
-        button.setTitleColor(UIColor.statusLabelAndIcon, for: .normal)
+        button.setTitleColor(UIColor.loginFormText, for: .normal)
         button.titleLabel?.font = .zenButton
         button.layer.cornerRadius = 8
         button.translatesAutoresizingMaskIntoConstraints = false

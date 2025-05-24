@@ -18,7 +18,7 @@ class SignUpViewController: UIViewController {
         let label = UILabel()
         label.text = "Join ZenPal"
         label.font = .zenAppTitle
-        label.textColor = UIColor.statusLabelAndIcon
+        label.textColor = UIColor.loginFormText
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -28,10 +28,10 @@ class SignUpViewController: UIViewController {
         let textField = UITextField()
         textField.placeholder = "Email"
         textField.backgroundColor = UIColor.pandaCircleBackground
-        textField.textColor = UIColor.chatBubbleText
+        textField.textColor = UIColor.loginFormText
         textField.attributedPlaceholder = NSAttributedString(
             string: "Email",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor.statusLabelAndIcon]
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor.loginFormPlaceholder]
         )
         textField.layer.cornerRadius = 8
         textField.autocapitalizationType = .none
@@ -46,10 +46,10 @@ class SignUpViewController: UIViewController {
         let textField = UITextField()
         textField.placeholder = "Password"
         textField.backgroundColor = UIColor.pandaCircleBackground
-        textField.textColor = UIColor.chatBubbleText
+        textField.textColor = UIColor.loginFormText
         textField.attributedPlaceholder = NSAttributedString(
             string: "Password",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor.statusLabelAndIcon]
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor.loginFormPlaceholder]
         )
         textField.layer.cornerRadius = 8
         textField.isSecureTextEntry = true
@@ -85,7 +85,7 @@ class SignUpViewController: UIViewController {
         let label = UILabel()
         label.text = "Already have an account? Log In"
         label.font = .zenCaption
-        label.textColor = UIColor.statusLabelAndIcon
+        label.textColor = UIColor.loginFormText
         label.textAlignment = .center
         label.isUserInteractionEnabled = true // Enable for tap gesture
         label.translatesAutoresizingMaskIntoConstraints = false

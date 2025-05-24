@@ -102,6 +102,26 @@ extension UIColor {
         return isDarkMode ? UIColor(hex: 0xFDF5EB) : UIColor(hex: 0xFDF5EB)
     }
 
+    /// Section title text - bold, prominent color for main section headings
+    static var sectionTitleText: UIColor {
+        return isDarkMode ? UIColor.white.withAlphaComponent(0.75) : UIColor(hex: 0x5a7f8e)
+    }
+    
+    /// Section subtitle text - softer color for descriptive text under section titles
+    static var sectionSubtitleText: UIColor {
+        return isDarkMode ? UIColor(hex: 0x6B7B8C).withAlphaComponent(0.9) : UIColor(hex: 0x8e756e).withAlphaComponent(0.9)
+    }
+
+    /// Login form text - white in light mode for better contrast on login screens
+    static var loginFormText: UIColor {
+        return isDarkMode ? UIColor(hex: 0xFDF5EB) : UIColor.white
+    }
+    
+    /// Login form placeholder text - lighter color for placeholders
+    static var loginFormPlaceholder: UIColor {
+        return isDarkMode ? UIColor(hex: 0x6B7B8C) : UIColor.white.withAlphaComponent(0.7)
+    }
+
     // MARK: - Warm Earth Accents
 
     /// Warm golden yellow for highlights and special elements
