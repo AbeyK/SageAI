@@ -11,6 +11,11 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
     public weak var delegate: SpeechRecognizerDelegate?
     public var onTranscriptUpdate: ((String) -> Void)?
 
+    private func postProcessTranscript(_ transcript: String) -> String {
+        // Replace "amber" with "Ember" using word boundaries to avoid partial replacements
+        return transcript.replacingOccurrences(of: "\\bamber\\b", with: "Ember", options: [.regularExpression, .caseInsensitive])
+    }
+
     func startRecognition() throws {
         // Ensure previous tasks are canceled
         recognitionTask?.cancel()
@@ -27,6 +32,18 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
             fatalError("testing -> speechRecognizer Unable to create a recognition request")
         }
         recognitionRequest.shouldReportPartialResults = true
+        
+        // Add contextual vocabulary for better meditation/wellness word recognition
+        let meditationVocabulary = [
+            "meditation", "zen", "zenpal", "ZenPal",
+            "ember", "Ember", "amber", "hey ember", "Hey Ember", "hey amber", "AI Ember", "my ember", "Ember AI", "Ember companion", "red panda Ember",
+            "red panda", "panda", "companion", "AI companion", "meditation companion"
+        ]
+        
+        if #available(iOS 16.0, *) {
+            recognitionRequest.addsPunctuation = true
+            recognitionRequest.contextualStrings = meditationVocabulary
+        }
 
         // Set up audio input
         let inputNode = audioEngine.inputNode
@@ -51,10 +68,10 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
                     return
                 }
                 
-                self.finalTranscript = transcript
-                print("testing -> speechRecognizer Transcription: \(transcript)")
+                self.finalTranscript = self.postProcessTranscript(transcript)
+                print("testing -> speechRecognizer Transcription: \(self.finalTranscript)")
 
-                self.onTranscriptUpdate?(transcript)
+                self.onTranscriptUpdate?(self.finalTranscript)
 
                 if self.isRunning() && result.isFinal { // Check if the recognition is final
                     print("testing -> speechRecognizer User has finished speaking.")
