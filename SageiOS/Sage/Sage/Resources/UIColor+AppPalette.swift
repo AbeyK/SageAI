@@ -27,9 +27,9 @@ extension UIColor {
 
     // MARK: - Foundations (major surfaces)
 
-    /// Light mode: #E0E5CC, Dark mode: #22262F — light beige with subtle green undertones for a calm, natural feel.
+    /// Light mode:#b8ccde, Dark mode: #22262F — light beige with subtle green undertones for a calm, natural feel.
     static var appBackground: UIColor {
-        return isDarkMode ? UIColor(hex: 0x22262F) : UIColor(hex: 0xe3bb77)
+        return isDarkMode ? UIColor(hex: 0x22262F) : UIColor(hex: 0xf1e8d0)
     }
 
     /// Light mode:#5e9e79, Dark mode:rgb(231, 215, 177) — light sage green that complements the earth tone palette.
@@ -37,7 +37,7 @@ extension UIColor {
         // return isDarkMode ? UIColor(hex: 0x374050) : UIColor(hex: 0xc4d1bc)
         // The line below was commented out in the user's previous change. I'm keeping it commented.
         // static let pandaCircleBackground = UIColor(hex: 0x374050)
-        return isDarkMode ? UIColor(hex: 0x374050): UIColor(hex: 0xa7a981)
+        return isDarkMode ? UIColor(hex: 0x374050): UIColor(hex: 0x5a7f8e).withAlphaComponent(0.6)
     }
     
     // static let pandaCircleBackground = UIColor(hex: 0x374050) // This line was commented out by user, I'm keeping it that way
@@ -46,7 +46,7 @@ extension UIColor {
     
     /// Light mode: #D4D9C0, Dark mode: #374050 — Slightly darker sage background for chat area with better contrast.
     static var chatTableViewBackground: UIColor {
-        return isDarkMode ? UIColor(hex: 0x374050): UIColor(hex: 0x8e756e).withAlphaComponent(0.3)
+        return isDarkMode ? UIColor(hex: 0x374050): UIColor(hex: 0x8e756e).withAlphaComponent(0.2)
     }
 
     /// AI/Sage messages - soft blue-gray for wisdom in dark mode
@@ -81,14 +81,14 @@ extension UIColor {
     }
     // MARK: - Primary CTA
 
-    /// Light mode: #4C8A5C, Dark mode: #4C8A5C — always green for primary actions and consistency
+    /// Light mode: #4C8A5C, Dark mode: more faded green — green for primary actions with appropriate intensity per mode
     static var primaryButtonBackground: UIColor {
-        return UIColor(hex: 0x4C8A5C)
+        return isDarkMode ? UIColor(hex: 0x4C8A5C).withAlphaComponent(0.8) : UIColor(hex: 0x6a966a)
     }
 
-    /// Light mode: #5FB669, Dark mode: #66D17A — always green for listening indicator, consistent with primary actions
+    /// Light mode:rgb(108, 166, 108) brighter green, Dark mode: #66D17A — green for listening indicator, bright and attention-getting
     static var brightListeningIndicator: UIColor {
-        return isDarkMode ? UIColor(hex: 0x66D17A) : UIColor(hex: 0x396e46)
+        return isDarkMode ? UIColor(hex: 0x66D17A) : UIColor(hex: 0x6b956b)
     }
 
     /// Pure white for legibility atop the earthy button colors.
