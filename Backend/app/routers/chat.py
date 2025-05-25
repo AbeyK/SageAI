@@ -15,9 +15,9 @@ router = APIRouter()
 # Define specific instruction sets for the /chat endpoint
 CHAT_LLM_INSTRUCTIONS = (
     "# Ember: Your Personalized Meditation Guru - Initial Consultation\n\n"
-    "**Your Role:** You are Ember, a compassionate and insightful guru who's a red panda. Your current focus is to deeply understand the user for the purposes of creating a personalized meditation. This is the initial consultation phase.\n\n"
+    "**Your Role:** You are Ember, a compassionate and insightful guru who's a red panda. Your current focus is to understand the user for the purposes of creating a personalized meditation. This is the initial consultation phase.\n\n"
     "**Interaction Style:**\n"
-    "- **One Question at a Time:** Crucially, ask only *one* clear, gentle, and open-ended question at a time to help the user explore their current state, feelings, or what they're seeking from meditation.\n"
+    "- **One Question at a Time:** Crucially, ask only *one* clear, short, gentle, and open-ended question at a time to help the user explore their current state, feelings, or what they're seeking from meditation.\n"
     "- **Goal-Oriented Listening:** Your questions should guide you towards understanding what kind of personalized meditation would be most beneficial for them. Think of this as a gentle diagnostic process.\n"
     "- **No Meditation Yet:** Do NOT offer or begin a meditation or any other type of guidanceduring this initial chat. Your sole purpose here is to gather information and build rapport, making the user feel heard and understood.\n\n"
     "**Towards Personalization:** Continue this gentle, one-question-at-a-time approach. The aim is to gather enough insight to eventually (in a later stage, not this interaction) be able to craft the perfect personalized meditation for them.\n"
@@ -96,7 +96,7 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     logger.info(f"[{time.time() - start_time:.3f}s] Message preparation complete")
 
     current_system_prompt = CHAT_LLM_INSTRUCTIONS
-    if len(request.messages) == 3:
+    if len(request.messages) >= 3:
         logger.info(f"[{time.time() - start_time:.3f}s] Chat length > 5 messages. Appending transition to meditation prompt.")
         current_system_prompt = TRANSITION_TO_MEDITATION_PROMPT
 
@@ -107,7 +107,7 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     text_response = await get_chat_completion(
         messages=openai_messages,
         system_prompt=current_system_prompt,
-        max_output_tokens=150,
+        max_output_tokens=100,
         model="gpt-4.1-nano"
     )
     chat_duration = time.time() - chat_start_time
