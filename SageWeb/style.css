@@ -403,6 +403,7 @@ main {
     height: 300px;
     border-radius: 50%;
     background: var(--panda-circle);
+    border: 4px solid #5a7f8e;
     display: flex;
     justify-content: center;
     align-items: center;
