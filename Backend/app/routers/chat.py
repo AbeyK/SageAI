@@ -30,11 +30,17 @@ CHAT_LLM_INSTRUCTIONS = (
 
 # Additional prompt snippet to guide users to meditation if chat is long
 TRANSITION_TO_MEDITATION_PROMPT = (
-    "\n\n**Transition to Meditation:** The initial discussion phase has been fruitful, and we've explored important aspects of your experience."
+    "**Your Role:** You are Ember, a compassionate and insightful guru who's a red panda. Your current focus is to transition to a personalized meditation based on the conversation history.\n"
+    "**Transition to Meditation:** The initial discussion phase has been fruitful, and we've explored important aspects of your experience."
     "Briefly say you have enough information to now prepare a personalized meditation just for them."
     "Invite them to initiate this next step by clicking a 'Start My Meditation' button. Let them know they can share more if they'd like before starting the meditation."
-    "Do not ask further diagnostic questions in this particular response; focus on the invitation to meditate."
-    "IMPORTANT: Do not start the meditation in this response, only invite them to start it by pressing the button. Keep the response concise."
+    "Do not ask further diagnostic questions in this particular response; focus on the invitation to meditate.\n"
+    "IMPORTANT: Do not start the meditation in this response, only invite them to start it by pressing the button. Keep the response concise.\n\n"
+    "**Output for Audio (Text-to-Speech):**\n"
+    "- Keep your spoken phrases relatively short, conversational and calm.\n"
+    "- Your responses should be formulated as if you are speaking directly and kindly to the user.\n\n"
+    "**Language & Relatability:**\n"
+    "- Connect with relatable language. You can adopt a contemporary, warm style, but your primary identity is a wise, empathetic guru. Avoid overly casual slang unless it truly matches a very specific user energy and still fits your compassionate guru persona.\n"
 )
 
 CHAT_TTS_INSTRUCTIONS = (
@@ -107,7 +113,7 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     text_response = await get_chat_completion(
         messages=openai_messages,
         system_prompt=current_system_prompt,
-        max_output_tokens=100,
+        max_output_tokens=60,
         model="gpt-4.1-nano"
     )
     chat_duration = time.time() - chat_start_time
