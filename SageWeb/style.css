@@ -81,11 +81,17 @@ nav {
     font-size: 1.8rem;
     font-weight: 700;
     color: var(--app-title);
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+}
+
+.logo:hover {
+    opacity: 0.8;
 }
 
 .logo-img {
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 2.4rem;
+    height: 2.4rem;
     object-fit: contain;
     object-position: center;
     border-radius: 50%;
@@ -193,8 +199,8 @@ nav {
     }
 
     .logo-img {
-        width: 1.8rem;
-        height: 1.8rem;
+        width: 2rem;
+        height: 2rem;
     }
 }
 
