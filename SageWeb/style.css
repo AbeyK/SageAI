@@ -81,12 +81,20 @@ nav {
     font-size: 1.8rem;
     font-weight: 700;
     color: var(--app-title);
-    text-decoration: none;
+    text-decoration: none !important;
     transition: opacity 0.3s ease;
 }
 
 .logo:hover {
     opacity: 0.8;
+    text-decoration: none !important;
+}
+
+.logo:visited,
+.logo:active,
+.logo:focus {
+    color: var(--app-title);
+    text-decoration: none !important;
 }
 
 .logo-img {
