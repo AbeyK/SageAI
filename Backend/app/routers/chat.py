@@ -103,7 +103,6 @@ async def process_chat(
     text_response = await get_chat_completion(
         messages=openai_messages,
         system_prompt=current_system_prompt,
-        max_output_tokens=60,
         model="gpt-4.1-nano",
     )
     # Run Firestore logging and TTS in parallel

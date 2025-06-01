@@ -101,8 +101,8 @@ def build_dynamic_prompt(progress: int, history_text: str | None = None) -> str:
     )
 
 
-def get_meditation_guidance_for_phase(percent_complete: int) -> tuple[str, int, str]:
-    """Selects LLM instructions and max_output_tokens based on meditation progress (0-100)."""
+def get_meditation_guidance_for_phase(percent_complete: int) -> tuple[str, str]:
+    """Selects LLM instructions and TTS instructions based on meditation progress (0-100)."""
     logger.info(
         f"Determining meditation phase for percent_complete: {percent_complete}"
     )
@@ -110,16 +110,8 @@ def get_meditation_guidance_for_phase(percent_complete: int) -> tuple[str, int, 
     # Build dynamic prompt based on progress
     prompt = build_dynamic_prompt(percent_complete)
 
-    # Adjust token limits based on phase
-    if percent_complete == 0:
-        max_tokens = 125
-    elif percent_complete == 100:
-        max_tokens = 80
-    else:
-        max_tokens = 150
-
     # Use the global TTS instructions for all phases
-    return prompt, max_tokens, GLOBAL_TTS
+    return prompt, GLOBAL_TTS
 
 
 @router.post("/meditate", response_model=AudioResponse)
@@ -147,11 +139,8 @@ async def run_meditation_session(
     message_dicts: List[Dict[str, str]] = [msg.model_dump() for msg in request.messages]
     logger.info(f"[OpenAI Input Messages]: {message_dicts}")
 
-    current_llm_instructions, current_max_tokens, current_tts_instructions = (
+    current_llm_instructions, current_tts_instructions = (
         get_meditation_guidance_for_phase(request.percent_complete)
-    )
-    logger.info(
-        f"Selected Phase based on {request.percent_complete}%: Max Tokens: {current_max_tokens}"
     )
     logger.info(
         f"LLM Instructions for phase {request.percent_complete}% (first 300 chars): {current_llm_instructions[:300]}..."
@@ -162,7 +151,6 @@ async def run_meditation_session(
         llm_response_text = await get_chat_completion(
             messages=message_dicts,
             system_prompt=current_llm_instructions,
-            max_output_tokens=current_max_tokens,
             model="gpt-4.1-mini",
         )
         # Run Firestore logging and TTS in parallel
