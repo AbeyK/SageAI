@@ -36,7 +36,7 @@ async def log_conversation_to_firestore(user_id: str, endpoint: str, messages: l
     if db is None:
         print("Firestore not initialized; skipping log.")
         return
-    doc_ref = db.collection("Meditations").document(user_id).collection("PersonaMeditations").document(session_id)
+    doc_ref = db.collection("sessions").document(user_id).collection("meditations").document(session_id)
     data = {
         "user_id": user_id,
         "endpoint": endpoint,
