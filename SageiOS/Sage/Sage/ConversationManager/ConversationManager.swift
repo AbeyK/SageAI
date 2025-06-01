@@ -509,7 +509,7 @@ public class ConversationManager: SpeechManagerDelegate {
     }
     
     private func updateMeditationProgress() {
-        if remainingSeconds < 30 {
+        if remainingSeconds < 70 {
             meditationProgress = 100
         } else {
             meditationProgress = Int((Double(300 - remainingSeconds) / 300.0) * 100)
