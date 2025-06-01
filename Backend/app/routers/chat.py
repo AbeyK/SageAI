@@ -76,8 +76,12 @@ async def process_chat(
             )
 
     # Simplified message preparation for OpenAI
+    VALID_ROLES = {"system", "assistant", "user", "function", "tool", "developer"}
+
     openai_messages = []
     for msg in request.messages:
+        if msg.role not in VALID_ROLES:
+            msg.role = "system"
         openai_messages.append({"role": msg.role, "content": msg.content})
 
     logger.info(f"[{time.time() - start_time:.3f}s] Message preparation complete")
@@ -89,6 +93,7 @@ async def process_chat(
         )
         current_system_prompt = TRANSITION_TO_MEDITATION_PROMPT
 
+    logger.info(f"[OpenAI Input Messages]: {openai_messages}")
     # Get text response from OpenAI GPT-4o
     chat_start_time = time.time()
     logger.info(

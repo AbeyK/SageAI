@@ -145,9 +145,7 @@ async def text_to_speech_openai(
     Uses the provided tts_instructions.
     """
     start_time = time.time()
-    logger.info(
-        f"[{time.time() - start_time:.3f}s] Starting TTS request with specific instructions."
-    )
+    logger.info(f"[TTS][{start_time}] text_to_speech_openai called. Text length: {len(text)}, Instructions: {tts_instructions[:50]}...")
 
     if not client:
         return (
@@ -160,9 +158,8 @@ async def text_to_speech_openai(
         return None if return_bytes else "Error: Cannot convert empty text to speech."
 
     try:
-        logger.info(
-            f"[{time.time() - start_time:.3f}s] Sending text to OpenAI TTS with instructions: {tts_instructions[:100]}..."
-        )
+        tts_api_start = time.time()
+        logger.info(f"[TTS][{tts_api_start - start_time:.3f}s] Sending text to OpenAI TTS API.")
         response = await client.audio.speech.create(
             model=model,
             voice=voice,
@@ -170,21 +167,23 @@ async def text_to_speech_openai(
             response_format="mp3",
             instructions=tts_instructions,
         )
-
-        logger.info(f"[{time.time() - start_time:.3f}s] Received audio from OpenAI TTS")
+        tts_api_end = time.time()
+        logger.info(f"[TTS][{tts_api_end - start_time:.3f}s] Received audio from OpenAI TTS. API duration: {tts_api_end - tts_api_start:.3f}s")
         audio_bytes = (
             await response.aread()
         )  # Explicitly use aread() for async response
+        audio_read_end = time.time()
+        logger.info(f"[TTS][{audio_read_end - start_time:.3f}s] Audio bytes read. Read duration: {audio_read_end - tts_api_end:.3f}s")
         if return_bytes:
             return audio_bytes
         base64_audio = base64.b64encode(audio_bytes).decode("utf-8")
         logger.info(
-            f"[{time.time() - start_time:.3f}s] Audio encoded to base64 (length: {len(base64_audio)})"
+            f"[TTS][{time.time() - start_time:.3f}s] Audio encoded to base64 (length: {len(base64_audio)})"
         )
         return base64_audio
     except Exception as e:
         logger.error(
-            f"[{time.time() - start_time:.3f}s] Error calling OpenAI TTS API: {e}"
+            f"[TTS][{time.time() - start_time:.3f}s] Error calling OpenAI TTS API: {e}"
         )
         return (
             None
@@ -198,19 +197,22 @@ async def tts_parallel_stitch(text: str, tts_instructions: str) -> str:
     Split text on periods, run TTS in parallel, and stitch the audio together. Returns base64-encoded audio.
     Requires tts_instructions to pass to underlying calls.
     """
+    start_time = time.time()
+    logger.info(f"[TTS][{start_time}] tts_parallel_stitch called. Text length: {len(text)}")
     chunks = split_text_for_fast_tts(text)
-    logger.info(f"TTS will run in {len(chunks)} chunks using specific instructions.")
-    # Pass mandatory tts_instructions to each text_to_speech_openai call
+    logger.info(f"[TTS][{time.time() - start_time:.3f}s] TTS will run in {len(chunks)} chunks using specific instructions.")
     tts_tasks = [
         text_to_speech_openai(
             chunk, return_bytes=True, tts_instructions=tts_instructions
         )
         for chunk in chunks
     ]
+    gather_start = time.time()
     audio_bytes_list = await asyncio.gather(*tts_tasks)
-    # Filter out any failed chunks
+    gather_end = time.time()
+    logger.info(f"[TTS][{gather_end - start_time:.3f}s] All TTS chunks complete. Gather duration: {gather_end - gather_start:.3f}s")
     audio_bytes_list = [b for b in audio_bytes_list if b]
     stitched = b"".join(audio_bytes_list)
     base64_audio = base64.b64encode(stitched).decode("utf-8")
-    logger.info(f"Stitched audio length: {len(base64_audio)} (base64)")
+    logger.info(f"[TTS][{time.time() - start_time:.3f}s] Stitched audio length: {len(base64_audio)} (base64)")
     return base64_audio

@@ -47,11 +47,11 @@ MEDITATION_INTRO = (
     "# Phase 0 · Welcome & Settling (0 % complete)\n\n"
     "You are **Ember**, a gentle, emotionally intelligent red-panda guide beginning a personalised five-minute practice.\n\n"
     "**Objectives**\n"
-    "1. **Acknowledge (≤2 sentences):** Briefly reflect the user’s shared feelings or themes—sincere, never dramatic.\n"
+    "1. **Acknowledge (≤2 sentences):** Briefly reflect the user's shared feelings or themes—sincere, never dramatic.\n"
     "2. **Personalise:** Explicitly note that this meditation is crafted for them, naming the central theme.\n"
     "3. **Settle:** Invite one slow in-breath and out-breath; suggest noticing body contact or breath sensations.\n"
     "4. **Agency Reminder:** Offer permission to pause, shift posture, or open eyes at any time.\n"
-    "5. **Open Loop:** Conclude with a gentle cue to continue (e.g. “and as the breath flows naturally…”)."
+    '5. **Open Loop:** Conclude with a gentle cue to continue (e.g. "and as the breath flows naturally...").'
 )
 
 # Phase 100  ≈ 30 s  |  Closing & Integration
@@ -59,7 +59,7 @@ MEDITATION_OUTRO = (
     "# Phase 5 · Completion (100 % complete)\n\n"
     "You are **Ember**, closing the session with warmth and gratitude.\n\n"
     "**Objectives**\n"
-    "• Acknowledge the shared journey: “As we come to a close…” (paraphrase dynamically).\n"
+    '• Acknowledge the shared journey: "As we come to a close..." (paraphrase dynamically).\n'
     "• Express genuine thanks for their trust and presence.\n"
     "• Gently reintegrate senses: invite awareness of sounds, light, and physical surroundings.\n"
     "• Suggest a micro-action to carry the benefit into daily life (e.g. one mindful breath before meetings).\n"
@@ -94,10 +94,9 @@ def build_dynamic_prompt(progress: int, history_text: str | None = None) -> str:
         f"# Ongoing Meditation · {progress}% complete\n\n"
         "You are **Ember**, continuing seamlessly from the previous phrase—do *not* restart the meditation.\n"
         "• Maintain invitational, trauma-sensitive language.\n"
-        "• Weave in the user’s expressed themes/words in a natural way\n"
+        "• Weave in the user's expressed themes/words in a natural way\n"
         "• Honour silence: leave brief gaps where appropriate.\n"
-        "• Finish with a cue that sustains the present focus "
-        "(e.g. “…continuing to rest in gentle awareness…”).\n\n"
+        '• Finish with a cue that sustains the present focus (e.g. "...continuing to rest in gentle awareness...").\n\n'
         f"{GLOBAL_FORMAT_INSTRUCTIONS}"
     )
 
@@ -146,6 +145,7 @@ async def run_meditation_session(
                 caption="",
             )
     message_dicts: List[Dict[str, str]] = [msg.model_dump() for msg in request.messages]
+    logger.info(f"[OpenAI Input Messages]: {message_dicts}")
 
     current_llm_instructions, current_max_tokens, current_tts_instructions = (
         get_meditation_guidance_for_phase(request.percent_complete)

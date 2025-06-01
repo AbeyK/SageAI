@@ -3,6 +3,8 @@ from firebase_admin import credentials, firestore
 from app.config import settings
 import datetime
 import asyncio
+import time
+import logging
 
 # Get credentials from settings (as dict)
 cred_dict = settings.get_firebase_credentials()
@@ -33,8 +35,11 @@ else:
 db = firestore.client() if cred else None
 
 async def log_conversation_to_firestore(user_id: str, endpoint: str, messages: list, llm_response: str, session_id: str):
+    logger = logging.getLogger("meditation_app")
+    start_time = time.time()
+    logger.info(f"[Firestore][{start_time}] log_conversation_to_firestore called for user_id={user_id}, session_id={session_id}")
     if db is None:
-        print("Firestore not initialized; skipping log.")
+        logger.warning(f"[Firestore][{time.time() - start_time:.3f}s] Firestore not initialized; skipping log.")
         return
     doc_ref = db.collection("sessions").document(user_id).collection("meditations").document(session_id)
     data = {
@@ -45,5 +50,9 @@ async def log_conversation_to_firestore(user_id: str, endpoint: str, messages: l
         "session_id": session_id,
         "timestamp": datetime.datetime.utcnow(),
     }
+    logger.info(f"[Firestore][{time.time() - start_time:.3f}s] Prepared Firestore data for logging.")
     loop = asyncio.get_event_loop()
+    before_write = time.time()
     await loop.run_in_executor(None, lambda: doc_ref.set(data))
+    after_write = time.time()
+    logger.info(f"[Firestore][{after_write - start_time:.3f}s] Firestore write complete. Write duration: {after_write - before_write:.3f}s")
