@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.models.chat_models import MeditateRequest as ChatRequest, AudioResponse as ChatResponse, Message as ChatMessage
+from app.models.chat_models import ChatRequest, AudioResponse as ChatResponse
 from app.auth.firebase_auth import verify_firebase_token
-from app.services.openai_service import get_chat_completion, text_to_speech_openai, tts_parallel_stitch
+from app.services.openai_service import get_chat_completion, tts_parallel_stitch
 from app.services.rate_limiter import is_rate_limited
-from typing import List
 import time
 import logging
 import base64
@@ -54,8 +53,11 @@ CHAT_TTS_INSTRUCTIONS = (
 STATIC_INTRO_MP3_PATH = os.path.join("static", "ember-intro.mp3")
 STATIC_RATE_LIMITED_MP3_PATH = os.path.join("static", "rate-limited.mp3")
 
+
 @router.post("/chat", response_model=ChatResponse, tags=["Chat"])
-async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebase_token)):
+async def process_chat(
+    request: ChatRequest, user: dict = Depends(verify_firebase_token)
+):
     """
     Receives a chat history, gets a response from OpenAI GPT-4o,
     converts the response to speech using OpenAI TTS,
@@ -63,10 +65,14 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
     Requires Firebase authentication.
     """
     start_time = time.time()
-    logger.info(f"[0.000s] Starting chat processing")
-    
-    logger.info(f"[{time.time() - start_time:.3f}s] Authenticated user: {user.get('uid')}")
-    logger.info(f"[{time.time() - start_time:.3f}s] Received messages: {request.messages}")
+    logger.info("[0.000s] Starting chat processing")
+
+    logger.info(
+        f"[{time.time() - start_time:.3f}s] Authenticated user: {user.get('uid')}"
+    )
+    logger.info(
+        f"[{time.time() - start_time:.3f}s] Received messages: {request.messages}"
+    )
 
     # Rate limiting check
     if await is_rate_limited(user["uid"]):
@@ -76,7 +82,7 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
             return ChatResponse(
                 text_response="It was fun chatting but Ember is feeling tired now. Come back tomorrow!",
                 audio_base64=audio_base64,
-                caption=""
+                caption="",
             )
     # # If the first message is from the 'initializer' role, return the static mp3
     if request.messages and len(request.messages) == 1:
@@ -87,7 +93,7 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
             return ChatResponse(
                 text_response="Hello! I'm Ember, your friendly red panda guide. How are you feeling today?",
                 audio_base64=audio_base64,
-                caption=""
+                caption="",
             )
         except Exception as e:
             logger.error(f"Error reading static mp3: {e}")
@@ -102,52 +108,73 @@ async def process_chat(request: ChatRequest, user: dict = Depends(verify_firebas
 
     current_system_prompt = CHAT_LLM_INSTRUCTIONS
     if len(request.messages) >= 3:
-        logger.info(f"[{time.time() - start_time:.3f}s] Chat length > 5 messages. Appending transition to meditation prompt.")
+        logger.info(
+            f"[{time.time() - start_time:.3f}s] Chat length > 5 messages. Appending transition to meditation prompt."
+        )
         current_system_prompt = TRANSITION_TO_MEDITATION_PROMPT
 
     # Get text response from OpenAI GPT-4o
     chat_start_time = time.time()
-    logger.info(f"[{time.time() - start_time:.3f}s] Using dynamically constructed CHAT_LLM_INSTRUCTIONS for /chat endpoint.")
+    logger.info(
+        f"[{time.time() - start_time:.3f}s] Using dynamically constructed CHAT_LLM_INSTRUCTIONS for /chat endpoint."
+    )
     logger.info(f"SYSTEM_PROMPT (first 300 chars): {current_system_prompt[:300]}...")
     text_response = await get_chat_completion(
         messages=openai_messages,
         system_prompt=current_system_prompt,
         max_output_tokens=60,
-        model="gpt-4.1-nano"
+        model="gpt-4.1-nano",
     )
     chat_duration = time.time() - chat_start_time
-    logger.info(f"[{time.time() - start_time:.3f}s] Chat completion call took: {chat_duration:.3f}s")
-    logger.info(f"[{time.time() - start_time:.3f}s] Elapsed since start after OpenAI call")
+    logger.info(
+        f"[{time.time() - start_time:.3f}s] Chat completion call took: {chat_duration:.3f}s"
+    )
+    logger.info(
+        f"[{time.time() - start_time:.3f}s] Elapsed since start after OpenAI call"
+    )
 
     if text_response.startswith("Error:"):
         logger.error(f"[{time.time() - start_time:.3f}s] OpenAI error: {text_response}")
-        raise HTTPException(status_code=503, detail=text_response) # Service Unavailable
+        raise HTTPException(
+            status_code=503, detail=text_response
+        )  # Service Unavailable
 
     # Generate audio from the text response
     tts_start_time = time.time()
-    logger.info(f"[{time.time() - start_time:.3f}s] Using CHAT_TTS_INSTRUCTIONS for /chat endpoint.")
-    logger.debug(f"CHAT_TTS_INSTRUCTIONS (first 300 chars): {CHAT_TTS_INSTRUCTIONS[:300]}...")
+    logger.info(
+        f"[{time.time() - start_time:.3f}s] Using CHAT_TTS_INSTRUCTIONS for /chat endpoint."
+    )
+    logger.debug(
+        f"CHAT_TTS_INSTRUCTIONS (first 300 chars): {CHAT_TTS_INSTRUCTIONS[:300]}..."
+    )
     actual_audio_base64 = await tts_parallel_stitch(
         text=text_response,
         tts_instructions=CHAT_TTS_INSTRUCTIONS,
     )
     tts_duration = time.time() - tts_start_time
-    logger.info(f"[{time.time() - start_time:.3f}s] TTS generation call (tts_parallel_stitch) took: {tts_duration:.3f}s")
+    logger.info(
+        f"[{time.time() - start_time:.3f}s] TTS generation call (tts_parallel_stitch) took: {tts_duration:.3f}s"
+    )
     logger.info(f"[{time.time() - start_time:.3f}s] Elapsed since start after TTS")
 
-    if actual_audio_base64 is None or (isinstance(actual_audio_base64, str) and actual_audio_base64.startswith("Error:")):
-        logger.error(f"[{time.time() - start_time:.3f}s] TTS error: {actual_audio_base64}")
+    if actual_audio_base64 is None or (
+        isinstance(actual_audio_base64, str)
+        and actual_audio_base64.startswith("Error:")
+    ):
+        logger.error(
+            f"[{time.time() - start_time:.3f}s] TTS error: {actual_audio_base64}"
+        )
         return ChatResponse(
             text_response=text_response,
-            audio_base64="", # Indicate audio failure
-            caption=f"Audio generation failed. Displaying text only: {text_response[:50]}..."
+            audio_base64="",  # Indicate audio failure
+            caption=f"Audio generation failed. Displaying text only: {text_response[:50]}...",
         )
 
     total_time = time.time() - start_time
     logger.info(f"[{total_time:.3f}s] Total processing time")
-    
+
     return ChatResponse(
         text_response=text_response,
         audio_base64=actual_audio_base64,
-        caption="Caption for: " + text_response[:50] + "..." 
-    ) 
+        caption="Caption for: " + text_response[:50] + "...",
+    )

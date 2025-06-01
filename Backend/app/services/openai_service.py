@@ -1,8 +1,7 @@
-import os
-from openai import AsyncOpenAI # Use AsyncOpenAI for FastAPI
+from openai import AsyncOpenAI  # Use AsyncOpenAI for FastAPI
 from app.config import settings
 from typing import List, Dict, Optional
-import base64 # Required for encoding audio to base64
+import base64  # Required for encoding audio to base64
 import time
 import logging
 import asyncio
@@ -14,21 +13,22 @@ logger = logging.getLogger("meditation_app")
 OPENAI_API_KEY = settings.OPENAI_API_KEY
 
 if not OPENAI_API_KEY:
-    logger.warning("OPENAI_API_KEY environment variable not set. OpenAI services will not work.")
+    logger.warning(
+        "OPENAI_API_KEY environment variable not set. OpenAI services will not work."
+    )
     # Depending on the application's needs, you might raise an error here
     # or allow the app to run with OpenAI features disabled.
     client = None
 else:
-    client = AsyncOpenAI(
-        api_key=OPENAI_API_KEY
-    )
+    client = AsyncOpenAI(api_key=OPENAI_API_KEY)
     logger.info("OpenAI client initialized.")
+
 
 async def get_chat_completion(
     messages: List[Dict[str, str]],
     system_prompt: str,
     model: str,
-    max_output_tokens: Optional[int] = None
+    max_output_tokens: Optional[int] = None,
 ) -> str:
     """
     Gets a chat completion from the specified OpenAI model using the provided system prompt.
@@ -43,39 +43,52 @@ async def get_chat_completion(
         The content of the assistant's response message, or an error message if the API call fails.
     """
     start_time = time.time()
-    logger.info(f"[{time.time() - start_time:.3f}s] Starting OpenAI chat completion with specific system prompt.")
+    logger.info(
+        f"[{time.time() - start_time:.3f}s] Starting OpenAI chat completion with specific system prompt."
+    )
 
     if not client:
-        return "Error: OpenAI client not initialized. Please check API key configuration."
+        return (
+            "Error: OpenAI client not initialized. Please check API key configuration."
+        )
 
     final_system_message = {"role": "system", "content": system_prompt}
-    
+
     # Filter out any stray system messages from the client
 
     updated_messages = [final_system_message] + messages
 
     try:
-        logger.info(f"[{time.time() - start_time:.3f}s] Sending final structured messages to OpenAI:")
-        logger.debug(f"System Prompt: {final_system_message['content'][:500]}...") 
-        for i, msg in enumerate(updated_messages[1:4]): 
-            logger.debug(f"Message {i+1}: Role: {msg['role']}, Content: {str(msg['content'])[:100]}...")
-            
+        logger.info(
+            f"[{time.time() - start_time:.3f}s] Sending final structured messages to OpenAI:"
+        )
+        logger.debug(f"System Prompt: {final_system_message['content'][:500]}...")
+        for i, msg in enumerate(updated_messages[1:4]):
+            logger.debug(
+                f"Message {i + 1}: Role: {msg['role']}, Content: {str(msg['content'])[:100]}..."
+            )
+
         completion_params = {
             "model": model,
             "messages": updated_messages,
-            "temperature": 0.7
+            "temperature": 0.7,
         }
         if max_output_tokens is not None:
             completion_params["max_tokens"] = max_output_tokens
-            logger.info(f"[{time.time() - start_time:.3f}s] Requesting max_output_tokens: {max_output_tokens}")
+            logger.info(
+                f"[{time.time() - start_time:.3f}s] Requesting max_output_tokens: {max_output_tokens}"
+            )
 
         response = await client.chat.completions.create(**completion_params)
         assistant_message = response.choices[0].message.content
         logger.info(f"[{time.time() - start_time:.3f}s] Received response from OpenAI")
         return assistant_message
     except Exception as e:
-        logger.error(f"[{time.time() - start_time:.3f}s] Error calling OpenAI chat completion API: {e}")
+        logger.error(
+            f"[{time.time() - start_time:.3f}s] Error calling OpenAI chat completion API: {e}"
+        )
         return f"Error: Could not get response from AI service. Details: {str(e)}"
+
 
 def split_text_for_fast_tts(text: str) -> List[str]:
     """
@@ -89,7 +102,9 @@ def split_text_for_fast_tts(text: str) -> List[str]:
     # This regex is a more robust way to capture natural sentence boundaries.
     # It looks for a punctuation mark (., ?, !) followed by a space or end of string,
     # OR a semicolon followed by a space.
-    sentence_delimiters = r'(?<=[.!?])\s+|\s*(?<=;)\s*' # Keep the delimiter for natural pauses
+    sentence_delimiters = (
+        r"(?<=[.!?])\s+|\s*(?<=;)\s*"  # Keep the delimiter for natural pauses
+    )
     sentences = re.split(sentence_delimiters, text)
 
     # Clean up and filter out empty strings
@@ -100,62 +115,83 @@ def split_text_for_fast_tts(text: str) -> List[str]:
     # If the last character of a sentence is a delimiter, move it to the end of the sentence
     final_chunks = []
     for s in cleaned_sentences:
-        if s and s[-1] not in ['.', '?', '!', ';']:
+        if s and s[-1] not in [".", "?", "!", ";"]:
             # Find the last punctuation that was used to split if it's missing
-            match = re.search(r'[.!?]$', s)
-            if not match: # Check for cases where the split might have removed it, e.g. if the original text was "Hello."
-                if s.endswith(','): # For clauses, the comma will be included
+            match = re.search(r"[.!?]$", s)
+            if not match:  # Check for cases where the split might have removed it, e.g. if the original text was "Hello."
+                if s.endswith(","):  # For clauses, the comma will be included
                     final_chunks.append(s)
                 else:
-                    final_chunks.append(s + '.') # Add a period for natural ending if none
+                    final_chunks.append(
+                        s + "."
+                    )  # Add a period for natural ending if none
             else:
                 final_chunks.append(s)
         else:
             final_chunks.append(s)
 
-
     return final_chunks
+
 
 async def text_to_speech_openai(
     text: str,
     tts_instructions: str,
     model: str = "gpt-4o-mini-tts",
     voice: str = "sage",
-    return_bytes: bool = False
+    return_bytes: bool = False,
 ) -> Optional[str]:
     """
     Converts text to speech using OpenAI TTS and returns base64 encoded audio or raw bytes.
     Uses the provided tts_instructions.
     """
     start_time = time.time()
-    logger.info(f"[{time.time() - start_time:.3f}s] Starting TTS request with specific instructions.")
+    logger.info(
+        f"[{time.time() - start_time:.3f}s] Starting TTS request with specific instructions."
+    )
 
     if not client:
-        return None if return_bytes else "Error: OpenAI client not initialized. TTS failed."
-    
+        return (
+            None
+            if return_bytes
+            else "Error: OpenAI client not initialized. TTS failed."
+        )
+
     if not text.strip():
         return None if return_bytes else "Error: Cannot convert empty text to speech."
 
     try:
-        logger.info(f"[{time.time() - start_time:.3f}s] Sending text to OpenAI TTS with instructions: {tts_instructions[:100]}...")
+        logger.info(
+            f"[{time.time() - start_time:.3f}s] Sending text to OpenAI TTS with instructions: {tts_instructions[:100]}..."
+        )
         response = await client.audio.speech.create(
             model=model,
             voice=voice,
             input=text,
             response_format="mp3",
-            instructions=tts_instructions
+            instructions=tts_instructions,
         )
-        
+
         logger.info(f"[{time.time() - start_time:.3f}s] Received audio from OpenAI TTS")
-        audio_bytes = await response.aread() # Explicitly use aread() for async response
+        audio_bytes = (
+            await response.aread()
+        )  # Explicitly use aread() for async response
         if return_bytes:
             return audio_bytes
-        base64_audio = base64.b64encode(audio_bytes).decode('utf-8')
-        logger.info(f"[{time.time() - start_time:.3f}s] Audio encoded to base64 (length: {len(base64_audio)})")
+        base64_audio = base64.b64encode(audio_bytes).decode("utf-8")
+        logger.info(
+            f"[{time.time() - start_time:.3f}s] Audio encoded to base64 (length: {len(base64_audio)})"
+        )
         return base64_audio
     except Exception as e:
-        logger.error(f"[{time.time() - start_time:.3f}s] Error calling OpenAI TTS API: {e}")
-        return None if return_bytes else f"Error: Could not generate audio. Details: {str(e)}"
+        logger.error(
+            f"[{time.time() - start_time:.3f}s] Error calling OpenAI TTS API: {e}"
+        )
+        return (
+            None
+            if return_bytes
+            else f"Error: Could not generate audio. Details: {str(e)}"
+        )
+
 
 async def tts_parallel_stitch(text: str, tts_instructions: str) -> str:
     """
@@ -165,11 +201,16 @@ async def tts_parallel_stitch(text: str, tts_instructions: str) -> str:
     chunks = split_text_for_fast_tts(text)
     logger.info(f"TTS will run in {len(chunks)} chunks using specific instructions.")
     # Pass mandatory tts_instructions to each text_to_speech_openai call
-    tts_tasks = [text_to_speech_openai(chunk, return_bytes=True, tts_instructions=tts_instructions) for chunk in chunks]
+    tts_tasks = [
+        text_to_speech_openai(
+            chunk, return_bytes=True, tts_instructions=tts_instructions
+        )
+        for chunk in chunks
+    ]
     audio_bytes_list = await asyncio.gather(*tts_tasks)
     # Filter out any failed chunks
     audio_bytes_list = [b for b in audio_bytes_list if b]
-    stitched = b''.join(audio_bytes_list)
-    base64_audio = base64.b64encode(stitched).decode('utf-8')
+    stitched = b"".join(audio_bytes_list)
+    base64_audio = base64.b64encode(stitched).decode("utf-8")
     logger.info(f"Stitched audio length: {len(base64_audio)} (base64)")
-    return base64_audio 
+    return base64_audio

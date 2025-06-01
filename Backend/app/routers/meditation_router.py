@@ -2,10 +2,14 @@ from fastapi import APIRouter, HTTPException, Body, Depends
 from typing import List, Dict
 import time
 
-from app.services.openai_service import get_chat_completion, text_to_speech_openai, tts_parallel_stitch
+from app.services.openai_service import (
+    get_chat_completion,
+    text_to_speech_openai,
+    tts_parallel_stitch,
+)
 from app.services.rate_limiter import is_rate_limited
 from app.auth.firebase_auth import verify_firebase_token
-from app.models.chat_models import MeditateRequest, AudioResponse, Message
+from app.models.chat_models import MeditateRequest, AudioResponse
 import logging
 import base64
 import os
@@ -14,7 +18,7 @@ logger = logging.getLogger("meditation_app")
 
 router = APIRouter()
 
-# --- Meditation Phase Instructions --- 
+# --- Meditation Phase Instructions ---
 
 # Global TTS instructions for all meditation phases
 GLOBAL_TTS = (
@@ -45,12 +49,13 @@ MEDITATION_INTRO = (
 MEDITATION_OUTRO = (
     "# Completion (100% complete)\n\n"
     "You are Ember, bringing this meditation to a close.\n\n"
-    "• Acknowledge the journey: \"As we bring this time together to a close...\"\n"
-    "• Express gratitude: \"Thank you for sharing this space with me.\"\n"
-    "• Transition back: \"When you feel ready, gently bring your awareness back to the room.\"\n"
+    '• Acknowledge the journey: "As we bring this time together to a close..."\n'
+    '• Express gratitude: "Thank you for sharing this space with me."\n'
+    '• Transition back: "When you feel ready, gently bring your awareness back to the room."\n'
 )
 
 STATIC_RATE_LIMITED_MP3_PATH = os.path.join("static", "rate-limited.mp3")
+
 
 def build_dynamic_prompt(progress, history_text=None):
     """Builds a dynamic meditation prompt based on the progress percentage and conversation history."""
@@ -68,13 +73,16 @@ def build_dynamic_prompt(progress, history_text=None):
             + GLOBAL_FORMAT_INSTRUCTIONS
         )
 
+
 def get_meditation_guidance_for_phase(percent_complete: int) -> tuple[str, int, str]:
     """Selects LLM instructions and max_output_tokens based on meditation progress (0-100)."""
-    logger.info(f"Determining meditation phase for percent_complete: {percent_complete}")
-    
+    logger.info(
+        f"Determining meditation phase for percent_complete: {percent_complete}"
+    )
+
     # Build dynamic prompt based on progress
     prompt = build_dynamic_prompt(percent_complete)
-    
+
     # Adjust token limits based on phase
     if percent_complete == 0:
         max_tokens = 125
@@ -82,17 +90,22 @@ def get_meditation_guidance_for_phase(percent_complete: int) -> tuple[str, int, 
         max_tokens = 80
     else:
         max_tokens = 150
-    
+
     # Use the global TTS instructions for all phases
     return prompt, max_tokens, GLOBAL_TTS
 
+
 @router.post("/meditate", response_model=AudioResponse)
-async def run_meditation_session(request: MeditateRequest = Body(...), user: dict = Depends(verify_firebase_token)):
+async def run_meditation_session(
+    request: MeditateRequest = Body(...), user: dict = Depends(verify_firebase_token)
+):
     """
     Provides a guided meditation session based on user messages and percent_complete (0-100).
     Uses dynamically generated prompts based on meditation progress.
     """
-    logger.info(f"Received /meditate request with {len(request.messages)} messages, percent_complete: {request.percent_complete}")
+    logger.info(
+        f"Received /meditate request with {len(request.messages)} messages, percent_complete: {request.percent_complete}"
+    )
 
     # Rate limiting check
     if await is_rate_limited(user["uid"]):
@@ -102,62 +115,91 @@ async def run_meditation_session(request: MeditateRequest = Body(...), user: dic
             return AudioResponse(
                 text_response="It was fun chatting but Ember is feeling tired now. Come back tomorrow!",
                 audio_base64=audio_base64,
-                caption=""
+                caption="",
             )
     message_dicts: List[Dict[str, str]] = [msg.model_dump() for msg in request.messages]
 
-    current_llm_instructions, current_max_tokens, current_tts_instructions = get_meditation_guidance_for_phase(request.percent_complete)
-    logger.info(f"Selected Phase based on {request.percent_complete}%: Max Tokens: {current_max_tokens}")
-    logger.info(f"LLM Instructions for phase {request.percent_complete}% (first 300 chars): {current_llm_instructions[:300]}...")
+    current_llm_instructions, current_max_tokens, current_tts_instructions = (
+        get_meditation_guidance_for_phase(request.percent_complete)
+    )
+    logger.info(
+        f"Selected Phase based on {request.percent_complete}%: Max Tokens: {current_max_tokens}"
+    )
+    logger.info(
+        f"LLM Instructions for phase {request.percent_complete}% (first 300 chars): {current_llm_instructions[:300]}..."
+    )
 
     try:
         llm_call_start_time = time.time()
         llm_response_text = await get_chat_completion(
-            messages=message_dicts, 
+            messages=message_dicts,
             system_prompt=current_llm_instructions,
             max_output_tokens=current_max_tokens,
-            model="gpt-4.1-mini"
+            model="gpt-4.1-mini",
         )
         llm_call_duration = time.time() - llm_call_start_time
-        logger.info(f"LLM call for /meditate phase {request.percent_complete} took: {llm_call_duration:.3f}s")
+        logger.info(
+            f"LLM call for /meditate phase {request.percent_complete} took: {llm_call_duration:.3f}s"
+        )
 
         if llm_response_text.startswith("Error:"):
-            logger.error(f"LLM error in /meditate phase {request.percent_complete}: {llm_response_text}")
+            logger.error(
+                f"LLM error in /meditate phase {request.percent_complete}: {llm_response_text}"
+            )
             raise HTTPException(status_code=500, detail=llm_response_text)
 
-        logger.info(f"/meditate phase {request.percent_complete} LLM response generated. Length: {len(llm_response_text)}")
+        logger.info(
+            f"/meditate phase {request.percent_complete} LLM response generated. Length: {len(llm_response_text)}"
+        )
 
-        logger.info(f"Using selected TTS_INSTRUCTIONS for /meditate endpoint (phase {request.percent_complete}).")
-        logger.info(f"Selected TTS_INSTRUCTIONS (first 300 chars): {current_tts_instructions[:300]}...")
+        logger.info(
+            f"Using selected TTS_INSTRUCTIONS for /meditate endpoint (phase {request.percent_complete})."
+        )
+        logger.info(
+            f"Selected TTS_INSTRUCTIONS (first 300 chars): {current_tts_instructions[:300]}..."
+        )
         tts_call_start_time = time.time()
-        
+
         # Only use tts_parallel_stitch (which includes split_text_for_fast_tts) for the first call
         if request.percent_complete == 0:
-            logger.info(f"Using tts_parallel_stitch for initial meditation call (percent_complete = 0)")
+            logger.info(
+                "Using tts_parallel_stitch for initial meditation call (percent_complete = 0)"
+            )
             base64_audio = await tts_parallel_stitch(
-                text=llm_response_text,
-                tts_instructions=current_tts_instructions
+                text=llm_response_text, tts_instructions=current_tts_instructions
             )
         else:
-            logger.info(f"Using simple text_to_speech_openai for non-initial meditation call (percent_complete = {request.percent_complete})")
-            base64_audio = await text_to_speech_openai(
-                text=llm_response_text,
-                tts_instructions=current_tts_instructions
+            logger.info(
+                f"Using simple text_to_speech_openai for non-initial meditation call (percent_complete = {request.percent_complete})"
             )
-        
+            base64_audio = await text_to_speech_openai(
+                text=llm_response_text, tts_instructions=current_tts_instructions
+            )
+
         tts_call_duration = time.time() - tts_call_start_time
-        logger.info(f"TTS call for /meditate phase {request.percent_complete} took: {tts_call_duration:.3f}s")
+        logger.info(
+            f"TTS call for /meditate phase {request.percent_complete} took: {tts_call_duration:.3f}s"
+        )
 
         if base64_audio and base64_audio.startswith("Error:"):
-            logger.error(f"TTS error in /meditate phase {request.percent_complete}: {base64_audio}")
+            logger.error(
+                f"TTS error in /meditate phase {request.percent_complete}: {base64_audio}"
+            )
             raise HTTPException(status_code=500, detail=base64_audio)
-        
-        logger.info(f"/meditate phase {request.percent_complete} TTS audio generated. Base64 length: {len(base64_audio) if base64_audio else 0}")
+
+        logger.info(
+            f"/meditate phase {request.percent_complete} TTS audio generated. Base64 length: {len(base64_audio) if base64_audio else 0}"
+        )
 
         return AudioResponse(audio_base64=base64_audio, text_response=llm_response_text)
 
     except HTTPException as http_exc:
         raise http_exc
     except Exception as e:
-        logger.error(f"Unexpected error in /meditate (phase {request.percent_complete}) endpoint: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}") 
+        logger.error(
+            f"Unexpected error in /meditate (phase {request.percent_complete}) endpoint: {e}",
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {str(e)}"
+        )

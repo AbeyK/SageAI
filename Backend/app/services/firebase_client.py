@@ -6,7 +6,9 @@ from app.config import settings
 cred_dict = settings.get_firebase_credentials()
 
 if not cred_dict:
-    print("WARNING: FIREBASE_CREDENTIALS environment variable not set. Firestore will not work.")
+    print(
+        "WARNING: FIREBASE_CREDENTIALS environment variable not set. Firestore will not work."
+    )
     cred = None
 else:
     try:
@@ -22,6 +24,8 @@ if cred:
         firebase_admin.initialize_app(cred)
     print("Firebase Admin SDK initialized for Firestore.")
 else:
-    print("Firebase Admin SDK NOT initialized for Firestore due to missing or invalid credentials.")
+    print(
+        "Firebase Admin SDK NOT initialized for Firestore due to missing or invalid credentials."
+    )
 
-db = firestore.client() if cred else None 
+db = firestore.client() if cred else None

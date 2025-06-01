@@ -4,6 +4,8 @@ python-dotenv==1.0.1
 firebase-admin==6.5.0
 openai>=1.77.0
 pydantic-settings==2.2.1
+mypy
+ruff
 
 # Note: These versions are examples. 
 # For a production build, generate this file using `pip freeze > requirements.txt`

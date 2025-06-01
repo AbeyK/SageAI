@@ -8,7 +8,9 @@ from app.config import settings
 cred_dict = settings.get_firebase_credentials()
 
 if not cred_dict:
-    print("WARNING: FIREBASE_CREDENTIALS environment variable not set. Firebase Auth will not work.")
+    print(
+        "WARNING: FIREBASE_CREDENTIALS environment variable not set. Firebase Auth will not work."
+    )
     cred = None
 else:
     try:
@@ -28,7 +30,10 @@ else:
 
 security = HTTPBearer()
 
-async def verify_firebase_token(creds: HTTPAuthorizationCredentials = Security(security)) -> dict:
+
+async def verify_firebase_token(
+    creds: HTTPAuthorizationCredentials = Security(security),
+) -> dict:
     """
     FastAPI dependency to verify Firebase ID token from the Authorization header.
     Returns the decoded token (user payload) if valid.
@@ -39,13 +44,13 @@ async def verify_firebase_token(creds: HTTPAuthorizationCredentials = Security(s
             detail="Not authenticated: No token provided.",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     id_token = creds.credentials
-    
-    if not firebase_admin._apps: # Check if Firebase app is initialized
+
+    if not firebase_admin._apps:  # Check if Firebase app is initialized
         raise HTTPException(
             status_code=500,
-            detail="Firebase Admin SDK not initialized. Cannot verify token."
+            detail="Firebase Admin SDK not initialized. Cannot verify token.",
         )
 
     try:
@@ -55,17 +60,18 @@ async def verify_firebase_token(creds: HTTPAuthorizationCredentials = Security(s
         raise HTTPException(
             status_code=401,
             detail="Token expired.",
-            headers={"WWW-Authenticate": "Bearer error=\'invalid_token\', error_description=\'Token expired\'"}
+            headers={
+                "WWW-Authenticate": "Bearer error='invalid_token', error_description='Token expired'"
+            },
         )
     except firebase_admin.auth.InvalidIdTokenError:
         raise HTTPException(
             status_code=401,
             detail="Invalid token.",
-            headers={"WWW-Authenticate": "Bearer error=\'invalid_token\', error_description=\'Invalid token\'"}
+            headers={
+                "WWW-Authenticate": "Bearer error='invalid_token', error_description='Invalid token'"
+            },
         )
     except Exception as e:
         print(f"An unexpected error occurred during token verification: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail="Could not process token."
-        ) 
+        raise HTTPException(status_code=500, detail="Could not process token.")

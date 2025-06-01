@@ -2,13 +2,13 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-import logging # Import logging
-from app.logging_config import setup_logging # Import setup_logging
-from app.routers import chat, meditation_router # Added import
+import logging  # Import logging
+from app.logging_config import setup_logging  # Import setup_logging
+from app.routers import chat, meditation_router  # Added import
 
 # Configure logging
 setup_logging()
-logger = logging.getLogger("meditation_app") # Get our configured logger
+logger = logging.getLogger("meditation_app")  # Get our configured logger
 
 app = FastAPI(
     title="Meditation Companion API",
@@ -25,10 +25,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Check the health of the API."""
     return {"status": "ok"}
+
 
 # Global Exception Handler
 @app.exception_handler(Exception)
@@ -41,6 +43,7 @@ async def generic_exception_handler(request: Request, exc: Exception):
         content={"detail": "An unexpected internal server error occurred."},
     )
 
+
 # Handler for Pydantic validation errors (optional, but good practice)
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -52,10 +55,12 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"detail": "Validation Error", "errors": exc.errors()},
     )
 
+
 # Placeholder for future routers
 app.include_router(chat.router, prefix="/api/v1")
 app.include_router(meditation_router.router, prefix="/api/v1", tags=["meditation"])
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
