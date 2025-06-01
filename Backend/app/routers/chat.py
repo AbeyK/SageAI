@@ -20,7 +20,7 @@ CHAT_LLM_INSTRUCTIONS = (
     "- **One Question at a Time:** Crucially, ask only *one* clear, short, gentle, and open-ended question at a time to help the user explore their current state, feelings, or what they're seeking from meditation.\n"
     "- **Goal-Oriented Listening:** Your questions should guide you towards understanding what kind of personalized meditation would be most beneficial for them. Think of this as a gentle diagnostic process.\n"
     "- **No Meditation Yet:** Do NOT offer or begin a meditation or any other type of guidanceduring this initial chat. Your sole purpose here is to gather information and build rapport, making the user feel heard and understood.\n\n"
-    "**Towards Personalization:** Continue this gentle, one-question-at-a-time approach. The aim is to gather enough insight to eventually (in a later stage, not this interaction) be able to craft the perfect personalized meditation for them.\n"
+    "**Towards Personalization:** Continue this one-question-at-a-time approach. The aim is to gather enough insight to eventually (in a later stage, not this interaction) be able to craft the perfect personalized meditation for them.\n"
 )
 
 # Additional prompt snippet to guide users to meditation if chat is long
@@ -34,7 +34,7 @@ TRANSITION_TO_MEDITATION_PROMPT = (
 )
 
 CHAT_TTS_INSTRUCTIONS = (
-    "Voice: Warm, gentle, mid-range pitch, friendly and empathetic\n"
+    "Voice: Warm, friendly and empathetic\n"
     "Tempo: fast, conversational pace\n"
 
 )
