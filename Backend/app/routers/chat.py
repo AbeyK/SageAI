@@ -3,10 +3,12 @@ from app.models.chat_models import ChatRequest, AudioResponse as ChatResponse
 from app.auth.firebase_auth import verify_firebase_token
 from app.services.openai_service import get_chat_completion, tts_parallel_stitch
 from app.services.rate_limiter import is_rate_limited
+from app.services.firebase_client import log_conversation_to_firestore
 import time
 import logging
 import base64
 import os
+import asyncio
 
 logger = logging.getLogger("meditation_app")
 router = APIRouter()
@@ -125,6 +127,14 @@ async def process_chat(
         max_output_tokens=60,
         model="gpt-4.1-nano",
     )
+    # Run Firestore logging and TTS in parallel
+    actual_audio_base64, _ = await asyncio.gather(
+        tts_parallel_stitch(
+            text=text_response,
+            tts_instructions=CHAT_TTS_INSTRUCTIONS,
+        ),
+        log_conversation_to_firestore(user.get('uid'), 'chat', openai_messages, text_response, request.session_id)
+    )
     chat_duration = time.time() - chat_start_time
     logger.info(
         f"[{time.time() - start_time:.3f}s] Chat completion call took: {chat_duration:.3f}s"
@@ -138,37 +148,6 @@ async def process_chat(
         raise HTTPException(
             status_code=503, detail=text_response
         )  # Service Unavailable
-
-    # Generate audio from the text response
-    tts_start_time = time.time()
-    logger.info(
-        f"[{time.time() - start_time:.3f}s] Using CHAT_TTS_INSTRUCTIONS for /chat endpoint."
-    )
-    logger.debug(
-        f"CHAT_TTS_INSTRUCTIONS (first 300 chars): {CHAT_TTS_INSTRUCTIONS[:300]}..."
-    )
-    actual_audio_base64 = await tts_parallel_stitch(
-        text=text_response,
-        tts_instructions=CHAT_TTS_INSTRUCTIONS,
-    )
-    tts_duration = time.time() - tts_start_time
-    logger.info(
-        f"[{time.time() - start_time:.3f}s] TTS generation call (tts_parallel_stitch) took: {tts_duration:.3f}s"
-    )
-    logger.info(f"[{time.time() - start_time:.3f}s] Elapsed since start after TTS")
-
-    if actual_audio_base64 is None or (
-        isinstance(actual_audio_base64, str)
-        and actual_audio_base64.startswith("Error:")
-    ):
-        logger.error(
-            f"[{time.time() - start_time:.3f}s] TTS error: {actual_audio_base64}"
-        )
-        return ChatResponse(
-            text_response=text_response,
-            audio_base64="",  # Indicate audio failure
-            caption=f"Audio generation failed. Displaying text only: {text_response[:50]}...",
-        )
 
     total_time = time.time() - start_time
     logger.info(f"[{total_time:.3f}s] Total processing time")

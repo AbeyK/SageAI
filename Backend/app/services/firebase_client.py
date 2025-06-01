@@ -1,6 +1,8 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 from app.config import settings
+import datetime
+import asyncio
 
 # Get credentials from settings (as dict)
 cred_dict = settings.get_firebase_credentials()
@@ -29,3 +31,19 @@ else:
     )
 
 db = firestore.client() if cred else None
+
+async def log_conversation_to_firestore(user_id: str, endpoint: str, messages: list, llm_response: str, session_id: str):
+    if db is None:
+        print("Firestore not initialized; skipping log.")
+        return
+    doc_ref = db.collection("Meditations").document(user_id).collection("PersonaMeditations").document(session_id)
+    data = {
+        "user_id": user_id,
+        "endpoint": endpoint,
+        "messages": messages,
+        "llm_response": llm_response,
+        "session_id": session_id,
+        "timestamp": datetime.datetime.utcnow(),
+    }
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, lambda: doc_ref.set(data))

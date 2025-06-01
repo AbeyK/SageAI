@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Body, Depends
 from typing import List, Dict
 import time
+import asyncio
 
 from app.services.openai_service import (
     get_chat_completion,
@@ -13,6 +14,7 @@ from app.models.chat_models import MeditateRequest, AudioResponse
 import logging
 import base64
 import os
+from app.services.firebase_client import log_conversation_to_firestore
 
 logger = logging.getLogger("meditation_app")
 
@@ -136,6 +138,21 @@ async def run_meditation_session(
             max_output_tokens=current_max_tokens,
             model="gpt-4.1-mini",
         )
+        # Run Firestore logging and TTS in parallel
+        if request.percent_complete == 0:
+            base64_audio, _ = await asyncio.gather(
+                tts_parallel_stitch(
+                    text=llm_response_text, tts_instructions=current_tts_instructions
+                ),
+                log_conversation_to_firestore(user.get('uid'), 'meditate', message_dicts, llm_response_text, request.session_id)
+            )
+        else:
+            base64_audio, _ = await asyncio.gather(
+                text_to_speech_openai(
+                    text=llm_response_text, tts_instructions=current_tts_instructions
+                ),
+                log_conversation_to_firestore(user.get('uid'), 'meditate', message_dicts, llm_response_text, request.session_id)
+            )
         llm_call_duration = time.time() - llm_call_start_time
         logger.info(
             f"LLM call for /meditate phase {request.percent_complete} took: {llm_call_duration:.3f}s"
@@ -156,28 +173,6 @@ async def run_meditation_session(
         )
         logger.info(
             f"Selected TTS_INSTRUCTIONS (first 300 chars): {current_tts_instructions[:300]}..."
-        )
-        tts_call_start_time = time.time()
-
-        # Only use tts_parallel_stitch (which includes split_text_for_fast_tts) for the first call
-        if request.percent_complete == 0:
-            logger.info(
-                "Using tts_parallel_stitch for initial meditation call (percent_complete = 0)"
-            )
-            base64_audio = await tts_parallel_stitch(
-                text=llm_response_text, tts_instructions=current_tts_instructions
-            )
-        else:
-            logger.info(
-                f"Using simple text_to_speech_openai for non-initial meditation call (percent_complete = {request.percent_complete})"
-            )
-            base64_audio = await text_to_speech_openai(
-                text=llm_response_text, tts_instructions=current_tts_instructions
-            )
-
-        tts_call_duration = time.time() - tts_call_start_time
-        logger.info(
-            f"TTS call for /meditate phase {request.percent_complete} took: {tts_call_duration:.3f}s"
         )
 
         if base64_audio and base64_audio.startswith("Error:"):
