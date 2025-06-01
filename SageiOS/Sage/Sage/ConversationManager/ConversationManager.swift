@@ -17,6 +17,7 @@ public class ConversationManager: SpeechManagerDelegate {
     private var timer: Timer?
     public var remainingSeconds = 300 // 5 minutes in seconds
     public var onTimerUpdate: ((Int, Int) -> Void)? // Callback for timer updates (minutes, seconds)
+    public var conversationInstanceId: String? // Unique ID for this conversation instance
 
     // Make delegate weak to prevent retain cycles
     private weak var delegate: ConversationManagerDelegate?
@@ -85,6 +86,9 @@ public class ConversationManager: SpeechManagerDelegate {
             log("testing -> ConversationManager: Conversation or meditation already in progress.")
             return
         }
+        
+        self.conversationInstanceId = generateNewConversationInstanceId()
+        log("testing -> ConversationManager: Generated conversationInstanceId: \(self.conversationInstanceId ?? "N/A")")
         
         log("testing -> ConversationManager: Initiating conversation flow...")
         currentPhase = .initialDiscussion
@@ -527,6 +531,16 @@ public class ConversationManager: SpeechManagerDelegate {
         timer = nil
         remainingSeconds = 300
         meditationProgress = 0
+    }
+
+    // MARK: - Helper Functions
+    
+    private func generateNewConversationInstanceId() -> String {
+        let currentUserID = Auth.auth().currentUser?.uid ?? "unknownUser"
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd_HHmmss_SSS"
+        let currentDateString = dateFormatter.string(from: Date())
+        return "\(currentUserID)_\(currentDateString)"
     }
 }
 
