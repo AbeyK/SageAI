@@ -87,10 +87,8 @@ public class ConversationManager: SpeechManagerDelegate {
             return
         }
         
-        self.conversationInstanceId = generateNewConversationInstanceId()
-        log("testing -> ConversationManager: Generated conversationInstanceId: \(self.conversationInstanceId ?? "N/A")")
-        
         log("testing -> ConversationManager: Initiating conversation flow...")
+        self.conversationInstanceId = generateNewConversationInstanceId()        
         currentPhase = .initialDiscussion
         updateConversationStatus(to: .isInitializing)
         lastUserInteractionTime = Date()  // Initialize interaction time hassank - not sure if we even want to keep track of lastUserInteractionTime anymore
@@ -283,7 +281,8 @@ public class ConversationManager: SpeechManagerDelegate {
                 
                 let requestBody: [String: Any] = [
                     "messages": messageDictionaries,
-                    "percent_complete": self.meditationProgress
+                    "percent_complete": self.meditationProgress,
+                    "session_id": self.conversationInstanceId ?? ""
                 ]
                 let jsonData = try JSONSerialization.data(withJSONObject: requestBody)
                 request.httpBody = jsonData
