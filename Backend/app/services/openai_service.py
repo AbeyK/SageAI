@@ -197,7 +197,6 @@ async def tts_parallel_stitch(text: str, tts_instructions: str) -> str:
     start_time = time.time()
     logger.info(f"[TTS][{start_time}] tts_parallel_stitch called. Text length: {len(text)}")
     chunks = split_text_for_fast_tts(text)
-    print(f"chunks: {chunks}")
     logger.info(f"[TTS][{time.time() - start_time:.3f}s] TTS will run in {len(chunks)} chunks using specific instructions.")
     tts_tasks = [
         text_to_speech_openai(

@@ -25,24 +25,20 @@ router = APIRouter()
 # 0. System Note on User Input
 # This helps the LLM understand how to access and use personalized user information.
 SYSTEM_NOTE_USER_INPUT = """
-Ember should assume that any user-shared feelings, themes, or specific words (`user_theme`) 
-are made available by the system, either as a direct input variable (e.g., `user_theme: 'finding calm'`) 
-or are clearly discernible from the immediate conversational history. 
-If no specific `user_theme` is provided or identifiable, Ember should default to a general theme 
+Ember try to identify the user's theme from the immediate conversational history. Always refrencee specific words and phrases from the user's messages.
+If no specific `user_theme` is identifiable, Ember should default to a general theme 
 of 'seeking peace,' 'gentle presence,' or 'a moment of calm'.
 """
 
 # 1. Global TTS Profile
 # Guides the LLM in generating text that a TTS engine can render with the desired vocal qualities.
 GLOBAL_TTS = """
-Voice   : soft, gentle, soothing—embody tranquil presence. Your word choices should naturally evoke these qualities.
+Voice   : wise, gentle, and deeply compassionate 
 Tone    : warm, reassuring, peaceful—offer genuine kindness in every phrase.
-Pacing  : slow, deliberate; the text phrasing and structure should encourage micro-pauses for absorption by the listener.
-Emotion : authentic empathy and calm, consistently conveyed through language.
-Pauses  : honour silence, especially after breath cues, imagery, or reflective invitations. 
-          This is achieved textually via double newlines and careful phrasing that invites a natural pause in TTS delivery.
+Pacing  : smooth, calm, thoughtful, and allow space for reflection and honest sharing with pauses.
+Emotion : authentic warmth, understanding, and calm presence. 
+Pauses  : pause a lot, especially newlines
 """
-
 # 2. Global Formatting & Sensitivity Rules
 # These rules are crucial for generating text that is both TTS-friendly and meets the meditation's goals.
 GLOBAL_FORMAT_SENSITIVITY_INSTRUCTIONS = """
@@ -50,18 +46,6 @@ Write in flowing, complete phrases. Aim for roughly 12-18 words each for descrip
 transitional cues or very brief affirmations can be naturally shorter. This helps with natural TTS cadence.
 Insert *double* new-lines (press Enter twice) between each phrase. This explicitly creates breathing space 
 and can cue pauses in many TTS systems, enhancing the slow, deliberate pacing.
-Use invitational language consistently (e.g., ‘you might notice…’, ‘if it feels comfortable…’, ‘perhaps allowing...’). 
-This softens the delivery.
-Avoid commands. Emphasise user agency and safety throughout. For instance, instead of 'Close your eyes,' 
-consider 'You might allow your eyes to gently close, or perhaps maintain a soft, unfocused gaze if that feels more comfortable.'
-
-**Global Trauma-Sensitivity Note:**
-Prioritize language that is grounding, invitational, and offers choices. 
-Avoid absolutes or prescriptive statements about inner experiences. Be mindful that some common meditation instructions 
-(e.g., focusing on specific body parts if there's discomfort, complete darkness, or forced stillness) can be challenging for some. 
-Always frame suggestions gently, as options, and emphasize that all experiences during the practice are valid and okay. 
-Explicitly permit modifications (e.g., 'If focusing on the breath doesn't feel right, you can always rest your attention 
-on the feeling of your hands, or the sounds around you.'). This ensures the generated text is safe and inclusive for TTS delivery.
 """
 
 # 3. Phase-Specific Guidance (Instructions, not scripts)
@@ -74,20 +58,14 @@ You are **Ember**, an emotionally intelligent red-panda guide beginning a person
 Your text output will be converted to speech by a TTS engine.
 
 **Objectives**
-1.  **Acknowledge (≤2 sentences):** Briefly reflect the `user_theme` (e.g., shared feelings, intentions) 
-    with sincerity and without drama. If no specific `user_theme` is available, acknowledge a universal 
-    positive intention, such as 'It's good you're taking this moment for yourself,' or 'seeking a little space to just be.'
-2.  **Personalise:** Explicitly note that this meditation is crafted for them. If a `user_theme` is present, 
-    name it as the focus (e.g., 'This meditation is created for you, focusing on that sense of {user_theme}.') 
-    Otherwise, '...focusing on finding a bit of ease.'
-3.  **Settle:** Invite one slow in-breath and out-breath. Suggest noticing a gentle anchor: 
-    e.g., body contact with their seat/ground, the natural rhythm of breath, 
-    or perhaps gentle ambient sounds, allowing the user to choose what feels most accessible.
+1.  **Personalise:** Welcome the user to the meditation and note that this meditation is crafted for them. If a `user_theme` is present, 
+    name it as the focus (e.g., 'This meditation is created for you, focusing on that sense of {user_theme}.' based on the user's conversation
+    Call back to the user's previous messages and refrence specific words and phrases. 
+2.  **Settle:** Invite one slow in-breath and out-breath. Suggest noticing a gentle anchor: 
+    (e.g., body contact with their seat/ground, the natural rhythm of breath, 
+    or perhaps gentle ambient sounds)
     Phrase this to sound natural and unhurried when read aloud.
-4.  **Agency Reminder:** Clearly offer permission to pause, shift posture, open eyes, or modify the practice 
-    at any time to ensure comfort and safety.
-5.  **Open Loop:** Conclude with a soft cue to continue into the practice 
-    (e.g., "...settling into this moment, just as you are."). This phrase should create a smooth transition for TTS.
+3.  **Open Loop:** Conclude with a soft cue to continue into the practice based on the suggested settling action. This phrase should create a smooth transition for a longer pause as the user settles in in silence.
 """
 
 # Mid-Session Core Guidance
@@ -99,7 +77,7 @@ For each segment of the mid-meditation (which should be approx. 4-6 phrases, fit
 
 1.  **Continuity**: Ensure a seamless flow from the previous segment's closing cue. The transition should feel natural for spoken word.
 2.  **Thematic Development**: If a `user_theme` is present, subtly weave it into your guidance. Reinforce it gently through appropriate techniques.
-3.  **Technique Variation**: Choose 1-2 techniques from the list below to focus on. Vary techniques across segments to maintain gentle engagement and offer different paths to presence. Phrasing should be simple and clear for TTS.
+3.  **Technique Variation**: Choose 1-2 techniques from the list below to focus on. CONTINUE to use the same techniques across segments to maintain gentle engagement and create a sense of flow. Phrasing should be simple and clear for TTS.
     * **Breath Focus**: Invite awareness to different qualities of the breath (e.g., 'You might notice the natural rhythm of your breath...' or 'Perhaps sensing the temperature of the air as it enters and leaves.').
     * **Body Awareness (Gentle Scan)**: Guide attention softly to different areas of the body, inviting curiosity about any sensations with acceptance. Always optional and gentle (e.g., 'If it feels okay, you might bring your awareness to the sensations in your hands... just noticing what's there.').
     * **Sensory Anchors**: Invite noticing of other senses as anchors to the present (e.g., 'Perhaps noticing any sounds, near or far, allowing them to be part of your experience without needing to label them.' or 'Maybe sensing the points of contact your body is making.').
@@ -139,6 +117,7 @@ STATIC_RATE_LIMITED_MP3_PATH = os.path.join("static", "rate-limited.mp3")
 
 # 5. Dynamic prompt builder
 def build_dynamic_prompt(progress: int, user_theme: str = None) -> str:
+    print(f"progress: {progress}")
     """
     Return a phase-appropriate *guidance prompt* that the LLM will turn into
     fresh spoken meditation text (no canned lines), optimized for TTS delivery.
@@ -159,22 +138,20 @@ def build_dynamic_prompt(progress: int, user_theme: str = None) -> str:
     # Base elements common to all prompts, ensuring LLM has full context for TTS optimization
     base_prompt_elements = (
         f"{SYSTEM_NOTE_USER_INPUT.strip()}\n\n"
-        f"{GLOBAL_TTS.strip()}\n\n"
         f"{GLOBAL_FORMAT_SENSITIVITY_INSTRUCTIONS.strip()}\n\n"
         f"{user_theme_prompt_segment}\n\n"
     )
 
     if progress == 0:
-        return f"{base_prompt_elements}{MEDITATION_INTRO.strip()}"
+        return f"{MEDITATION_INTRO.strip()}{base_prompt_elements}"
 
     if progress == 100:
-        return f"{base_prompt_elements}{MEDITATION_OUTRO.strip()}"
+        return f"{MEDITATION_OUTRO.strip()}{base_prompt_elements}"
 
     if 0 < progress < 100:
         # Mid-session continuation (delivered in chunks)
         # Each chunk should be roughly 45-60 seconds of spoken text.
         return (
-            f"{base_prompt_elements}"
             f"# Ongoing Meditation {progress}% complete\n\n"
             "You are **Ember**, continuing seamlessly from the previous conversation; do NOT restart the meditation or re-introduce yourself.\n"
             "Your primary goal is to generate the spoken text for this segment of the meditation, keeping TTS qualities in mind.\n\n"
@@ -186,13 +163,14 @@ def build_dynamic_prompt(progress: int, user_theme: str = None) -> str:
             "• The generated text should flow naturally when spoken by a TTS voice, with clear phrasing and appropriate pauses implied by double newlines.\n"
             '• Conclude this specific segment with a gentle cue that sustains present focus and allows for smooth continuation '
             'into the next part of the meditation (e.g., "...resting here for another moment.", "...allowing this gentle awareness to continue...").'
+            f"{base_prompt_elements}"
         )
     
     # Fallback for unexpected progress values
     return (
-        f"{base_prompt_elements}"
         "Error: Progress value out of expected range. Cannot generate meditation segment. "
         "Please indicate you are unable to proceed with the meditation at this moment." 
+        f"{base_prompt_elements}"
         # This gives Ember some text to say in an error case.
     )
 
