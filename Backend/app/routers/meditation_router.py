@@ -25,10 +25,9 @@ router = APIRouter()
 # 0. System Note on User Input
 # This helps the LLM understand how to access and use personalized user information.
 SYSTEM_NOTE_USER_INPUT = """
-You're Andy Puddicombe crafting a specical meditation. Use your specific knowlege to create the best possible meditation.
+You're Andy Puddicombe crafting a few phrases of a special meditation. Use your specific knowlege to create the best possible meditation.
+IMPORTANT: Generate the only the next valid phrase in the meditation based on the messages. It should be detailed, specific but concise (10-15 words)
 Try to identify the user's theme from the immediate conversational history. Always refrencee specific words and phrases from the user's messages.
-If no specific `user_theme` is identifiable, you should default to a general theme 
-of 'seeking peace,' 'gentle presence,' or 'a moment of calm'.
 """
 
 # 1. Global TTS Profile
@@ -36,11 +35,11 @@ of 'seeking peace,' 'gentle presence,' or 'a moment of calm'.
 
 
 GLOBAL_TTS = """
-Voice   : slow, rythmic, compassionate 
-Tone    : warm, reassuring, peaceful, confident
-Pacing  : smooth, calm, thoughtful, and allow space for reflection and honest sharing with pauses.
-Emotion : authentic warmth, understanding, and calm presence. 
-Pauses  : pause a lot, especially newlines
+Voice   : slow, meditative, peaceful
+Tone    : steady, reassuring, 
+Pacing  : calming, rythmic
+Emotion : empathetic, warm, reflective
+Pauses  : pause very long and often
 """
 # 3. Phase-Specific Guidance (Instructions, not scripts)
 
@@ -218,20 +217,12 @@ async def run_meditation_session(
             model="gpt-4o-mini",
         )
         # Run Firestore logging and TTS in parallel
-        if request.percent_complete == 0:
-            base64_audio, _ = await asyncio.gather(
-                tts_parallel_stitch(
-                    text=llm_response_text, tts_instructions=current_tts_instructions
-                ),
-                log_conversation_to_firestore(str(user.get('uid', '')), 'meditate', message_dicts, llm_response_text, request.session_id)
-            )
-        else:
-            base64_audio, _ = await asyncio.gather(
-                text_to_speech_openai(
-                    text=llm_response_text, tts_instructions=current_tts_instructions
-                ),
-                log_conversation_to_firestore(str(user.get('uid', '')), 'meditate', message_dicts, llm_response_text, request.session_id)
-            )
+        base64_audio, _ = await asyncio.gather(
+            text_to_speech_openai(
+                text=llm_response_text, tts_instructions=current_tts_instructions
+            ),
+            log_conversation_to_firestore(str(user.get('uid', '')), 'meditate', message_dicts, llm_response_text, request.session_id)
+        )
         llm_call_duration = time.time() - llm_call_start_time
         logger.info(
             f"LLM call for /meditate phase {request.percent_complete} took: {llm_call_duration:.3f}s"
