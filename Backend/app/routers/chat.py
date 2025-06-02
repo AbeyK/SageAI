@@ -86,7 +86,7 @@ async def process_chat(
     logger.info(f"[{time.time() - start_time:.3f}s] Message preparation complete")
 
     current_system_prompt = CHAT_LLM_INSTRUCTIONS
-    if len(request.messages) >= 3:
+    if len(request.messages) >= 5:
         logger.info(
             f"[{time.time() - start_time:.3f}s] Chat length > 5 messages. Appending transition to meditation prompt."
         )
