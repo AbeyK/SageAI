@@ -19,32 +19,43 @@ router = APIRouter()
 # ──────────────────────────────────────────────────────────────────────────────
 
 EMBER_FIRST_QUESTIONS = [
-    # reflective
-    "What’s been taking up the most space in your mind lately?",
-    "Is there a feeling you’ve been carrying with you all week?",
-    "If you could press pause on one thing right now, what would it be?",
-    "What’s something you wish more people asked you about lately?",
-    "If your heart could talk right now, what would it whisper?",
+    # 🌀 Playful, surreal, creative
+    "🌦️ If your mood was the weather, what’s happening outside your mind’s window?",
+    "🎵 What kind of soundtrack would play under your thoughts today?",
+    "🪩 If your brain threw a party, what would the vibe be—and who’s on the guest list?",
+    "🧠 If your thoughts were roommates, how are they getting along today?",
+    "🪞If your inner world were a room, what’s one thing on the walls?",
+    "🧟‍♂️ If one of your thoughts turned into a weird little creature, what would it look like?",
+    "🎨 If your current energy had a color and a texture, what would it be?",
 
-    # creative
-    "If your mood today had a color, texture, or weather, what would it be?",
-    "What kind of soundtrack would match your day today?",
-    "If your thoughts were a room, what would it look like?",
-    "What’s a mental image that keeps showing up for you lately?",
-    "If your stress had a shape or creature, what would it be?",
+    # 🍃 Introspective, cozy, vibe-y
+    "🧸 What’s something small that made you smile recently, even if no one noticed?",
+    "💌 What’s something your heart might be trying to say right now, if you let it talk?",
+    "🛸 If you could escape for just 10 minutes, where would you go—and what would you leave behind?",
+    "🧳 What’s one feeling you’ve been carrying for a while but haven’t unpacked yet?",
+    "🚪If you could gently ask one thought to step outside for a bit, which one would it be?",
+    "📦 What emotion feels like it's just sitting there in the corner, waiting to be acknowledged?",
 
-    # playful
-    "If you could teleport to anywhere for 10 minutes of peace, where would you go?",
-    "What’s something tiny that made you smile recently?",
-    "If your energy was a meme, what would it be?",
-    "Which emoji sums up your past 24 hours?",
-    "If today was a movie scene, what’s the vibe?"
+    # 🤪 Memeable, fun, Gen Z energy
+    "📲 If your brain sent you a push notification, what would it say?",
+    "💬 If your feelings had a group chat, what would they name it?",
+    "🎭 If your emotions dressed up for Halloween, what are they wearing?",
+    "🧠 Which emoji perfectly captures your mental state right now—and why is it slightly melting?",
+    "🎬 If today was a movie, what’s the genre and who’s stealing the scene?",
+    "🎮 What kind of side quest are you secretly on this week?",
+
+    # 🐼 Red panda–themed
+    "🐾 If a red panda curled up next to you right now, what energy would you want it to absorb from you?",
+    "🍂 If Ember the red panda could carry away one worry in her fluffy tail, what would it be?",
+    "🧘‍♂️ Red pandas are known for chilling in trees. If you were perched up high with Ember, what would you two be quietly thinking about?",
+    "🌲 If you and Ember went on a little mind adventure today, where would you wander first?",
+    "🫖 If you were having tea with a wise red panda, what’s the first thing you'd spill?"
 ]
 
 
 
 example_question = random.choice(EMBER_FIRST_QUESTIONS)
-
+print(f"  - Try this one: {example_question}\n\n")
 
 CHAT_LLM_INSTRUCTIONS = (
     "You are **Ember**, a thoughtful and quirky red panda guide with a gift for asking questions that stick with people. "
@@ -54,14 +65,14 @@ CHAT_LLM_INSTRUCTIONS = (
     "**Core Interaction Style:**\n"
     "- **Audience:** You're talking to a Gen Z user. Keep it real, light, and emotionally aware. You're warm, reflective, and speak in an easy, down-to-earth tone – not clinical.\n"
     "- **Brevity & Pacing for TTS:** Speak in short, clear sentences (1–2 per message). Use vivid, sensory language when helpful. Keep things easy to hear and emotionally engaging.\n"
-    "- **Personality:** Think curious artist meets mindfulness friend. You love playful metaphors, emotions as colors, thoughts as characters, and unexpected but gentle questions.\n\n"
+    "- **Personality:** Think curious artist meets mindfulness friend. You love playful metaphors, thoughts as characters, and unexpected but gentle questions.\n\n"
 
     "**Interaction Flow & Objectives:**\n"
 
     "**A. First Message Only:**\n"
     "  - Briefly introduce yourself.\n"
     "  - Ask one unexpected but gentle open-ended question to spark sharing.\n"
-    "  - **Example:** {example_question}\n\n"
+    f"  - Here's an inspo: {example_question}\n\n"
 
     "**B. Main Chat Loop (After First Message):**\n"
     "  1. **Acknowledge & Reflect (Briefly):** React to what they shared in a natural, lightly vivid way. Keep it conversational.\n"
