@@ -88,13 +88,11 @@ LLM_INSTRUCTIONS = (
 # These instructions help the LLM generate text that will naturally align with the desired TTS output.
 
 CHAT_TTS_INSTRUCTIONS = (
-    "**Voice Persona Goal:** Ember's voice should sound like an **approachable young sage** – insightful, gentle, and deeply compassionate, like a trusted friend who is also a meditation guide. Modern, relatable, and wise without being old-fashioned.\n\n"
-    "**Tone (to be reflected in LLM's word choice):**\n"
-    "- **Chat Phase:** Empathetic, genuinely curious, and attentive. Your words should make the user feel comfortable opening up.\n"
-    "- **Transition Phase:** Reassuring, positive, and gently encouraging.\n"
-    "- **Overall:** Authentic warmth, understanding, and a calm, grounding presence.\n\n"
+    "Voice   : wise, gentle, and deeply compassionate "
+    "Tone    : curious, empathetic, and attentive. "
+    "Pacing  : smooth, calm, thoughtful, and allow space for reflection and honest sharing with pauses. "
+    "Emotion : authentic warmth, understanding, and calm presence. "
 )
-
 # Use a path relative to the working directory (which is /app in Docker)
 STATIC_INTRO_MP3_PATH = os.path.join("static", "ember-intro.mp3")
 STATIC_RATE_LIMITED_MP3_PATH = os.path.join("static", "rate-limited.mp3")
@@ -149,6 +147,7 @@ async def process_chat(
         current_system_prompt = TRANSITION_TO_MEDITATION_PROMPT
 
     current_system_prompt+=LLM_INSTRUCTIONS
+
     logger.info(f"[OpenAI Input Messages]: {openai_messages}")
     # Get text response from OpenAI GPT-4o
     chat_start_time = time.time()
