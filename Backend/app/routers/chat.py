@@ -158,7 +158,7 @@ async def process_chat(
     text_response = await get_chat_completion(
         messages=openai_messages,
         system_prompt=current_system_prompt,
-        model="gpt-4.1-nano",
+        model="gpt-4o-mini",
     )
     # Run Firestore logging and TTS in parallel
     actual_audio_base64, _ = await asyncio.gather(
