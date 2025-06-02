@@ -91,47 +91,46 @@ async def get_chat_completion(
         return f"Error: Could not get response from AI service. Details: {str(e)}"
 
 
-def split_text_for_fast_tts(text: str) -> List[str]:
+def split_text_for_fast_tts(text: str, max_chunks: int = 3, min_total_chars: int = 180, min_chunk_size: int = 80) -> List[str]:
     """
-    Split text into individual sentences or strong clauses for fastest TTS streaming.
-    This aims to maximize the number of small, independent chunks to reduce
-    Time To First Token (TTFT) for each segment.
+    Split text into at most max_chunks (default 3) for TTS streaming, with similar sizes.
+    If the text is short, return 1 or 2 chunks as appropriate.
+    Splits on sentence-ending punctuation, em-dash, and commas.
+    Won't split if text is below min_total_chars, or if resulting chunks would be too small.
     """
-    # Use a regex that splits on common sentence-ending punctuation,
-    # and also on semicolons, while keeping the delimiters.
-    # It also handles cases like "Mr. Smith" or "U.S.A." by not splitting there.
-    # This regex is a more robust way to capture natural sentence boundaries.
-    # It looks for a punctuation mark (., ?, !) followed by a space or end of string,
-    # OR a semicolon followed by a space.
-    sentence_delimiters = (
-        r"(?<=[.!?])\s+|\s*(?<=;)\s*"  # Keep the delimiter for natural pauses
-    )
-    sentences = re.split(sentence_delimiters, text)
+    text = text.strip()
+    if len(text) <= min_total_chars:
+        return [text]
 
-    # Clean up and filter out empty strings
-    cleaned_sentences = [s.strip() for s in sentences if s.strip()]
+    # Split on . ! ? ; — , followed by whitespace
+    fragments = re.split(r'(?<=[.!?;,—])\s+', text)
+    fragments = [f.strip() for f in fragments if f.strip()]
+    # Ensure each fragment ends with a strong delimiter
+    fragments = [f if f[-1] in ".!?;,—" else f + "." for f in fragments]
 
-    logger.info(f"Cleaned sentences: {cleaned_sentences}")
-
-    # If the last character of a sentence is a delimiter, move it to the end of the sentence
-    final_chunks = []
-    for s in cleaned_sentences:
-        if s and s[-1] not in [".", "?", "!", ";"]:
-            # Find the last punctuation that was used to split if it's missing
-            match = re.search(r"[.!?]$", s)
-            if not match:  # Check for cases where the split might have removed it, e.g. if the original text was "Hello."
-                if s.endswith(","):  # For clauses, the comma will be included
-                    final_chunks.append(s)
-                else:
-                    final_chunks.append(
-                        s + "."
-                    )  # Add a period for natural ending if none
+    # Try splitting into max_chunks, then 2, then 1
+    for n_chunks in range(max_chunks, 0, -1):
+        if len(fragments) <= n_chunks:
+            return fragments
+        total_chars = sum(len(f) for f in fragments)
+        target_size = total_chars // n_chunks
+        if target_size < min_chunk_size:
+            continue
+        chunks, current = [], ""
+        for f in fragments:
+            if not current:
+                current = f
+            elif len(current) + 1 + len(f) <= target_size or len(chunks) >= n_chunks - 1:
+                current += " " + f
             else:
-                final_chunks.append(s)
-        else:
-            final_chunks.append(s)
-
-    return final_chunks
+                chunks.append(current)
+                current = f
+        if current:
+            chunks.append(current)
+        if all(len(chunk) >= min_chunk_size or len(chunks) == 1 for chunk in chunks):
+            return chunks
+    # Fallback: just return the whole text as one chunk
+    return [text]
 
 
 async def text_to_speech_openai(
@@ -198,6 +197,7 @@ async def tts_parallel_stitch(text: str, tts_instructions: str) -> str:
     start_time = time.time()
     logger.info(f"[TTS][{start_time}] tts_parallel_stitch called. Text length: {len(text)}")
     chunks = split_text_for_fast_tts(text)
+    print(f"chunks: {chunks}")
     logger.info(f"[TTS][{time.time() - start_time:.3f}s] TTS will run in {len(chunks)} chunks using specific instructions.")
     tts_tasks = [
         text_to_speech_openai(
