@@ -62,8 +62,7 @@ Your text output will be converted to speech by a TTS engine.
     name it as the focus (e.g., 'This meditation is created for you, focusing on that sense of {user_theme}.' based on the user's conversation
     Call back to the user's previous messages and refrence specific words and phrases. 
 2.  **Settle:** Invite one slow in-breath and out-breath. Suggest noticing a gentle anchor: 
-    (e.g., body contact with their seat/ground, the natural rhythm of breath, 
-    or perhaps gentle ambient sounds)
+    (e.g., contact with the ground, the natural rhythm of breath, or perhaps gentle ambient sounds)
     Phrase this to sound natural and unhurried when read aloud.
 3.  **Open Loop:** Conclude with a soft cue to continue into the practice based on the suggested settling action. This phrase should create a smooth transition for a longer pause as the user settles in in silence.
 """
@@ -117,7 +116,6 @@ STATIC_RATE_LIMITED_MP3_PATH = os.path.join("static", "rate-limited.mp3")
 
 # 5. Dynamic prompt builder
 def build_dynamic_prompt(progress: int, user_theme: str = None) -> str:
-    print(f"progress: {progress}")
     """
     Return a phase-appropriate *guidance prompt* that the LLM will turn into
     fresh spoken meditation text (no canned lines), optimized for TTS delivery.
