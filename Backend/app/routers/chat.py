@@ -34,9 +34,10 @@ TRANSITION_TO_MEDITATION_PROMPT = (
 )
 
 CHAT_TTS_INSTRUCTIONS = (
-    "Voice: Warm, friendly and empathetic\n"
-    "Tempo: fast, conversational pace\n"
-
+    "Voice   : wise, gentle, and deeply compassionate—like a trusted guru guiding a personal consult. "
+    "Tone    : curious, empathetic, and attentive—invite the user to share about themselves and their needs. "
+    "Pacing  : brisk but thoughtful, and allow space for reflection and honest sharing. "
+    "Emotion : authentic warmth, understanding, and calm presence. "
 )
 
 # Use a path relative to the working directory (which is /app in Docker)
