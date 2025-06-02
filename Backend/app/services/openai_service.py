@@ -1,6 +1,6 @@
 from openai import AsyncOpenAI  # Use AsyncOpenAI for FastAPI
 from app.config import settings
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Iterable, Union
 import base64  # Required for encoding audio to base64
 import time
 import logging
@@ -25,7 +25,7 @@ else:
 
 
 async def get_chat_completion(
-    messages: List[Dict[str, str]],
+    messages: Iterable[Dict[str, str]],
     system_prompt: str,
     model: str,
     max_output_tokens: Optional[int] = None,
@@ -54,9 +54,10 @@ async def get_chat_completion(
 
     final_system_message = {"role": "system", "content": system_prompt}
 
-    # Filter out any stray system messages from the client
-
-    updated_messages = [final_system_message] + messages
+    # Ensure messages are in the correct format for OpenAI (List[Dict[str, str]])
+    updated_messages: List[Dict[str, str]] = [final_system_message] + [
+        {"role": str(m["role"]), "content": str(m["content"])} for m in messages
+    ]
 
     try:
         logger.info(
@@ -79,7 +80,7 @@ async def get_chat_completion(
                 f"[{time.time() - start_time:.3f}s] Requesting max_output_tokens: {max_output_tokens}"
             )
 
-        response = await client.chat.completions.create(**completion_params)
+        response = await client.chat.completions.create(**completion_params)  # type: ignore
         assistant_message = response.choices[0].message.content
         logger.info(f"[{time.time() - start_time:.3f}s] Received response from OpenAI")
         return assistant_message
@@ -139,7 +140,7 @@ async def text_to_speech_openai(
     model: str = "gpt-4o-mini-tts",
     voice: str = "sage",
     return_bytes: bool = False,
-) -> Optional[str]:
+) -> Union[str, bytes]:
     """
     Converts text to speech using OpenAI TTS and returns base64 encoded audio or raw bytes.
     Uses the provided tts_instructions.
@@ -149,13 +150,12 @@ async def text_to_speech_openai(
 
     if not client:
         return (
-            None
-            if return_bytes
+            b"" if return_bytes
             else "Error: OpenAI client not initialized. TTS failed."
         )
 
     if not text.strip():
-        return None if return_bytes else "Error: Cannot convert empty text to speech."
+        return b"" if return_bytes else "Error: Cannot convert empty text to speech."
 
     try:
         tts_api_start = time.time()
@@ -186,9 +186,7 @@ async def text_to_speech_openai(
             f"[TTS][{time.time() - start_time:.3f}s] Error calling OpenAI TTS API: {e}"
         )
         return (
-            None
-            if return_bytes
-            else f"Error: Could not generate audio. Details: {str(e)}"
+            b"" if return_bytes else f"Error: Could not generate audio. Details: {str(e)}"
         )
 
 
@@ -211,8 +209,9 @@ async def tts_parallel_stitch(text: str, tts_instructions: str) -> str:
     audio_bytes_list = await asyncio.gather(*tts_tasks)
     gather_end = time.time()
     logger.info(f"[TTS][{gather_end - start_time:.3f}s] All TTS chunks complete. Gather duration: {gather_end - gather_start:.3f}s")
-    audio_bytes_list = [b for b in audio_bytes_list if b]
-    stitched = b"".join(audio_bytes_list)
+    # Only keep bytes, ignore str or None
+    audio_bytes_list = [b for b in audio_bytes_list if isinstance(b, (bytes, bytearray))]
+    stitched = b"".join(audio_bytes_list)  # type: ignore
     base64_audio = base64.b64encode(stitched).decode("utf-8")
     logger.info(f"[TTS][{time.time() - start_time:.3f}s] Stitched audio length: {len(base64_audio)} (base64)")
     return base64_audio

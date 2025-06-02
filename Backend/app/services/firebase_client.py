@@ -5,6 +5,8 @@ import datetime
 import asyncio
 import time
 import logging
+from typing import Optional
+
 
 # Get credentials from settings (as dict)
 cred_dict = settings.get_firebase_credentials()
@@ -34,13 +36,16 @@ else:
 
 db = firestore.client() if cred else None
 
-async def log_conversation_to_firestore(user_id: str, endpoint: str, messages: list, llm_response: str, session_id: str):
+async def log_conversation_to_firestore(user_id: str, endpoint: str, messages: list, llm_response: str, session_id: Optional[str]):
     logger = logging.getLogger("meditation_app")
     start_time = time.time()
     logger.info(f"[Firestore][{start_time}] log_conversation_to_firestore called for user_id={user_id}, session_id={session_id}")
     if db is None:
         logger.warning(f"[Firestore][{time.time() - start_time:.3f}s] Firestore not initialized; skipping log.")
         return
+    if not session_id:
+        logger.warning(f"[Firestore][{time.time() - start_time:.3f}s] No session_id provided; will make one up.")
+        session_id = "NO_SESSION_ID_" + user_id + "_" + datetime.datetime.utcnow().strftime("%Y%m%d")
     doc_ref = db.collection("sessions").document(user_id).collection("meditations").document(session_id)
     data = {
         "user_id": user_id,

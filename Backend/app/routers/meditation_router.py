@@ -133,8 +133,7 @@ async def run_meditation_session(
             audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
             return AudioResponse(
                 text_response="It was fun chatting but Ember is feeling tired now. Come back tomorrow!",
-                audio_base64=audio_base64,
-                caption="",
+                audio_base64=audio_base64
             )
     message_dicts: List[Dict[str, str]] = [msg.model_dump() for msg in request.messages]
     logger.info(f"[OpenAI Input Messages]: {message_dicts}")
@@ -159,14 +158,14 @@ async def run_meditation_session(
                 tts_parallel_stitch(
                     text=llm_response_text, tts_instructions=current_tts_instructions
                 ),
-                log_conversation_to_firestore(user.get('uid'), 'meditate', message_dicts, llm_response_text, request.session_id)
+                log_conversation_to_firestore(str(user.get('uid', '')), 'meditate', message_dicts, llm_response_text, request.session_id)
             )
         else:
             base64_audio, _ = await asyncio.gather(
                 text_to_speech_openai(
                     text=llm_response_text, tts_instructions=current_tts_instructions
                 ),
-                log_conversation_to_firestore(user.get('uid'), 'meditate', message_dicts, llm_response_text, request.session_id)
+                log_conversation_to_firestore(str(user.get('uid', '')), 'meditate', message_dicts, llm_response_text, request.session_id)
             )
         llm_call_duration = time.time() - llm_call_start_time
         logger.info(

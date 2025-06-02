@@ -23,6 +23,9 @@ async def is_rate_limited(user_id: str) -> bool:
     if user_id in RATE_LIMIT_WHITELIST:
         return False
 
+    if db is None:
+        return False
+
     today = get_today_utc_str()
     doc_ref = db.collection("rate_limits").document(user_id)
     doc = doc_ref.get()

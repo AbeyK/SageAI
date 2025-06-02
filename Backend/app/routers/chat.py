@@ -71,8 +71,7 @@ async def process_chat(
             audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
             return ChatResponse(
                 text_response="It was fun chatting but Ember is feeling tired now. Come back tomorrow!",
-                audio_base64=audio_base64,
-                caption="",
+                audio_base64=audio_base64
             )
 
     # Simplified message preparation for OpenAI
@@ -111,7 +110,7 @@ async def process_chat(
             text=text_response,
             tts_instructions=CHAT_TTS_INSTRUCTIONS,
         ),
-        log_conversation_to_firestore(user.get('uid'), 'chat', openai_messages, text_response, request.session_id)
+        log_conversation_to_firestore(str(user.get('uid', '')), 'chat', openai_messages, text_response, request.session_id)
     )
     chat_duration = time.time() - chat_start_time
     logger.info(
@@ -132,6 +131,5 @@ async def process_chat(
 
     return ChatResponse(
         text_response=text_response,
-        audio_base64=actual_audio_base64,
-        caption="Caption for: " + text_response[:50] + "...",
+        audio_base64=actual_audio_base64
     )

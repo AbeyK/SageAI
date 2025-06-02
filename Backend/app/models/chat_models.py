@@ -9,14 +9,14 @@ class Message(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: List[Message] = Field(
-        ..., example=[{"role": "user", "content": "I'm feeling stressed about work."}]
+        ..., examples=[[{"role": "user", "content": "I'm feeling stressed about work."}]]
     )
     session_id: Optional[str] = None
 
 
 class MeditateRequest(BaseModel):
     messages: List[Message] = Field(
-        ..., example=[{"role": "user", "content": "I'm feeling stressed about work."}]
+        ..., examples=[[{"role": "user", "content": "I'm feeling stressed about work."}]]
     )
     percent_complete: int = Field(
         0,
