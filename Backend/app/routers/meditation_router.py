@@ -33,8 +33,8 @@ of 'seeking peace,' 'gentle presence,' or 'a moment of calm'.
 # 1. Global TTS Profile
 # Guides the LLM in generating text that a TTS engine can render with the desired vocal qualities.
 GLOBAL_TTS = """
-Voice   : wise, gentle, and deeply compassionate 
-Tone    : warm, reassuring, peaceful—offer genuine kindness in every phrase.
+Voice   : gentle, and deeply compassionate 
+Tone    : warm, reassuring, peacefu
 Pacing  : smooth, calm, thoughtful, and allow space for reflection and honest sharing with pauses.
 Emotion : authentic warmth, understanding, and calm presence. 
 Pauses  : pause a lot, especially newlines
@@ -61,7 +61,7 @@ Your text output will be converted to speech by a TTS engine.
 1.  **Personalise:** Welcome the user to the meditation and note that this meditation is crafted for them. If a `user_theme` is present, 
     name it as the focus (e.g., 'This meditation is created for you, focusing on that sense of {user_theme}.' based on the user's conversation
     Call back to the user's previous messages and refrence specific words and phrases. 
-2.  **Settle:** Invite one slow in-breath and out-breath. Suggest noticing a gentle anchor: 
+2.  **Settle:** Invite one slow in-breath and out-breath. Suggest noticing a SINGLE gentle anchor and describe it in detail: 
     (e.g., contact with the ground, the natural rhythm of breath, or perhaps gentle ambient sounds)
     Phrase this to sound natural and unhurried when read aloud.
 3.  **Open Loop:** Conclude with a soft cue to continue into the practice based on the suggested settling action. This phrase should create a smooth transition for a longer pause as the user settles in in silence.
@@ -77,8 +77,7 @@ For each segment of the mid-meditation (which should be approx. 4-6 phrases, fit
 1.  **Continuity**: Ensure a seamless flow from the previous segment's closing cue. The transition should feel natural for spoken word.
 2.  **Thematic Development**: If a `user_theme` is present, subtly weave it into your guidance. Reinforce it gently through appropriate techniques.
 3.  **Technique Variation**: Choose 1-2 techniques from the list below to focus on. CONTINUE to use the same techniques across segments to maintain gentle engagement and create a sense of flow. Phrasing should be simple and clear for TTS.
-    * **Breath Focus**: Invite awareness to different qualities of the breath (e.g., 'You might notice the natural rhythm of your breath...' or 'Perhaps sensing the temperature of the air as it enters and leaves.').
-    * **Body Awareness (Gentle Scan)**: Guide attention softly to different areas of the body, inviting curiosity about any sensations with acceptance. Always optional and gentle (e.g., 'If it feels okay, you might bring your awareness to the sensations in your hands... just noticing what's there.').
+    * **Body Awareness (Gentle Scan)**: Guide attention softly to different areas of the body, inviting curiosity about any sensations with acceptance. If this was the anchor from the previous segment, then continue to describe it in detail.
     * **Sensory Anchors**: Invite noticing of other senses as anchors to the present (e.g., 'Perhaps noticing any sounds, near or far, allowing them to be part of your experience without needing to label them.' or 'Maybe sensing the points of contact your body is making.').
     * **Mindful Observation (Thoughts/Emotions)**: If appropriate for the `user_theme` (e.g., 'managing stress'), suggest observing thoughts or feelings as transient events, without judgment (e.g., 'Thoughts and feelings may arise, and you can allow them to come and go, like clouds drifting by.'). Emphasise non-attachment and acceptance.
     * **Affirmations/Intentions (Theme-related & Gentle)**: Offer soft, invitational affirmations related to the `user_theme` (e.g., for 'self-compassion', 'You might silently offer yourself a kind phrase, whatever feels right for you right now.').
