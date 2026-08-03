@@ -1,0 +1,1820 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sage AI — a field report (slides)</title>
+<style>
+/* ------------------------------------------------------------------ tokens */
+:root{
+  --paper:#FCFCFA;
+  --ink:#191B1E;
+  --muted:#5C6066;
+  --hairline:#DEDCD4;
+  --accent:#2A46D4;
+  --accent-tint:#E9EDF9;
+  --alarm:#C9364B;
+  --serif:"Iowan Old Style","Palatino Nova",Palatino,"Book Antiqua",Georgia,serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --col:700px;
+  --colw:1060px;
+  --gut:2.5rem;
+}
+
+/* ------------------------------------------------------------------- reset */
+*,*::before,*::after{box-sizing:border-box}
+html,body,h1,h2,h3,p,figure,figcaption,blockquote,table,th,td{margin:0;padding:0}
+img,svg,canvas,video{max-width:100%;height:auto;display:block}
+
+html{
+  background:var(--paper);
+  scroll-padding-top:3.5rem;
+}
+@media (prefers-reduced-motion:no-preference){
+  html{scroll-behavior:smooth}
+}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font:400 18px/1.65 var(--serif);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{text-wrap:balance;font-weight:400}
+::selection{background:var(--accent-tint);color:var(--ink)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:0}
+
+/* ---------------------------------------------------------------- utility */
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ------------------------------------------------------------ page column */
+.flow>*{
+  width:min(var(--col),100% - var(--gut));
+  margin-inline:auto;
+}
+.flow>.wide{width:min(var(--colw),100% - var(--gut))}
+.flow>.bleed,.flow>.sec{width:100%}
+@media (min-width:1200px){
+  /* keep wide figures clear of the right-margin index */
+  .flow>.wide{width:min(var(--colw),100vw - 21rem)}
+}
+
+/* --------------------------------------------------------------- progress */
+.progress{
+  position:fixed;top:0;left:0;right:0;height:1px;
+  z-index:40;pointer-events:none;
+}
+.progress b{
+  display:block;height:100%;background:var(--accent);
+  transform:scaleX(0);transform-origin:0 50%;
+}
+html:not(.js) .progress{display:none}
+
+/* ---------------------------------------------------------- section index */
+.secindex{
+  display:none;
+  position:fixed;top:50%;right:2rem;transform:translateY(-50%);
+  z-index:30;
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+  font-variant-numeric:tabular-nums;
+  visibility:hidden;opacity:0;
+  transition:opacity .35s ease,visibility 0s .35s;
+}
+html.in-article .secindex{
+  visibility:visible;opacity:1;
+  transition:opacity .35s ease;
+}
+@media (min-width:1200px){ html.js .secindex{display:block} }
+.secindex a{
+  display:flex;align-items:baseline;gap:.7em;
+  padding:.42em 0;
+  color:var(--muted);text-decoration:none;
+  text-transform:uppercase;
+}
+.secindex a .no{
+  color:var(--ink);
+  width:2.7em;
+  border-bottom:1px solid var(--hairline);
+  padding-bottom:2px;
+}
+.secindex a:hover{color:var(--ink)}
+.secindex a[aria-current]{color:var(--accent)}
+.secindex a[aria-current] .no{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ------------------------------------------------------------------- hero */
+.hero{
+  min-height:100svh;
+  display:flex;flex-direction:column;
+}
+.hero-text{
+  width:min(var(--colw),100% - var(--gut));
+  margin-inline:auto;
+  padding-top:clamp(3rem,9svh,6.5rem);
+}
+.eyebrow{
+  font-family:var(--mono);
+  font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  font-variant-numeric:tabular-nums;
+  color:var(--muted);
+}
+.eyebrow .no{color:var(--accent)}
+.hero .eyebrow{color:var(--ink)}
+.hero .eyebrow::after{
+  content:"";display:block;width:2.75rem;height:1px;
+  background:var(--accent);margin-top:1.1rem;
+}
+.hero h1{
+  margin-top:2.2rem;
+  font-size:clamp(42px,6.4vw,84px);
+  line-height:1.04;
+  letter-spacing:-.014em;
+  max-width:14em;
+}
+.standfirst{
+  margin-top:2rem;
+  font-size:clamp(18px,1.6vw,21.5px);
+  line-height:1.55;
+  color:var(--muted);
+  max-width:33em;
+}
+.byline{
+  margin-top:2.6rem;
+  border-block:1px solid var(--hairline);
+  padding:.8rem 0;
+  display:flex;justify-content:space-between;align-items:baseline;gap:1.5rem;
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;font-variant-numeric:tabular-nums;
+  color:var(--muted);
+}
+.scrollhint{color:var(--muted);white-space:nowrap}
+.scrollhint::after{content:" ↓";color:var(--accent)}
+.hero-fig{
+  flex:1 1 auto;
+  width:100%;
+  margin-top:clamp(1.6rem,4svh,3rem);
+  border-top:1px solid var(--hairline);
+}
+.hero-fig .fig-slot{height:100%}
+.hero-fig .fig-slot:empty{min-height:44svh}
+.hero-fig figcaption{
+  width:min(var(--colw),100% - var(--gut));
+  margin-inline:auto;
+  border-top:1px solid var(--hairline);
+}
+
+/* --------------------------------------------------------------- abstract */
+.abstract{
+  margin-top:5.5rem;
+  border-left:1px solid var(--ink);
+  padding-left:clamp(1.4rem,4vw,2.4rem);
+}
+.abstract .label{
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent);
+  margin-bottom:1.1rem;
+}
+.abstract .copy{font-size:16.5px;line-height:1.7}
+
+/* --------------------------------------------------------------- sections */
+.sec{padding-top:5.5rem}
+.sec-head{
+  border-top:1px solid var(--hairline);
+  padding-top:2.4rem;
+}
+.sec-head h2{
+  margin-top:1.15rem;
+  font-size:clamp(27px,3vw,34px);
+  line-height:1.18;
+  letter-spacing:-.008em;
+}
+
+/* ------------------------------------------------------------------- copy */
+.flow>.copy{margin-top:1.9rem}
+.sec-head+.copy{margin-top:2.2rem}
+.copy p{
+  text-align:justify;
+  text-wrap:pretty;
+  hyphens:auto;
+  -webkit-hyphens:auto;
+}
+.copy p+p{margin-top:1.15em}
+.copy blockquote{
+  margin:1.4em 0;padding-left:1.4rem;
+  border-left:1px solid var(--hairline);
+  font-style:italic;color:var(--muted);
+}
+.copy hr{
+  border:0;margin:2.4rem 0;
+  text-align:center;
+}
+.copy hr::before{
+  content:"⁂";
+  color:var(--muted);font-size:15px;letter-spacing:.5em;text-indent:.5em;
+}
+pre{
+  font-family:var(--mono);font-size:12.5px;line-height:1.7;
+  font-variant-numeric:tabular-nums;
+  border:1px solid var(--hairline);
+  padding:1rem 1.2rem;
+  overflow-x:auto;
+  background:#F4F4F1;
+}
+.copy a{
+  text-decoration:underline;
+  text-decoration-color:var(--accent);
+  text-decoration-thickness:1px;
+  text-underline-offset:3px;
+}
+.copy a:hover{color:var(--accent)}
+.copy strong{font-weight:700}
+.copy code,.copy kbd{
+  font-family:var(--mono);font-size:.82em;
+  background:var(--accent-tint);
+  padding:.1em .35em;border-radius:2px;
+}
+.copy sup{font-family:var(--mono);font-size:.68em;color:var(--accent)}
+.dropcap>p:first-child::first-letter{
+  float:left;
+  font-size:3.55em;
+  line-height:.83;
+  padding:.06em .09em 0 0;
+  color:var(--accent);
+}
+.fn{
+  font-family:var(--mono);font-size:11.5px;line-height:1.7;
+  letter-spacing:.01em;color:var(--muted);
+  font-variant-numeric:tabular-nums;
+}
+.flow>.fn{margin-top:1.4rem;border-top:1px solid var(--hairline);padding-top:.8rem}
+
+/* ---------------------------------------------------------------- figures */
+.flow>.fig{margin-top:3.4rem}
+.fig+.copy{margin-top:3.4rem}
+.fig-slot{min-width:0}
+.fig-slot:empty,.table-slot:empty{
+  display:grid;place-items:center;
+  min-height:var(--ph,340px);
+  background:
+    repeating-linear-gradient(-45deg,transparent 0 9px,rgba(25,27,30,.028) 9px 10px),
+    #F4F4F1;
+  border:1px solid var(--hairline);
+}
+.table-slot:empty{min-height:220px}
+.fig-slot:empty::before,.table-slot:empty::before{
+  content:attr(data-slot) " · awaiting instrument";
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);
+}
+figcaption{
+  margin-top:.85rem;
+  border-top:1px solid var(--hairline);
+  padding-top:.65rem;
+  font-family:var(--mono);font-size:11.5px;line-height:1.65;
+  letter-spacing:.015em;color:var(--muted);
+  font-variant-numeric:tabular-nums;
+}
+figcaption .figno{color:var(--ink)}
+.fig.wide figcaption{max-width:var(--col);}
+
+/* ----------------------------------------------------------------- tables */
+.table-slot{overflow-x:auto}
+.table-slot table{
+  width:100%;
+  border-collapse:collapse;
+  font-family:var(--mono);font-size:12.5px;line-height:1.6;
+  font-variant-numeric:tabular-nums;
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+}
+.table-slot caption{
+  text-align:left;
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);
+  padding-bottom:.7rem;
+}
+.table-slot th{
+  font-weight:400;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);text-align:left;
+  border-bottom:1px solid var(--ink);
+  padding:.55rem .9rem .55rem 0;
+}
+.table-slot td{
+  border-bottom:1px solid var(--hairline);
+  padding:.55rem .9rem .55rem 0;
+  vertical-align:top;
+}
+.table-slot tr:last-child td{border-bottom:0}
+.table-slot th:last-child,.table-slot td:last-child{padding-right:0}
+.table-slot .num{text-align:right}
+.table-slot .alarm{color:var(--alarm)}
+
+/* ------------------------------------------------------------ field notes */
+.fieldnote{
+  margin-top:3.4rem;
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--hairline);
+  padding:1.5rem 0 1.7rem;
+}
+.fieldnote .label{
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent);
+  font-variant-numeric:tabular-nums;
+  margin-bottom:1rem;
+}
+.fieldnote .copy{font-size:16.5px;line-height:1.7}
+.fieldnote .copy p{text-align:left;hyphens:none}
+.fieldnote+.copy{margin-top:3.4rem}
+
+/* ------------------------------------------------------------- end matter */
+.endmatter{padding:5.5rem 0 3.5rem}
+.fleuron{
+  text-align:center;color:var(--muted);
+  font-size:18px;letter-spacing:.6em;text-indent:.6em;
+}
+.colophon{
+  margin-top:2.6rem;
+  text-align:center;
+  font-family:var(--mono);font-size:10.5px;line-height:2;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-variant-numeric:tabular-nums;
+}
+
+/* ----------------------------------------------------------------- reveal */
+html.js .reveal{opacity:0;transform:translate3d(0,12px,0)}
+html.js .reveal.is-in{
+  opacity:1;transform:none;
+  transition:
+    opacity .6s cubic-bezier(.25,.6,.35,1) var(--d,0ms),
+    transform .6s cubic-bezier(.25,.6,.35,1) var(--d,0ms);
+}
+@media (prefers-reduced-motion:reduce){
+  html.js .reveal{opacity:1;transform:none;transition:none}
+}
+
+/* ------------------------------------------------------------------ print */
+@media print{
+  .progress,.secindex,.scrollhint{display:none!important}
+  .sec{padding-top:3rem}
+}
+
+/* ------------------------------------------------- integration additions */
+.plate{display:flex;justify-content:center;padding:2.4rem 0;border:1px solid var(--hairline);background:#F8F8F5}
+.plate .dev{width:290px;border:1.5px solid var(--ink);border-radius:26px;padding:1.1rem 1rem 1.2rem;background:var(--paper);display:flex;flex-direction:column;gap:.55rem}
+.dv-head{display:flex;align-items:center;gap:.55rem;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;border-bottom:1px solid var(--hairline);padding-bottom:.7rem}
+.dv-head img{width:26px;height:26px;border-radius:50%;border:1px solid var(--hairline)}
+.dv-head .st{margin-left:auto;color:var(--accent)}
+.dv-bub{font-family:var(--mono);font-size:11px;line-height:1.55;border:1px solid var(--hairline);border-radius:2px;padding:.5rem .6rem;max-width:88%}
+.dv-bub.me{margin-left:auto;border-color:var(--accent);background:var(--accent-tint)}
+.dv-wave{display:flex;gap:3px;align-items:flex-end;justify-content:center;height:18px;margin-top:.5rem}
+.dv-wave i{width:3px;background:var(--muted);display:block}
+.dv-mic{width:44px;height:44px;border:1.5px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0.4rem auto 0}
+.dv-cap{text-align:center;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--muted)}
+.listing{border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:1rem 0 1.1rem;font-family:var(--mono);font-size:12.5px;line-height:2;font-variant-numeric:tabular-nums}
+.listing .cmd{color:var(--muted);border-bottom:1px solid var(--hairline);padding-bottom:.5rem;margin-bottom:.5rem}
+.listing .row{display:flex;gap:1.4rem}
+.listing .h{color:var(--muted);width:5.2em}
+.listing .t{color:var(--accent);width:5.8em;text-align:right}
+.listing .dim .m{color:var(--muted)}
+.coda{background:var(--ink);color:var(--paper);text-align:center;padding:6.5rem 1.5rem 5.5rem;margin-top:5.5rem}
+.coda h2{font-size:clamp(40px,5.4vw,64px);letter-spacing:-.012em}
+.coda img{width:168px;margin:2.6rem auto 0}
+.coda .note{margin-top:1.6rem;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#9EA3AC}
+
+
+/* ------------------------------------------------------------- deck chrome */
+html,body{height:100%;overflow:hidden}
+.deck{position:relative;width:100vw;height:100vh}
+.sl{display:none;position:absolute;inset:0;padding:6vh 5vw 8vh;overflow:hidden}
+.sl.on{display:flex;flex-direction:column;justify-content:center}
+.sl-inner{width:min(1140px,100%);margin:0 auto}
+.sl.dark{background:var(--ink);color:var(--paper)}
+.sl h2{font-size:clamp(26px,3.2vw,40px);line-height:1.16;letter-spacing:-.01em;margin-top:.9rem}
+.sl .lede{margin-top:1.1rem;font-size:clamp(16px,1.45vw,19.5px);line-height:1.6;color:var(--muted);max-width:46em}
+.sl .copy p{text-align:left;hyphens:none}
+.chrome{position:fixed;left:0;right:0;z-index:50;pointer-events:none;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-variant-numeric:tabular-nums}
+.chrome.top{top:0;height:2px}
+.chrome.top b{display:block;height:100%;background:var(--accent);width:0;transition:width .25s ease}
+.chrome.bot{bottom:0;padding:.9rem 1.4rem;display:flex;justify-content:space-between}
+.sl.dark ~ .chrome.bot{color:#9EA3AC}
+.navzone{position:fixed;top:0;bottom:0;width:12vw;z-index:40;cursor:pointer}
+.navzone.prev{left:0}.navzone.next{right:0}
+.kbd-hint{position:fixed;right:1.4rem;top:1rem;z-index:50;font-family:var(--mono);font-size:10px;
+  letter-spacing:.1em;color:var(--muted);opacity:.7}
+/* decision tables */
+.dq{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.dtable{margin-top:1.6rem;overflow-x:auto}
+.dtable table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;line-height:1.55;
+  font-variant-numeric:tabular-nums;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+.dtable th{font-weight:400;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  text-align:left;border-bottom:1px solid var(--ink);padding:.55rem .9rem .55rem 0}
+.dtable td{border-bottom:1px solid var(--hairline);padding:.62rem .9rem .62rem 0;vertical-align:top}
+.dtable tr:last-child td{border-bottom:0}
+.dtable tr.chose td{background:var(--accent-tint)}
+.dtable tr.chose td:first-child{box-shadow:inset 3px 0 0 var(--accent);padding-left:.8rem}
+.dtable .tag{color:var(--accent);font-weight:700}
+.dtable .dead{color:var(--muted)}
+.price{margin-top:1.1rem;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--muted)}
+.price b{color:var(--ink);font-weight:400}
+.sl .fig{margin-top:1.4rem}
+.sl figcaption{max-width:none}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:2.6rem;margin-top:1.4rem}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2rem;margin-top:1.6rem}
+.blk .bl{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
+.blk p{font-size:15.5px;line-height:1.6;margin:0;text-align:left}
+.shape{margin-top:2rem;border-top:1px solid var(--ink)}
+.shape .row{display:grid;grid-template-columns:11rem 1fr;gap:2rem;padding:1.05rem 0;border-bottom:1px solid var(--hairline);align-items:baseline}
+.shape .k{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.shape .v{font-size:17.5px;line-height:1.5}
+.agenda a{display:grid;grid-template-columns:2.2rem 11rem 1fr auto;gap:1.4rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--hairline);text-decoration:none;color:var(--ink)}
+.agenda .no{font-family:var(--mono);font-size:11px;color:var(--accent)}
+.agenda .t{font-size:19px}
+.agenda .d{font-size:13.5px;color:var(--muted)}
+.agenda .commit{font-family:var(--mono);font-size:10.5px;color:#8A6A4F;background:#F1EFE8;border:1px solid var(--hairline);padding:2px 8px}
+@media (max-width:900px){.agenda a{grid-template-columns:2rem 1fr}. agenda .d,.agenda .commit{display:none}}
+/* in-slide reveal */
+html.js .sl .rv{opacity:0;transform:translate3d(0,10px,0)}
+html.js .sl.on .rv{opacity:1;transform:none;transition:opacity .5s cubic-bezier(.25,.6,.35,1) var(--d,0ms),transform .5s cubic-bezier(.25,.6,.35,1) var(--d,0ms)}
+@media (prefers-reduced-motion:reduce){html.js .sl .rv{opacity:1;transform:none;transition:none}}
+.codepair{display:grid;grid-template-columns:1fr 1fr;gap:1.6rem;margin-top:1.4rem}
+.codepair pre{margin:0}
+.qslide h2{font-size:clamp(56px,8vw,110px)}
+.qslide img{width:180px;margin:3rem auto 0}
+.qslide .note{margin-top:1.4rem;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#9EA3AC}
+</style>
+</head>
+<body>
+<div class="chrome top"><b id="bar"></b></div>
+<div class="navzone prev" aria-hidden="true"></div>
+<div class="navzone next" aria-hidden="true"></div>
+<main class="deck">
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Sage AI · 2025 · A field report · Abey Koolipurackal</p><h1 class="rv" style="font-size:clamp(44px,6vw,78px);line-height:1.05;margin-top:1.6rem">Real-time voice AI,<br>end to end</h1><p class="lede rv">A voice meditation app built solo around a day job: on-device speech recognition, an LLM + TTS pipeline cut from 10.7 s to 5.5 s per turn, 150+ beta tests, and a shutdown decided by the retention curve. Field report follows, commit messages left in.</p><figure class="fig rv" style="margin-top:2.2rem"><div class="fig-slot"><figure class="fig" id="fig-hero">
+<style>
+#fig-hero{position:relative;margin:0;box-sizing:border-box;width:100%;background:#FCFCFA;border:1px solid #DEDCD4;padding:14px 16px 26px;color:#191B1E;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+#fig-hero .hd{display:flex;align-items:baseline;gap:16px;padding:0 2px 10px;margin-bottom:12px;border-bottom:1px solid #DEDCD4;font-size:11px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+#fig-hero .hd .no{color:#2A46D4;flex:none}
+#fig-hero .hd .ttl{color:#191B1E;overflow:hidden;text-overflow:ellipsis}
+#fig-hero .hd .mt{margin-left:auto;color:#5C6066;flex:none}
+@media (max-width:620px){#fig-hero .hd .mt{display:none}}
+#fig-hero .stage{width:100%}
+#fig-hero canvas{display:block;width:100%;aspect-ratio:1060/300}
+#fig-hero .replay{position:absolute;right:8px;bottom:4px;border:0;background:transparent;padding:2px 4px;font:11px/1.4 ui-monospace,"SF Mono",Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:#5C6066;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .5s}
+#fig-hero.done .replay{opacity:1;pointer-events:auto}
+#fig-hero .replay:hover{color:#2A46D4}
+</style>
+<div class="hd"><span class="no">Fig. 01</span><span class="ttl">One conversational turn, as a signal</span><span class="mt">amplitude · time &#8594;</span></div>
+<div class="stage"><canvas aria-label="Oscilloscope trace: user speech, two seconds of silence, then the reply"></canvas></div>
+<button class="replay" type="button" aria-label="Replay animation">replay</button>
+<script>
+(function(){
+'use strict';
+var fig=document.getElementById('fig-hero');
+if(!fig)return;
+var cv=fig.querySelector('canvas'),ctx=cv.getContext('2d'),btn=fig.querySelector('.replay');
+var RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var VW=1060,VH=300,PL=20,PR=1040,PT=36,PB=264,MID=150;
+var X0=40,SIL0=432,SIL1=640,X1=1022;
+var INK='#191B1E',MUT='#5C6066',HAIR='#DEDCD4',CO='#2A46D4',PAPER='#FCFCFA';
+
+function mul(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+var nz=(function(){var r=mul(20260714),a=[],i;for(i=0;i<1200;i++)a.push(r()*2-1);return a;})();
+function noise(x){var i=Math.floor(x),f=x-i,u=f*f*(3-2*f);var a=nz[((i%1200)+1200)%1200],b=nz[(((i+1)%1200)+1200)%1200];return a+(b-a)*u;}
+
+var UB=[[70,15,24],[104,19,44],[150,22,58],[204,26,66],[257,19,46],[300,23,62],[352,21,52],[397,15,28]];
+var EB=[[668,17,28],[706,25,52],[760,30,64],[822,25,55],[876,29,60],[934,25,46],[985,17,26]];
+function env(x,B){var e=0,i,d;for(i=0;i<B.length;i++){d=(x-B[i][0])/B[i][1];e+=B[i][2]*Math.exp(-d*d);}return e;}
+function genTrace(ph){
+  var Y=new Float32Array(X1-X0+1),x,a,c;
+  for(x=X0;x<=X1;x++){a=0;
+    if(x<SIL0){c=(Math.sin(x*0.55+ph)+0.55*Math.sin(x*1.31+1.3+ph*1.7)+0.32*Math.sin(x*2.71+0.7)+0.5*noise(x/2.6+ph*11))/2.4;a=env(x,UB)*c;}
+    else if(x>=SIL1){c=(Math.sin(x*0.42+ph*0.8)+0.5*Math.sin(x*1.05+2.1+ph)+0.25*Math.sin(x*2.2+0.9)+0.34*noise(x/3.1+ph*7))/2.1;a=env(x,EB)*c;}
+    Y[x-X0]=MID-a;}
+  return Y;
+}
+var Told=genTrace(0),Tnew=Told;
+
+var W=0,H=0,dpr=1,s=1;
+var xr=PL,sweepX=null,mode='idle';
+function clamp(v,a,b){return v<a?a:(v>b?b:v);}
+
+function traceAt(x){return (sweepX!==null&&x<=sweepX)?Tnew:Told;}
+function strokeSeg(Y,from,to,color,alpha,lw){
+  from=Math.max(X0,Math.ceil(from));to=Math.min(X1,Math.floor(to));
+  if(to<=from)return;
+  ctx.strokeStyle=color;ctx.globalAlpha=alpha;ctx.lineWidth=lw;ctx.lineJoin='round';
+  ctx.beginPath();
+  for(var x=from;x<=to;x++){var px=x*s,py=Y[x-X0]*s;if(x===from)ctx.moveTo(px,py);else ctx.lineTo(px,py);}
+  ctx.stroke();
+}
+function drawTracePart(from,to,color,alpha,lw){
+  // honor sweep split between Tnew (behind) and Told (ahead)
+  if(sweepX===null){strokeSeg(Told,from,to,color,alpha,lw);return;}
+  if(sweepX<=from){strokeSeg(Told,from,to,color,alpha,lw);}
+  else if(sweepX>=to){strokeSeg(Tnew,from,to,color,alpha,lw);}
+  else{strokeSeg(Tnew,from,sweepX+1,color,alpha,lw);strokeSeg(Told,sweepX,to,color,alpha,lw);}
+}
+function vline(x,y0,y1,color,alpha,lw){ctx.strokeStyle=color;ctx.globalAlpha=alpha;ctx.lineWidth=lw;ctx.beginPath();ctx.moveTo(x*s,y0*s);ctx.lineTo(x*s,y1*s);ctx.stroke();}
+function hline(x0,x1,y,color,alpha,lw){ctx.strokeStyle=color;ctx.globalAlpha=alpha;ctx.lineWidth=lw;ctx.beginPath();ctx.moveTo(x0*s,y*s);ctx.lineTo(x1*s,y*s);ctx.stroke();}
+
+function draw(){
+  if(!W)return;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);
+  var x,y;
+  // graticule
+  if(s>0.5){
+    ctx.strokeStyle=HAIR;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.beginPath();
+    for(x=PL;x<=PR;x+=20){if((x-40)%100===0)continue;ctx.moveTo(x*s,PT*s);ctx.lineTo(x*s,PB*s);}
+    for(y=50;y<=250;y+=20){if((y-50)%100===0)continue;ctx.moveTo(PL*s,y*s);ctx.lineTo(PR*s,y*s);}
+    ctx.stroke();
+  }
+  ctx.strokeStyle=HAIR;ctx.globalAlpha=1;ctx.lineWidth=1;ctx.beginPath();
+  for(x=40;x<=1040;x+=100){ctx.moveTo(x*s,PT*s);ctx.lineTo(x*s,PB*s);}
+  for(y=50;y<=250;y+=100){ctx.moveTo(PL*s,y*s);ctx.lineTo(PR*s,y*s);}
+  ctx.stroke();
+  ctx.strokeRect(PL*s,PT*s,(PR-PL)*s,(PB-PT)*s);
+  // trace
+  var lw=Math.max(1.1,1.5*Math.max(s,.65));
+  if(xr>PL)hline(PL,Math.min(xr,X0),MID,INK,.9,lw);           // lead-in
+  drawTracePart(X0,Math.min(xr,SIL1),INK,.92,lw);              // user + silence
+  if(xr>SIL1)drawTracePart(SIL1,Math.min(xr,X1),CO,.95,lw);    // reply
+  if(xr>X1)hline(X1,Math.min(xr,PR),MID,CO,.95,lw);            // tail
+  // ambient sweep
+  if(sweepX!==null){
+    vline(sweepX,PT,PB,CO,.12,1);
+    var h0=Math.max(X0,sweepX-110),h1=Math.min(sweepX,X1);
+    if(h1>SIL1)strokeSeg(Tnew,Math.max(h0,SIL1),h1,CO,.25,lw);
+    if(h0<SIL1)strokeSeg(Tnew,h0,Math.min(h1,SIL1),INK,.2,lw);
+  }
+  // pen cursor
+  if(mode==='draw'&&xr<PR){
+    vline(xr,PT,PB,CO,.45,1);
+    var yy=(xr>=X0&&xr<=X1)?traceAt(Math.round(xr))[Math.round(xr)-X0]:MID;
+    ctx.globalAlpha=1;ctx.fillStyle=CO;ctx.beginPath();ctx.arc(xr*s,yy*s,2.2*Math.max(s,.7),0,6.2832);ctx.fill();
+  }
+  // annotations (screen-space text, reveal keyed to pen position)
+  var fs=W<640?10:11;
+  ctx.font=fs+'px ui-monospace,"SF Mono",Menlo,Consolas,monospace';
+  try{ctx.letterSpacing='0.08em';}catch(e){}
+  ctx.textBaseline='middle';
+  var aU=clamp((xr-80)/50,0,1);
+  if(aU>0){ctx.globalAlpha=aU;ctx.fillStyle=INK;ctx.fillRect(40*s-0,62*s-2.5,5,5);ctx.textAlign='left';ctx.fillText('USER',40*s+11,62*s+.5);}
+  var aS=clamp((xr-650)/50,0,1);
+  if(aS>0){
+    ctx.globalAlpha=aS;
+    hline(436,636,204,MUT,.9*aS,1);vline(436,199,204,MUT,.9*aS,1);vline(636,199,204,MUT,.9*aS,1);
+    ctx.globalAlpha=aS;ctx.fillStyle=MUT;ctx.textAlign='center';
+    var lbl=W>=700?'2.0 S SILENCE · END OF TURN':(W>=460?'2.0 S SILENCE':'2.0 S');
+    ctx.fillText(lbl,536*s,222*s);
+  }
+  var aE=clamp((xr-700)/50,0,1);
+  if(aE>0){ctx.globalAlpha=aE;ctx.fillStyle=CO;ctx.fillRect(644*s,62*s-2.5,5,5);ctx.textAlign='left';ctx.fillText(W>=560?'EMBER · REPLY':'EMBER',644*s+11,62*s+.5);}
+  ctx.globalAlpha=1;
+}
+
+function size(){
+  var r=cv.getBoundingClientRect();
+  W=Math.max(60,Math.round(r.width));H=Math.round(W*VH/VW);
+  dpr=Math.min(2.5,window.devicePixelRatio||1);
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  s=W/VW;
+  draw();
+}
+
+var TCK=(function(){try{return !!navigator.webdriver||/HeadlessChrome/.test(navigator.userAgent)||location.hash.indexOf('vtclk')>=0;}catch(e){return false;}})();
+var vclk=0,gen=0;
+function sched(cb){if(TCK)setTimeout(function(){vclk+=16.667;cb(vclk);},16);else requestAnimationFrame(cb);}
+function nowc(){return TCK?vclk:performance.now();}
+var t0=0,cycle=0,lastQ=0;
+var DRAW_MS=5000,AMB_MS=16000,SWEEP_FRAC=0.7;
+function loop(ts){
+  if(mode==='draw'){
+    var p=clamp((ts-t0)/DRAW_MS,0,1);
+    xr=PL+(PR-PL)*p;
+    if(p>=1){fig.classList.add('done');mode='ambient';t0=ts;cycle=0;lastQ=0;Tnew=genTrace(0.35);}
+    draw();
+    return true;
+  }
+  if(mode==='ambient'){
+    var q=((ts-t0)%AMB_MS)/AMB_MS;
+    var n=Math.floor((ts-t0)/AMB_MS);
+    if(n>cycle){cycle=n;Told=Tnew;Tnew=genTrace(0.35*(cycle+1));}
+    if(q<SWEEP_FRAC){sweepX=PL+(PR-PL)*(q/SWEEP_FRAC);}
+    else{if(lastQ<SWEEP_FRAC){Told=Tnew;}sweepX=null;}
+    lastQ=q;
+    draw();
+    return true;
+  }
+  draw();return false;
+}
+function start(){
+  gen++;var g=gen;
+  Told=genTrace(0);Tnew=Told;sweepX=null;cycle=0;lastQ=0;
+  if(RM){xr=PR;mode='final';fig.classList.add('done');draw();return;}
+  mode='draw';xr=PL;t0=nowc();
+  sched(function step(ts){if(g!==gen)return;if(loop(ts))sched(step);});
+}
+btn.addEventListener('click',start);
+window.addEventListener('resize',size);
+size();
+var started=false;
+function kick(){if(!started){started=true;io.disconnect();start();}}
+var io=new IntersectionObserver(function(es){
+  for(var i=0;i<es.length;i++){if(es[i].isIntersecting)kick();}
+},{threshold:0.25});
+io.observe(fig);
+if(TCK)setTimeout(kick,30);
+})();
+</script>
+</figure></div></figure></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Contents</p><h2 class="rv">Six chapters, one real commit each</h2><nav class="agenda rv" style="margin-top:1.8rem">
+  <a><span class="no">01</span><span class="t">Context</span><span class="d">The product, and why voice is the hard version · ≈4 min</span><span class="commit">make Sage's face cuter</span></a>
+  <a><span class="no">02</span><span class="t">Decisions</span><span class="d">Transport, speech-to-text, state, delivery — alternatives included · ≈10 min</span><span class="commit">attemp 1 to move it all over to REST backend</span></a>
+  <a><span class="no">03</span><span class="t">Latency</span><span class="d">Recovering 5.2 seconds, with instruments · ≈7 min</span><span class="commit">worse models, faster response</span></a>
+  <a><span class="no">04</span><span class="t">War stories</span><span class="d">Four bugs, four commit messages · ≈9 min</span><span class="commit">lol python is weird</span></a>
+  <a><span class="no">05</span><span class="t">The data</span><span class="d">Evals, unit economics, and the number that stopped it · ≈8 min</span><span class="commit">get rid of rate limits</span></a>
+  <a><span class="no">06</span><span class="t">Rebuild</span><span class="d">What 2026 deletes, what transfers · ≈4 min</span><span class="commit">e2e full medidation works</span></a>
+  </nav></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">01 · Context</p><h2 class="rv">A meditation built from your day</h2><div class="two rv">
+    <div><div class="plate">
+  <div class="dev">
+    <div class="dv-head"><img src="PandaTalking.png" alt="Ember avatar"><span>EMBER</span><span class="st">● LISTENING</span></div>
+    <div class="dv-bub ai">If your mood was the weather, what’s happening outside your mind’s window?</div>
+    <div class="dv-bub me">Fog, honestly. Work has been a lot this week.</div>
+    <div class="dv-bub ai">Where does that fog sit in your body right now?</div>
+    <div class="dv-wave"><i style="height:5px"></i><i style="height:11px"></i><i style="height:16px"></i><i style="height:9px"></i><i style="height:5px"></i></div>
+    <div class="dv-mic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" fill="#2A46D4"/><path d="M6 11a6 6 0 0 0 12 0" stroke="#2A46D4" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="21" stroke="#2A46D4" stroke-width="2" stroke-linecap="round"/></svg></div>
+    <div class="dv-cap">HANDS-FREE · TAP TO INTERRUPT</div>
+  </div>
+</div></div>
+    <div>
+      <blockquote style="margin:0;border-left:1px solid var(--hairline);padding-left:1.3rem;font-style:italic;color:var(--muted);font-size:17px;line-height:1.65">
+      "I'm having a panic attack and open Headspace to calm down, but I end up on a sleep meditation instead.
+      I use it anyway because it's the best I could find at that moment."</blockquote>
+      <p class="price" style="margin-top:1rem">— one of 20 user interviews</p>
+      <div class="shape" style="margin-top:2rem">
+        <div class="row"><span class="k">Industry</span><span class="v">&lt; 10% of users still active by day 20</span></div>
+        <div class="row"><span class="k">The bet</span><span class="v">you talk with Ember, the app’s voice guide; the meditation is generated from that talk</span></div>
+        <div class="row"><span class="k">The build</span><span class="v">solo, nights and weekends, one small always-on VM</span></div>
+      </div>
+    </div>
+  </div></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">01 · Context</p><h2 class="rv">A voice loop has nowhere to hide</h2><div class="three rv">
+    <div class="blk"><p class="bl">Dead air</p><p>A chat app hides a slow model behind a typing indicator. In audio, silence reads as a crash. The naive chain — speech-to-text (ASR) → LLM → text-to-speech (TTS), run one after another — took 10.7 seconds.</p></div>
+    <div class="blk"><p class="bl">One tired operator</p><p>Whatever shipped had to be debuggable by one person after midnight, on a 512MB machine, for single-digit dollars.</p></div>
+    <div class="blk"><p class="bl">Users re-ranked the problem</p><p>Interviews were clear: a pause is tolerable, a robotic voice is not. Chat got a latency budget; meditation got a continuity budget.</p></div>
+  </div></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Decision № 1 · Transport</p><h2 class="rv">How should audio move between phone and model?</h2><div class="dtable rv"><table><thead><tr><th>Alternative</th><th>First audio</th><th>Cost</th><th>Ops for one person</th><th>Verdict</th></tr></thead><tbody><tr><td>Realtime voice-to-voice</td><td>~1 s</td><td>~10× per minute</td><td>WebRTC, reconnects, young APIs</td><td><span class="dead">prototyped · killed on cost + maturity</span></td></tr><tr><td>WebSocket streaming</td><td>~2 s</td><td>same models</td><td>stateful conns, mobile reconnect pain</td><td><span class="dead">designed · never left the whiteboard</span></td></tr><tr><td>SSE sentence streaming</td><td>~2.5 s</td><td>same models</td><td>retry semantics</td><td><span class="dead">considered · the one I regret skipping</span></td></tr><tr class="chose"><td><span class="tag">CHOSE →</span> REST + async fan-out</td><td>5.5 s = full turn, no early audio</td><td>cheapest tier</td><td>stateless, curl-debuggable</td><td>shipped</td></tr></tbody></table></div><p class="price rv">PRICE PAID · ~5 s turns, no streaming — acceptable because users ranked voice quality over speed. REVISIT TRIGGER · first paid launch. BASIS · realtime measured on the prototype; WS/SSE estimated from vendor docs.</p></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Decision № 2 · Speech-to-text</p><h2 class="rv">Where should transcription happen?</h2><div class="dtable rv"><table><thead><tr><th>Alternative</th><th>Added latency</th><th>Cost</th><th>Privacy</th><th>Verdict</th></tr></thead><tbody><tr><td>Whisper, server-side</td><td>+1–3 s upload + decode</td><td>$0.006/min</td><td>raw audio leaves the phone</td><td><span class="dead">prototyped · killed on latency + privacy</span></td></tr><tr class="chose"><td><span class="tag">CHOSE →</span> Apple on-device</td><td>≈ 0 (streaming partials)</td><td>free</td><td>only text leaves the device</td><td>shipped</td></tr></tbody></table></div><p class="price rv">PRICE PAID · it heard "Ember" as "amber" for weeks (contextualStrings + a regex; commit "can transcribe ember", 5:32 AM) · endpointing — deciding when the user has finished speaking — became mine to own: 2.0 s of unchanged transcript ends the turn · iOS lock-in. REVISIT · an Android build or first non-English locale.</p></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">02 · Decisions, assembled</p><h2 class="rv">One turn, end to end — Σ 5.50 s</h2><figure class="fig rv"><div class="fig-slot"><figure class="fig" id="fig-turn">
+<style>
+#fig-turn{position:relative;margin:0;box-sizing:border-box;width:100%;background:#FCFCFA;border:1px solid #DEDCD4;padding:14px 16px 26px;color:#191B1E;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+#fig-turn .hd{display:flex;align-items:baseline;gap:16px;padding:0 2px 10px;margin-bottom:14px;border-bottom:1px solid #DEDCD4;font-size:11px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+#fig-turn .hd .no{color:#2A46D4;flex:none}
+#fig-turn .hd .ttl{color:#191B1E;overflow:hidden;text-overflow:ellipsis}
+#fig-turn .hd .mt{margin-left:auto;color:#5C6066;flex:none;font-variant-numeric:tabular-nums}
+#fig-turn.done .hd .mt{color:#2A46D4}
+#fig-turn svg{display:block;width:100%;height:auto}
+#fig-turn svg text{font-family:inherit}
+#fig-turn .box{fill:#FCFCFA;stroke:#191B1E;stroke-width:1}
+#fig-turn .box.on{fill:#E9EDF9;stroke:#2A46D4;stroke-width:1.5}
+#fig-turn .lbl{fill:#191B1E;font-size:11px;letter-spacing:.08em}
+#fig-turn .wire{stroke:#191B1E;stroke-opacity:.45;stroke-width:1;fill:none}
+#fig-turn .chev{fill:#5C6066}
+#fig-turn .cross{stroke:#DEDCD4;stroke-width:1}
+#fig-turn .cost{fill:#191B1E;font-size:11px}
+#fig-turn .ann{fill:#5C6066;font-size:10.5px;letter-spacing:.08em}
+#fig-turn .tick{fill:#2A46D4}
+#fig-turn .pulse{fill:#2A46D4}
+#fig-turn .stamp{opacity:0;transition:opacity .35s}
+#fig-turn .stamp.on{opacity:1}
+#fig-turn.rm .stamp{transition:none}
+#fig-turn .replay{position:absolute;right:8px;bottom:4px;border:0;background:transparent;padding:2px 4px;font:11px/1.4 ui-monospace,"SF Mono",Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:#5C6066;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .5s}
+#fig-turn.done .replay{opacity:1;pointer-events:auto}
+#fig-turn .replay:hover{color:#2A46D4}
+</style>
+<div class="hd"><span class="no">Fig. 02</span><span class="ttl">One turn through the pipeline</span><span class="mt">&#931; 0.00 s</span></div>
+<svg viewBox="0 0 1060 244" role="img" aria-label="Signal chain: mic, on-device ASR, HTTPS, auth, LLM, three parallel TTS calls, join, speaker; total 5.5 seconds"></svg>
+<button class="replay" type="button" aria-label="Replay animation">replay</button>
+<script>
+(function(){
+'use strict';
+var fig=document.getElementById('fig-turn');
+if(!fig)return;
+var svg=fig.querySelector('svg'),btn=fig.querySelector('.replay'),tot=fig.querySelector('.hd .mt');
+var RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(RM)fig.classList.add('rm');
+var NS='http://www.w3.org/2000/svg';
+function E(n,a,p){var e=document.createElementNS(NS,n),k;for(k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e;}
+function T(x,y,str,cls,anchor,size,p){var e=E('text',{x:x,y:y,'text-anchor':anchor||'middle','class':cls||'lbl'},p);if(size)e.setAttribute('font-size',size);e.textContent=str;return e;}
+
+var YM=132,BT=112,BB=152;
+var ST={mic:[20,46],asr:[184,108],https:[353,60],auth:[474,96],llm:[631,46],tts:[735,58],join:[851,52],spk:[964,76]};
+var TY=[72,132,192]; // tts branch centers
+
+// plotter cross marks
+var gx,gy,gcross=E('g',{'class':'cross','stroke-opacity':'.9'});
+for(gx=60;gx<=1020;gx+=96){for(gy=40;gy<=232;gy+=64){
+  E('line',{x1:gx-3,y1:gy,x2:gx+3,y2:gy},gcross);E('line',{x1:gx,y1:gy-3,x2:gx,y2:gy+3},gcross);
+}}
+
+// wires
+var wires=[
+ [66,132,184,132],[292,132,353,132],[413,132,474,132],[570,132,631,132],
+ [677,132,706,132],[706,72,706,192],[706,72,735,72],[706,192,735,192],[706,132,735,132],
+ [793,72,822,72],[793,132,822,132],[793,192,822,192],[822,72,822,192],[822,132,851,132],
+ [903,132,964,132]
+];
+wires.forEach(function(w){E('line',{x1:w[0],y1:w[1],x2:w[2],y2:w[3],'class':'wire'});});
+// chevrons at box entries
+[[184,132],[353,132],[474,132],[631,132],[735,72],[735,132],[735,192],[851,132],[964,132]].forEach(function(c){
+  E('path',{d:'M'+(c[0]-6)+' '+(c[1]-3)+' L'+(c[0]-1)+' '+c[1]+' L'+(c[0]-6)+' '+(c[1]+3)+' Z','class':'chev'});
+});
+
+// boxes + labels + done-ticks + cost stamps
+var box={},tick={},stamp={};
+function mkBox(id,x,w,y0,y1,label){
+  box[id]=E('rect',{x:x,y:y0,width:w,height:y1-y0,'class':'box'});
+  T(x+w/2,(y0+y1)/2+4,label,'lbl');
+  tick[id]=E('rect',{x:x+w-9,y:y0+4,width:5,height:5,'class':'tick stamp'});
+}
+mkBox('mic',ST.mic[0],ST.mic[1],BT,BB,'MIC');
+mkBox('asr',ST.asr[0],ST.asr[1],BT,BB,'ON-DEVICE ASR');
+mkBox('https',ST.https[0],ST.https[1],BT,BB,'HTTPS');
+mkBox('auth',ST.auth[0],ST.auth[1],BT,BB,'AUTH / LIMIT');
+mkBox('llm',ST.llm[0],ST.llm[1],BT,BB,'LLM');
+mkBox('ttsA',ST.tts[0],ST.tts[1],TY[0]-15,TY[0]+15,'TTS · A');
+mkBox('ttsB',ST.tts[0],ST.tts[1],TY[1]-15,TY[1]+15,'TTS · B');
+mkBox('ttsC',ST.tts[0],ST.tts[1],TY[2]-15,TY[2]+15,'TTS · C');
+mkBox('join',ST.join[0],ST.join[1],BT,BB,'JOIN');
+mkBox('spk',ST.spk[0],ST.spk[1],BT,BB,'SPEAKER');
+
+function mkStamp(id,cx,y,txt){stamp[id]=T(cx,y,txt,'cost stamp');}
+mkStamp('mic',ST.mic[0]+23,172,'~0 MS');
+mkStamp('asr',ST.asr[0]+54,172,'~350 MS');
+mkStamp('https',ST.https[0]+30,172,'~100 MS');
+mkStamp('auth',ST.auth[0]+48,172,'~20 MS');
+mkStamp('llm',ST.llm[0]+23,172,'~1.1 S');
+mkStamp('tts',ST.tts[0]+29,229,'~1.6 S ×3');
+mkStamp('join',ST.join[0]+26,172,'~80 MS');
+mkStamp('spk',ST.spk[0]+38,172,'~250 MS');
+
+// silence annotation over first connector
+var silA=T(125,98,'2.0 S SILENCE','ann stamp','middle',11);
+var silB=T(125,113,'= END OF TURN','ann stamp','middle',10);
+
+// pulses
+var pM=E('circle',{cx:22,cy:YM,r:3.5,'class':'pulse',opacity:0});
+var pA=E('circle',{cx:677,cy:YM,r:3.2,'class':'pulse',opacity:0});
+var pC=E('circle',{cx:677,cy:YM,r:3.2,'class':'pulse',opacity:0});
+
+function polyAt(pts,t){
+  var L=[0],i,tot=0;
+  for(i=1;i<pts.length;i++){tot+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);L.push(tot);}
+  var d=t*tot;
+  for(i=1;i<pts.length;i++){if(d<=L[i]||i===pts.length-1){var f=(d-L[i-1])/(L[i]-L[i-1]||1);return [pts[i-1][0]+(pts[i][0]-pts[i-1][0])*f,pts[i-1][1]+(pts[i][1]-pts[i-1][1])*f];}}
+  return pts[pts.length-1];
+}
+var fanM=[[677,132],[735,132]],fanA=[[677,132],[706,132],[706,72],[735,72]],fanC=[[677,132],[706,132],[706,192],[735,192]];
+var mrgM=[[793,132],[851,132]],mrgA=[[793,72],[822,72],[822,132],[851,132]],mrgC=[[793,192],[822,192],[822,132],[851,132]];
+
+function setP(el,x,y,r){el.setAttribute('cx',x);el.setAttribute('cy',y);if(r)el.setAttribute('r',r);}
+function light(id,on){box[id].setAttribute('class',on?'box on':'box');}
+function done(id){tick[id].setAttribute('class','tick stamp on');}
+function st(id){stamp[id].setAttribute('class','cost stamp on');if(id==='sil'){silA.setAttribute('class','ann stamp on');silB.setAttribute('class','ann stamp on');}}
+function moveX(a,b){return function(t){setP(pM,a+(b-a)*t,YM,3.5);};}
+
+var SEG=[
+ {d:220,c:[0,0],  f:moveX(22,66),  s:function(){pM.setAttribute('opacity',1);light('mic',1);}, e:function(){light('mic',0);done('mic');st('mic');}},
+ {d:120,c:[0,0],  f:moveX(66,125)},
+ {d:900,c:[0,2.0],f:function(t){setP(pM,125,YM,3.5+1.3*Math.sin(Math.PI*t));}, s:function(){silA.setAttribute('class','ann stamp on');silB.setAttribute('class','ann stamp on');}},
+ {d:120,c:[2.0,2.0],f:moveX(125,184)},
+ {d:340,c:[2.0,2.35],f:moveX(184,292), s:function(){light('asr',1);}, e:function(){light('asr',0);done('asr');st('asr');}},
+ {d:140,c:[2.35,2.35],f:moveX(292,353)},
+ {d:220,c:[2.35,2.45],f:moveX(353,413), s:function(){light('https',1);}, e:function(){light('https',0);done('https');st('https');}},
+ {d:140,c:[2.45,2.45],f:moveX(413,474)},
+ {d:200,c:[2.45,2.47],f:moveX(474,570), s:function(){light('auth',1);}, e:function(){light('auth',0);done('auth');st('auth');}},
+ {d:140,c:[2.47,2.47],f:moveX(570,631)},
+ {d:640,c:[2.47,3.57],f:moveX(631,677), s:function(){light('llm',1);}, e:function(){light('llm',0);done('llm');st('llm');}},
+ {d:200,c:[3.57,3.57],f:function(t){var m=polyAt(fanM,t),a=polyAt(fanA,t),c=polyAt(fanC,t);setP(pM,m[0],m[1]);setP(pA,a[0],a[1]);setP(pC,c[0],c[1]);}, s:function(){pA.setAttribute('opacity',1);pC.setAttribute('opacity',1);}},
+ {d:860,c:[3.57,5.17],f:function(t){var x=735+58*t;setP(pM,x,TY[1]);setP(pA,x,TY[0]);setP(pC,x,TY[2]);}, s:function(){light('ttsA',1);light('ttsB',1);light('ttsC',1);}, e:function(){light('ttsA',0);light('ttsB',0);light('ttsC',0);done('ttsA');done('ttsB');done('ttsC');st('tts');}},
+ {d:200,c:[5.17,5.17],f:function(t){var m=polyAt(mrgM,t),a=polyAt(mrgA,t),c=polyAt(mrgC,t);setP(pM,m[0],m[1]);setP(pA,a[0],a[1]);setP(pC,c[0],c[1]);}, e:function(){pA.setAttribute('opacity',0);pC.setAttribute('opacity',0);}},
+ {d:220,c:[5.17,5.25],f:moveX(851,903), s:function(){light('join',1);}, e:function(){light('join',0);done('join');st('join');}},
+ {d:140,c:[5.25,5.25],f:moveX(903,964)},
+ {d:300,c:[5.25,5.50],f:moveX(964,1040), s:function(){light('spk',1);}, e:function(){light('spk',0);done('spk');st('spk');pM.setAttribute('opacity',0);fig.classList.add('done');}}
+];
+var TOTAL=SEG.reduce(function(a,x){return a+x.d;},0);
+
+function setTot(v){tot.textContent='Σ '+v.toFixed(2)+' s'.toUpperCase();}
+function reset(){
+  ['mic','asr','https','auth','llm','ttsA','ttsB','ttsC','join','spk'].forEach(function(id){light(id,0);tick[id].setAttribute('class','tick stamp');});
+  for(var k in stamp)stamp[k].setAttribute('class','cost stamp');
+  silA.setAttribute('class','ann stamp');silB.setAttribute('class','ann stamp');
+  pM.setAttribute('opacity',0);pA.setAttribute('opacity',0);pC.setAttribute('opacity',0);
+  fig.classList.remove('done');setTot(0);
+}
+function finalState(){
+  reset();
+  SEG.forEach(function(sg){if(sg.e)sg.e();});
+  silA.setAttribute('class','ann stamp on');silB.setAttribute('class','ann stamp on');
+  pM.setAttribute('opacity',0);pA.setAttribute('opacity',0);pC.setAttribute('opacity',0);
+  setTot(5.5);fig.classList.add('done');
+}
+var TCK=(function(){try{return !!navigator.webdriver||/HeadlessChrome/.test(navigator.userAgent)||location.hash.indexOf('vtclk')>=0;}catch(e){return false;}})();
+var vclk=0,gen=0;
+function sched(cb){if(TCK)setTimeout(function(){vclk+=16.667;cb(vclk);},16);else requestAnimationFrame(cb);}
+function nowc(){return TCK?vclk:performance.now();}
+var t0=0,idx=-1;
+function loop(ts){
+  var t=ts-t0,acc=0,i;
+  for(i=0;i<SEG.length;i++){
+    if(t<acc+SEG[i].d||i===SEG.length-1){
+      var lt=Math.min(1,Math.max(0,(t-acc)/SEG[i].d));
+      while(idx<i){
+        if(idx>=0){if(SEG[idx].f)SEG[idx].f(1);if(SEG[idx].e)SEG[idx].e();}
+        idx++;
+        if(SEG[idx].s)SEG[idx].s();
+      }
+      SEG[i].f(lt);
+      setTot(SEG[i].c[0]+(SEG[i].c[1]-SEG[i].c[0])*lt);
+      break;
+    }
+    acc+=SEG[i].d;
+  }
+  if(t>=TOTAL){if(idx===SEG.length-1){var L=SEG[idx];if(L.f)L.f(1);if(L.e)L.e();idx++;}setTot(5.5);return false;}
+  return true;
+}
+function start(){
+  gen++;var g=gen;
+  reset();
+  if(RM){finalState();return;}
+  idx=-1;t0=nowc();
+  sched(function step(ts){if(g!==gen)return;if(loop(ts))sched(step);});
+}
+btn.addEventListener('click',start);
+setTot(0);
+var started=false;
+function kick(){if(!started){started=true;io.disconnect();start();}}
+var io=new IntersectionObserver(function(es){
+  for(var i=0;i<es.length;i++){if(es[i].isIntersecting)kick();}
+},{threshold:0.3});
+io.observe(fig);
+if(TCK)setTimeout(kick,30);
+})();
+</script>
+</figure></div><figcaption><span class="figno">Fig. 2</span> — Anatomy of one turn. Stage boxes sum to 3.5 s of processing; the remaining 2.0 s is the silence rule itself — a product decision, with everything below it as consequences.</figcaption></figure></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Decision № 3 · Session state</p><h2 class="rv">Who remembers the conversation?</h2><div class="dtable rv"><table><thead><tr><th>Alternative</th><th>Scale-out</th><th>Failure modes</th><th>Ops</th><th>Verdict</th></tr></thead><tbody><tr><td>Server session store</td><td>sticky routing or shared store</td><td>session recovery on deploy/crash</td><td>Redis/DB to run</td><td><span class="dead">rejected · infra for a problem I didn't have</span></td></tr><tr class="chose"><td><span class="tag">CHOSE →</span> Client carries everything</td><td>any machine, any request</td><td>nothing to lose on deploy</td><td>zero</td><td>shipped</td></tr></tbody></table></div><p class="price rv">MECHANISM · every request carries the full conversation plus percent_complete — how far through the meditation the user is; under 70 s left the app pins it to 100 so the closing always lands before the bell. PRICE PAID · a client can lie about progress (bounded by auth + 30/day caps) · full-history resends grow tokens per turn (bounded by session length). REVISIT TRIGGER · server-issued session tokens before money changes hands.</p></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">02 · Decisions · git: remove condesending tone</p><h2 class="rv">Prompts are production code</h2><div class="three rv">
+    <div class="blk"><p class="bl">Persona = state machine</p><p>The prompt encodes three phases: an interview, a hand-off that must end at the app’s begin button (it forbids asking "are you ready?"), and a meditation parameterized 0→100%.</p></div>
+    <div class="blk"><p class="bl">Voice direction per request</p><p>Each endpoint ships its own TTS style block: quick and warm for chat, slow with long pauses for meditation. Emotional register is a request parameter.</p></div>
+    <div class="blk"><p class="bl">Prompts outrun clients</p><p>Persona iterated daily against app builds I couldn't update: unknown roles coerced server-side, message schema append-only. No session ever broke.</p></div>
+  </div>
+  <p class="price rv">PROMPT CHANGES SHIPPED DAILY, REVIEWED AND PHASED LIKE ANY OTHER DEPLOY · THE COMMIT IN THE HEADER IS A USER-FILED BUGFIX</p></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">02 · Decisions · the method</p><h2 class="rv">Everything built twice, and what survived</h2><p class="lede rv">AI-assisted prototyping priced the alternatives near zero. The engineering judgment moved to choosing what to delete.</p><figure class="fig rv"><div class="table-slot"><table>
+<thead><tr><th>Layer</th><th>Also built — measured, cut</th><th>Verdict</th><th>Kept</th></tr></thead>
+<tbody>
+<tr><td>Transport</td><td>Realtime voice-to-voice prototype</td><td>~1 s turns at ~10× the cost on young APIs; REST is slower and boring, and one person can operate it</td><td><strong>REST + async fan-out</strong></td></tr>
+<tr><td>Speech-to-text</td><td>Whisper, server-side</td><td>+1–3 s and $0.006/min, raw audio leaves the phone; on-device is instant, free, private — and hears “amber”</td><td><strong>Apple on-device</strong></td></tr>
+<tr><td>LLM</td><td>gpt-4o</td><td>indistinguishable for two-sentence replies at ~15× the price</td><td><strong>gpt-4o-mini</strong></td></tr>
+<tr><td>Text-to-speech</td><td>tts-1-hd · tts-1</td><td>hd: lovely, twice too slow; tts-1: fast, robotic; the third is fast and steerable per endpoint</td><td><strong>gpt-4o-mini-tts</strong></td></tr>
+<tr><td>TTS delivery</td><td>(nothing cut — both shipped)</td><td>parallel stitch where speed rules; single synthesis where continuity rules</td><td><strong>Both, routed</strong></td></tr>
+<tr><td>Cold starts</td><td>Cron pinger · Redis warm-state spike</td><td>a coin flip and the wrong half of the problem, respectively</td><td><strong>min_machines_running = 1</strong></td></tr>
+</tbody></table></div><figcaption><span class="figno">Table 1</span> — Each row is an alternative that was prototyped, measured, and deleted, which was cheaper than being right in advance.</figcaption></figure></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">03 · Latency · git: worse models, faster response — 4:07 AM</p><h2 class="rv">Timers first, opinions second</h2><div class="two rv">
+    <div class="copy"><p style="font-size:17px;line-height:1.7">The commit that downgraded the models also added elapsed-time
+    logging at every await boundary. From then on, every stage of every turn reported its cost. No APM vendor: a system whose
+    slow parts are all network calls needs nothing finer than wall-clock deltas.</p>
+    <p style="font-size:17px;line-height:1.7;margin-top:1rem">The logs made the argument simple — model calls dominated the
+    turn, everything else was noise, and anything optimized without a timer in front of it was decoration.</p></div>
+    <pre style="font-size:12px">[0.000s] chat processing start
+[0.048s] auth ok
+[1.310s] LLM reply received
+[TTS]    3 chunks · gather wall 1.62s
+[FS]     audit write (concurrent)
+[3.05s]  total server time</pre>
+  </div></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">03 · Latency</p><h2 class="rv">Where the 5.2 seconds went</h2><figure class="fig rv"><div class="fig-slot"><figure class="fig" id="fig-waterfall">
+<style>
+#fig-waterfall{position:relative;margin:0;box-sizing:border-box;width:100%;background:#FCFCFA;border:1px solid #DEDCD4;padding:14px 16px 26px;color:#191B1E;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+#fig-waterfall .hd{display:flex;align-items:baseline;gap:16px;padding:0 2px 10px;margin-bottom:14px;border-bottom:1px solid #DEDCD4;font-size:11px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+#fig-waterfall .hd .no{color:#2A46D4;flex:none}
+#fig-waterfall .hd .ttl{color:#191B1E;overflow:hidden;text-overflow:ellipsis}
+#fig-waterfall .hd .mt{margin-left:auto;color:#5C6066;flex:none}
+@media (max-width:620px){#fig-waterfall .hd .mt{display:none}}
+#fig-waterfall svg{display:block;width:100%;height:auto}
+#fig-waterfall svg text{font-family:inherit}
+#fig-waterfall .grid{stroke:#DEDCD4;stroke-width:1}
+#fig-waterfall .axis{stroke:#191B1E;stroke-width:1}
+#fig-waterfall .rowlbl{fill:#191B1E;font-size:11px;letter-spacing:.1em}
+#fig-waterfall .seglbl{fill:#5C6066;font-size:10.5px;letter-spacing:.04em}
+#fig-waterfall .num{fill:#5C6066;font-size:10px}
+#fig-waterfall .total{font-size:12.5px;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+#fig-waterfall .stamp{opacity:0;transition:opacity .3s}
+#fig-waterfall .stamp.on{opacity:1}
+#fig-waterfall.rm .stamp{transition:none}
+#fig-waterfall .replay{position:absolute;right:8px;bottom:4px;border:0;background:transparent;padding:2px 4px;font:11px/1.4 ui-monospace,"SF Mono",Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:#5C6066;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .5s}
+#fig-waterfall.done .replay{opacity:1;pointer-events:auto}
+#fig-waterfall .replay:hover{color:#2A46D4}
+</style>
+<div class="hd"><span class="no">Fig. 03</span><span class="ttl">The turn budget, three generations</span><span class="mt">wall-clock seconds</span></div>
+<svg viewBox="0 0 1060 322" role="img" aria-label="Three stacked latency bars: v1 prototype 10.7 seconds, v3 shipped 5.5 seconds, next overlapped about 1.2 seconds"></svg>
+<button class="replay" type="button" aria-label="Replay animation">replay</button>
+<script>
+(function(){
+'use strict';
+var fig=document.getElementById('fig-waterfall');
+if(!fig)return;
+var svg=fig.querySelector('svg'),btn=fig.querySelector('.replay');
+var RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(RM)fig.classList.add('rm');
+var NS='http://www.w3.org/2000/svg';
+var INK='#191B1E',MUT='#5C6066',HAIR='#DEDCD4',CO='#2A46D4',TINT='#E9EDF9';
+function E(n,a,p){var e=document.createElementNS(NS,n),k;for(k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e;}
+function T(x,y,str,cls,anchor,fill,size,p){var e=E('text',{x:x,y:y,'text-anchor':anchor||'start','class':cls||'num'},p);if(fill)e.style.fill=fill;if(size)e.setAttribute('font-size',size);e.textContent=str;return e;}
+
+var X0=40,PXS=89.09;   // px per second
+function X(t){return X0+t*PXS;}
+
+// defs: hatch pattern + row clips
+var defs=E('defs',{});
+var pat=E('pattern',{id:'fig-waterfall-hatch',width:6,height:6,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},defs);
+E('rect',{width:6,height:6,fill:HAIR,opacity:.45},pat);
+E('line',{x1:.5,y1:0,x2:.5,y2:6,stroke:INK,'stroke-opacity':.45,'stroke-width':1},pat);
+function mkClip(id){var c=E('clipPath',{id:id},defs);return E('rect',{x:X0,y:0,width:0,height:322},c);}
+var clipV1=mkClip('fig-waterfall-c1'),clipV3=mkClip('fig-waterfall-c2');
+
+// graticule
+var g,i;
+g=E('g',{'class':'grid','stroke-opacity':.6});
+for(i=0;i<=11;i++)E('line',{x1:X(i),y1:60,x2:X(i),y2:264},g);
+// axis
+E('line',{x1:X0,y1:272.5,x2:X(11),y2:272.5,'class':'axis'});
+for(i=0;i<=11;i++){E('line',{x1:X(i),y1:272.5,x2:X(i),y2:277.5,'class':'axis'});T(X(i),290,String(i),'num','middle');}
+T(1020,306,'WALL-CLOCK SECONDS','num','end',MUT);
+
+// legend
+var lg=E('g',{});
+E('rect',{x:X0,y:297,width:20,height:10,fill:'url(#fig-waterfall-hatch)',stroke:MUT,'stroke-opacity':.55,'stroke-width':1},lg);
+T(X0+27,306,'PLATFORM · NOT MODEL TIME','num','start',MUT,null,lg);
+E('rect',{x:250,y:297,width:20,height:10,fill:TINT,stroke:CO,'stroke-width':1},lg);
+T(277,306,'LLM','num','start',MUT,null,lg);
+E('rect',{x:330,y:297,width:20,height:10,fill:CO},lg);
+T(357,306,'TTS','num','start',MUT,null,lg);
+
+function segFill(k,rect){
+  if(k==='llm'){rect.setAttribute('fill',TINT);rect.setAttribute('stroke',CO);rect.setAttribute('stroke-width',1);}
+  else if(k==='tts'){rect.setAttribute('fill',CO);}
+  else{rect.setAttribute('fill','url(#fig-waterfall-hatch)');rect.setAttribute('stroke',MUT);rect.setAttribute('stroke-opacity',.55);rect.setAttribute('stroke-width',1);}
+}
+
+// ---- rows ----
+var V1=[['sil',2.0,'SILENCE · 2.0'],['asr',0.5,'ASR · 0.5'],['llm',2.8,'LLM · 2.8'],['tts',4.2,'TTS · 4.2'],['glue',1.2,'GLUE · 1.2']];
+var V3=[['sil',2.0,'2.0'],['asr',0.35,'0.35'],['llm',1.1,'1.1'],['tts',1.6,'1.6'],['glue',0.45,'0.45']];
+
+function buildRow(defsSegs,y,labelY,clipRect,clipId){
+  var grp=E('g',{'clip-path':'url(#'+clipId+')'});
+  var cum=0,labels=[];
+  defsSegs.forEach(function(sg){
+    var w=sg[1]*PXS;
+    var r=E('rect',{x:X(cum),y:y,width:Math.max(0,w-2),height:26},grp);
+    segFill(sg[0],r);
+    labels.push({x:X(cum)+w/2,txt:sg[2]});
+    cum+=sg[1];
+  });
+  var lbl=labels.map(function(L){return T(L.x,labelY,L.txt,'seglbl stamp','middle');});
+  return {grp:grp,labels:lbl,labelXs:labels.map(function(L){return L.x;})};
+}
+var rowlblV1=T(X0,68,'V1 · PROTOTYPE','rowlbl stamp');
+var r1=buildRow(V1,76,118,clipV1,'fig-waterfall-c1');
+var tot1=T(X(10.7)+10,93,'','total stamp','start',MUT);
+
+var rowlblV3=T(X0,142,'V3 · SHIPPED','rowlbl stamp');
+var r3=buildRow(V3,150,192,clipV3,'fig-waterfall-c2');
+var tot3=T(X(5.5)+10,167,'','total stamp','start',INK);
+
+var rowlblNX=T(X0,216,'NEXT · OVERLAPPED — STREAM WHILE GENERATING','rowlbl stamp');
+// overlapped strips: [class, t0, t1, y]
+var STRIPS=[['asr',0,0.35,224],['llm',0.10,0.80,234],['tts',0.30,1.20,244]];
+var stripEls=STRIPS.map(function(sp){
+  var r=E('rect',{x:X(sp[1]),y:sp[3],width:0,height:7});
+  segFill(sp[0],r);
+  return r;
+});
+var stripLbl=STRIPS.map(function(sp,j){
+  return T(X(sp[2])+6,sp[3]+7,['ASR','LLM','TTS'][j],'seglbl stamp','start');
+});
+var nxRule=E('line',{x1:X(1.2),y1:220,x2:X(1.2),y2:255,stroke:CO,'stroke-width':1,'stroke-dasharray':'2 3','class':'stamp'});
+var totNX=T(X(1.2)+42,242,'','total stamp','start',CO);
+
+function setClip(rect,w){rect.setAttribute('width',Math.max(0,w));}
+function on(el){el.setAttribute('class',(el.getAttribute('class')||'').replace(/ ?\bon\b/,'')+' on');}
+function off(el){el.setAttribute('class',(el.getAttribute('class')||'').replace(/ ?\bon\b/,''));}
+
+function reset(){
+  setClip(clipV1,0);setClip(clipV3,0);
+  stripEls.forEach(function(r,j){r.setAttribute('width',0);});
+  [rowlblV1,rowlblV3,rowlblNX,tot1,tot3,totNX,nxRule].forEach(off);
+  r1.labels.forEach(off);r3.labels.forEach(off);stripLbl.forEach(off);
+  tot1.textContent='';tot3.textContent='';totNX.textContent='';
+  fig.classList.remove('done');
+}
+function finalState(){
+  reset();
+  setClip(clipV1,X(10.7)-X0+4);setClip(clipV3,X(5.5)-X0+4);
+  STRIPS.forEach(function(sp,j){stripEls[j].setAttribute('width',(sp[2]-sp[1])*PXS);});
+  [rowlblV1,rowlblV3,rowlblNX,tot1,tot3,totNX,nxRule].forEach(on);
+  r1.labels.forEach(on);r3.labels.forEach(on);stripLbl.forEach(on);
+  tot1.textContent='10.7 S';tot3.textContent='5.5 S';totNX.textContent='≈1.2 S';
+  tot1.setAttribute('x',X(10.7)+10);tot3.setAttribute('x',X(5.5)+10);
+  fig.classList.add('done');
+}
+// timeline: [start, dur, row]
+var PH=[[0,1400],[1600,800],[2600,600]],END=3400;
+var TCK=(function(){try{return !!navigator.webdriver||/HeadlessChrome/.test(navigator.userAgent)||location.hash.indexOf('vtclk')>=0;}catch(e){return false;}})();
+var vclk=0,gen=0;
+function sched(cb){if(TCK)setTimeout(function(){vclk+=16.667;cb(vclk);},16);else requestAnimationFrame(cb);}
+function nowc(){return TCK?vclk:performance.now();}
+var t0=0;
+function ease(t){return t;}
+function loop(ts){
+  var t=ts-t0,p,edge,j;
+  // v1
+  p=Math.min(1,Math.max(0,(t-PH[0][0])/PH[0][1]));
+  if(t>=PH[0][0])on(rowlblV1);
+  edge=X0+(X(10.7)-X0)*ease(p);
+  setClip(clipV1,edge-X0+(p>=1?4:0));
+  if(p>0){on(tot1);tot1.textContent=(10.7*p).toFixed(1)+' S';tot1.setAttribute('x',Math.min(edge,X(10.7))+10);}
+  r1.labels.forEach(function(L,k){if(edge>=r1.labelXs[k])on(L);});
+  // v3
+  p=Math.min(1,Math.max(0,(t-PH[1][0])/PH[1][1]));
+  if(t>=PH[1][0])on(rowlblV3);
+  edge=X0+(X(5.5)-X0)*ease(p);
+  if(t>=PH[1][0]){setClip(clipV3,edge-X0+(p>=1?4:0));
+    if(p>0){on(tot3);tot3.textContent=(5.5*p).toFixed(1)+' S';tot3.setAttribute('x',Math.min(edge,X(5.5))+10);}
+    r3.labels.forEach(function(L,k){if(edge>=r3.labelXs[k])on(L);});}
+  // next (strips grow on their own overlapped schedule)
+  p=Math.min(1,Math.max(0,(t-PH[2][0])/PH[2][1]));
+  if(t>=PH[2][0]){
+    on(rowlblNX);
+    var rowT=1.2*p;
+    for(j=0;j<STRIPS.length;j++){
+      var sp=STRIPS[j],f=Math.min(1,Math.max(0,(rowT-sp[1])/(sp[2]-sp[1])));
+      stripEls[j].setAttribute('width',(sp[2]-sp[1])*PXS*f);
+      if(f>=1)on(stripLbl[j]);
+    }
+    if(p>0){on(totNX);totNX.textContent='≈'+(1.2*p).toFixed(1)+' S';}
+    if(p>=1){on(nxRule);}
+  }
+  if(t>=END){fig.classList.add('done');return false;}
+  return true;
+}
+function start(){
+  gen++;var g=gen;
+  reset();
+  if(RM){finalState();return;}
+  t0=nowc();
+  sched(function step(ts){if(g!==gen)return;if(loop(ts))sched(step);});
+}
+btn.addEventListener('click',start);
+var started=false;
+function kick(){if(!started){started=true;io.disconnect();start();}}
+var io=new IntersectionObserver(function(es){
+  for(var i=0;i<es.length;i++){if(es[i].isIntersecting)kick();}
+},{threshold:0.3});
+io.observe(fig);
+if(TCK)setTimeout(kick,30);
+})();
+</script>
+</figure></div><figcaption><span class="figno">Fig. 3</span> — The turn budget, 10.7 s naive to 5.5 s shipped, with the designed 1.2 s streaming variant included for morale.</figcaption></figure></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Decision № 4 · TTS delivery</p><h2 class="rv">One synthesis call, or three in parallel?</h2><div class="dtable rv"><table><thead><tr><th>Alternative</th><th>Wall time</th><th>Prosody (voice mood)</th><th>Verdict</th></tr></thead><tbody><tr><td>Serial, single call</td><td>~4.5 s</td><td>one continuous mood</td><td><span class="dead">too slow for chat</span></td></tr><tr><td>Parallel 3-chunk stitch</td><td>~1.6 s (slowest chunk)</td><td>mood resets at every seam</td><td><span class="dead">too jarring for meditation</span></td></tr><tr class="chose"><td><span class="tag">CHOSE →</span> Both, routed per consumer</td><td>1.6 s chat · 4.5 s meditation</td><td>each product gets the budget it needs</td><td>shipped</td></tr></tbody></table></div><p class="price rv">MECHANISM · split at punctuation, ≥80 chars/chunk, byte-concatenate the MP3s — frames carry sync headers, decoders forgive the seams. PRICE PAID · two delivery paths to maintain and test. BLAST RADIUS · a failed chunk today drops silently from the reply — accepted at beta scale; check-and-raise is the one-line fix. REVISIT · realtime voice APIs. THE EXCEPTION BECAME FIELD NOTE № 1.</p></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">03 · Latency</p><h2 class="rv">The stitch, racing itself</h2><figure class="fig rv"><div class="fig-slot"><figure class="fig" id="fig-stitch">
+<style>
+#fig-stitch{position:relative;margin:0;box-sizing:border-box;width:100%;background:#FCFCFA;border:1px solid #DEDCD4;padding:14px 16px 26px;color:#191B1E;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+#fig-stitch .hd{display:flex;align-items:baseline;gap:16px;padding:0 2px 10px;margin-bottom:14px;border-bottom:1px solid #DEDCD4;font-size:11px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+#fig-stitch .hd .no{color:#2A46D4;flex:none}
+#fig-stitch .hd .ttl{color:#191B1E;overflow:hidden;text-overflow:ellipsis}
+#fig-stitch .hd .mt{margin-left:auto;color:#5C6066;flex:none}
+@media (max-width:620px){#fig-stitch .hd .mt{display:none}}
+#fig-stitch svg{display:block;width:100%;height:auto}
+#fig-stitch svg text{font-family:inherit}
+#fig-stitch .grid{stroke:#DEDCD4}
+#fig-stitch .axis{stroke:#191B1E;stroke-width:1}
+#fig-stitch .num{fill:#5C6066;font-size:10px}
+#fig-stitch .lane{fill:#191B1E;font-size:11px;letter-spacing:.12em}
+#fig-stitch .sub{fill:#5C6066;font-size:10px;letter-spacing:.08em}
+#fig-stitch .ghost{fill:none;stroke:#DEDCD4;stroke-dasharray:3 2}
+#fig-stitch .chunk{fill:#5C6066;font-size:10.5px;letter-spacing:.06em}
+#fig-stitch .flag{font-size:13px;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+#fig-stitch .stamp{opacity:0;transition:opacity .3s}
+#fig-stitch .stamp.on{opacity:1}
+#fig-stitch.rm .stamp{transition:none}
+#fig-stitch .cursorline{stroke:#2A46D4;stroke-width:1}
+#fig-stitch .replay{position:absolute;right:8px;bottom:4px;border:0;background:transparent;padding:2px 4px;font:11px/1.4 ui-monospace,"SF Mono",Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:#5C6066;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .5s}
+#fig-stitch.done .replay{opacity:1;pointer-events:auto}
+#fig-stitch .replay:hover{color:#2A46D4}
+</style>
+<div class="hd"><span class="no">Fig. 04</span><span class="ttl">Serial vs parallel TTS — the stitch</span><span class="mt">same 3 chunks · 2 schedules</span></div>
+<svg viewBox="0 0 1060 268" role="img" aria-label="Race chart: three TTS chunks rendered serially finish at 4.5 seconds; rendered in parallel they finish at 1.6 seconds"></svg>
+<button class="replay" type="button" aria-label="Replay animation">replay</button>
+<script>
+(function(){
+'use strict';
+var fig=document.getElementById('fig-stitch');
+if(!fig)return;
+var svg=fig.querySelector('svg'),btn=fig.querySelector('.replay');
+var RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(RM)fig.classList.add('rm');
+var NS='http://www.w3.org/2000/svg';
+var INK='#191B1E',MUT='#5C6066',HAIR='#DEDCD4',CO='#2A46D4',TINT='#E9EDF9',PAPER='#FCFCFA';
+function E(n,a,p){var e=document.createElementNS(NS,n),k;for(k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e;}
+function T(x,y,str,cls,anchor,fill,size){var e=E('text',{x:x,y:y,'text-anchor':anchor||'start','class':cls||'num'});if(fill)e.style.fill=fill;if(size)e.setAttribute('font-size',size);e.textContent=str;return e;}
+
+var X0=150,PXS=174;
+function X(t){return X0+t*PXS;}
+
+// graticule + axis
+var g=E('g',{'class':'grid'}),i,t;
+for(t=0;t<=5.01;t+=0.5){
+  E('line',{x1:X(t),y1:52,x2:X(t),y2:232,'stroke-opacity':(t%1===0)?.9:.45},g);
+}
+E('line',{x1:X0,y1:238.5,x2:X(5),y2:238.5,'class':'axis'});
+for(t=0;t<=5.01;t+=0.5){
+  E('line',{x1:X(t),y1:238.5,x2:X(t),y2:238.5+(t%1===0?5:3),'class':'axis'});
+  if(t%1===0)T(X(t),256,t.toFixed(0)+' S','num','middle');
+}
+
+// lane labels
+T(20,79,'SERIAL','lane');T(20,94,'1 WORKER','sub');
+T(20,174,'PARALLEL','lane');T(20,189,'3 WORKERS','sub');
+
+// serial lane: y 64..92 ; chunks 0-1.5 / 1.5-3.0 / 3.0-4.5
+var SER=[[0,1.5],[1.5,3.0],[3.0,4.5]];
+var serFill=[],serGhost=[],serLbl=[];
+SER.forEach(function(c,j){
+  serGhost.push(E('rect',{x:X(c[0])+1,y:64,width:(c[1]-c[0])*PXS-2,height:28,'class':'ghost'}));
+  serFill.push(E('rect',{x:X(c[0])+1,y:64,width:0,height:28,fill:TINT,stroke:CO,'stroke-width':1,'stroke-opacity':0}));
+  serLbl.push(T(X((c[0]+c[1])/2),82,'CHUNK '+(j+1),'chunk','middle'));
+});
+// parallel lane: rows y 142/168/194, h20 ; all chunks 0-1.6
+var PAR=[142,168,194];
+var parFill=[],parGhost=[],parLbl=[];
+PAR.forEach(function(y,j){
+  parGhost.push(E('rect',{x:X(0)+1,y:y,width:1.6*PXS-2,height:20,'class':'ghost'}));
+  parFill.push(E('rect',{x:X(0)+1,y:y,width:0,height:20,fill:CO}));
+  parLbl.push(T(X(0.8),y+14,'CHUNK '+(j+1),'chunk','middle'));
+});
+
+// stamps
+var joinLine=E('line',{x1:X(1.6),y1:134,x2:X(1.6),y2:222,stroke:CO,'stroke-width':1,'class':'stamp'});
+var joinLbl=T(X(1.6)+8,148,'JOIN → PLAY','sub stamp','start',CO);
+var parFlag=T(X(1.6)+8,170,'1.6 S','flag stamp','start',CO);
+var parSub=T(X(1.6)+8,186,'3 × IN PARALLEL','sub stamp','start',MUT);
+var serFlagLine=E('line',{x1:X(4.5),y1:56,x2:X(4.5),y2:100,stroke:INK,'stroke-width':1,'class':'stamp'});
+var serFlag=T(X(4.5)+8,74,'4.5 S','flag stamp','start',INK);
+var serSub=T(X(4.5)+8,90,'3 × 1.5 S','sub stamp','start',MUT);
+var dLine=E('line',{x1:X(1.6),y1:118,x2:X(4.5),y2:118,stroke:MUT,'stroke-width':1,'class':'stamp'});
+var dT1=E('line',{x1:X(1.6),y1:114,x2:X(1.6),y2:122,stroke:MUT,'stroke-width':1,'class':'stamp'});
+var dT2=E('line',{x1:X(4.5),y1:114,x2:X(4.5),y2:122,stroke:MUT,'stroke-width':1,'class':'stamp'});
+var dLbl=T(X(3.05),112,'−2.9 S WALL-CLOCK','sub stamp','middle',CO);
+
+// cursor
+var cur=E('line',{x1:X0,y1:48,x2:X0,y2:232,'class':'cursorline',opacity:0});
+var curT=T(X0,42,'','num','middle',CO);
+
+function on(el){var c=el.getAttribute('class')||'';if(c.indexOf(' on')<0)el.setAttribute('class',c+' on');}
+function off(el){el.setAttribute('class',(el.getAttribute('class')||'').replace(/ ?\bon\b/g,''));}
+var stamps=[joinLine,joinLbl,parFlag,parSub,serFlagLine,serFlag,serSub,dLine,dT1,dT2,dLbl];
+
+function reset(){
+  serFill.forEach(function(r){r.setAttribute('width',0);r.setAttribute('stroke-opacity',0);});
+  parFill.forEach(function(r){r.setAttribute('width',0);});
+  parLbl.forEach(function(l){l.style.fill='';});
+  serLbl.forEach(function(l){l.style.fill='';});
+  stamps.forEach(off);
+  cur.setAttribute('opacity',0);curT.textContent='';
+  fig.classList.remove('done');
+}
+function finalState(){
+  reset();
+  serFill.forEach(function(r,j){r.setAttribute('width',(SER[j][1]-SER[j][0])*PXS-2);r.setAttribute('stroke-opacity',1);});
+  parFill.forEach(function(r){r.setAttribute('width',1.6*PXS-2);});
+  parLbl.forEach(function(l){l.style.fill=PAPER;});
+  serLbl.forEach(function(l){l.style.fill=INK;});
+  stamps.forEach(on);
+  fig.classList.add('done');
+}
+var TCK=(function(){try{return !!navigator.webdriver||/HeadlessChrome/.test(navigator.userAgent)||location.hash.indexOf('vtclk')>=0;}catch(e){return false;}})();
+var vclk=0,gen=0;
+function sched(cb){if(TCK)setTimeout(function(){vclk+=16.667;cb(vclk);},16);else requestAnimationFrame(cb);}
+function nowc(){return TCK?vclk:performance.now();}
+var t0=0,DUR=2000;
+function loop(ts){
+  var p=Math.min(1,(ts-t0)/DUR);
+  var tc=4.5*p,j,f;
+  for(j=0;j<3;j++){
+    f=Math.min(1,Math.max(0,(tc-SER[j][0])/1.5));
+    serFill[j].setAttribute('width',Math.max(0,f*((SER[j][1]-SER[j][0])*PXS-2)));
+    serFill[j].setAttribute('stroke-opacity',f>=1?1:0);
+    if(f>=1)serLbl[j].style.fill=INK;
+  }
+  f=Math.min(1,tc/1.6);
+  for(j=0;j<3;j++){
+    parFill[j].setAttribute('width',Math.max(0,f*(1.6*PXS-2)));
+  }
+  if(tc>=1.6){
+    on(joinLine);on(joinLbl);on(parFlag);on(parSub);
+    parLbl.forEach(function(l){l.style.fill=PAPER;});
+  }
+  if(p<1){
+    cur.setAttribute('opacity',1);
+    cur.setAttribute('x1',X(tc));cur.setAttribute('x2',X(tc));
+    curT.setAttribute('x',Math.min(Math.max(X(tc),X0+20),X(5)-20));
+    curT.style.fill=CO;curT.textContent='T+'+tc.toFixed(1)+' S';
+    return true;
+  }
+  cur.setAttribute('opacity',0);curT.textContent='';
+  on(serFlagLine);on(serFlag);on(serSub);on(dLine);on(dT1);on(dT2);on(dLbl);
+  fig.classList.add('done');
+  return false;
+}
+function start(){
+  gen++;var g=gen;
+  reset();
+  if(RM){finalState();return;}
+  t0=nowc();
+  sched(function step(ts){if(g!==gen)return;if(loop(ts))sched(step);});
+}
+btn.addEventListener('click',start);
+var started=false;
+function kick(){if(!started){started=true;io.disconnect();start();}}
+var io=new IntersectionObserver(function(es){
+  for(var i=0;i<es.length;i++){if(es[i].isIntersecting)kick();}
+},{threshold:0.3});
+io.observe(fig);
+if(TCK)setTimeout(kick,30);
+})();
+</script>
+</figure></div><figcaption><span class="figno">Fig. 4</span> — Same three chunks, two schedules; wall time collapses to the slowest chunk, plus ~0.1 s of join.</figcaption></figure></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Field note № 1 · war stories</p><h2 class="rv">Vibes are per-request state</h2><div class="copy rv" style="margin-top:1.4rem;max-width:52em"><p style="font-size:17px;line-height:1.7">Testers reported the meditation voice changing mood mid-session, and pauses that should have stretched getting clipped. Each TTS request renders emotional tone from scratch, so chunk two came back in a different mood than chunk one — and the chunk boundaries kept landing exactly on the scripted pauses. The benchmark measured seconds; the users were hearing mood. The fix was routing, not code: chat keeps the stitch, meditation gets one unbroken call. <br><br><span class="mono" style="font-size:12px;color:var(--muted)">COMMIT · "fixing feedback around jarring changes in tone + not enough pauses" — the whole postmortem in one line.</span></p></div></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Field note № 2 · war stories</p><h2 class="rv">The first user each morning waited 12 seconds</h2><p class="lede rv">Scale-to-zero stopped the only machine when idle; the first turn of the day paid boot + imports + client init before saying a word.</p><div class="dtable rv"><table><thead><tr><th>Attempt</th><th>Result</th></tr></thead><tbody>
+  <tr><td>Live with it</td><td class="dead">testers read the stall as a broken app</td></tr>
+  <tr><td>Cron pinger on /health</td><td class="dead">warmth became a coin flip against the idle timer</td></tr>
+  <tr><td>Redis warm-state spike</td><td class="dead">rehydrated state — the wrong half of a problem that was mostly process start</td></tr>
+  <tr class="chose"><td><span class="tag">CHOSE →</span> min_machines_running = 0 → 1</td><td>always on, $3.19/month · commit "no more cold start"</td></tr>
+  </tbody></table></div>
+  <p class="price rv">ONE LINE OF CONFIG · ONE EVENING OF EVIDENCE TO PROVE THE OUTLIERS WERE MACHINE STARTS, NOT VENDOR LATENCY</p></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Field note № 2 · continued</p><h2 class="rv">A day of latency, before and after</h2><figure class="fig rv"><div class="fig-slot"><figure class="fig" id="fig-coldstart">
+<style>
+#fig-coldstart{position:relative;margin:0;box-sizing:border-box;width:100%;background:#FCFCFA;border:1px solid #DEDCD4;padding:14px 16px 26px;color:#191B1E;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+#fig-coldstart .hd{display:flex;align-items:baseline;gap:16px;padding:0 2px 10px;margin-bottom:14px;border-bottom:1px solid #DEDCD4;font-size:11px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+#fig-coldstart .hd .no{color:#2A46D4;flex:none}
+#fig-coldstart .hd .ttl{color:#191B1E;overflow:hidden;text-overflow:ellipsis}
+#fig-coldstart .hd .mt{margin-left:auto;color:#5C6066;flex:none}
+@media (max-width:620px){#fig-coldstart .hd .mt{display:none}}
+#fig-coldstart svg{display:block;width:100%;height:auto}
+#fig-coldstart svg text{font-family:inherit}
+#fig-coldstart .grid{stroke:#DEDCD4}
+#fig-coldstart .axis{stroke:#191B1E;stroke-width:1}
+#fig-coldstart .num{fill:#5C6066;font-size:10px}
+#fig-coldstart .ann{fill:#5C6066;font-size:10.5px;letter-spacing:.08em}
+#fig-coldstart .code{fill:#2A46D4;font-size:11.5px}
+#fig-coldstart .alarm{fill:#C9364B;font-size:10.5px;letter-spacing:.08em}
+#fig-coldstart .stamp{opacity:0;transition:opacity .35s}
+#fig-coldstart .stamp.on{opacity:1}
+#fig-coldstart.rm .stamp{transition:none}
+#fig-coldstart .replay{position:absolute;right:8px;bottom:4px;border:0;background:transparent;padding:2px 4px;font:11px/1.4 ui-monospace,"SF Mono",Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:#5C6066;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .5s}
+#fig-coldstart.done .replay{opacity:1;pointer-events:auto}
+#fig-coldstart .replay:hover{color:#2A46D4}
+</style>
+<div class="hd"><span class="no">Fig. 05</span><span class="ttl">The $3.19 fix</span><span class="mt">24 h · one tick = one request</span></div>
+<svg viewBox="0 0 1060 300" role="img" aria-label="24-hour strip chart of request latency; morning cold-start spikes to 12 seconds disappear after min_machines_running is set to 1"></svg>
+<button class="replay" type="button" aria-label="Replay animation">replay</button>
+<script>
+(function(){
+'use strict';
+var fig=document.getElementById('fig-coldstart');
+if(!fig)return;
+var svg=fig.querySelector('svg'),btn=fig.querySelector('.replay');
+var RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(RM)fig.classList.add('rm');
+var NS='http://www.w3.org/2000/svg';
+var INK='#191B1E',MUT='#5C6066',HAIR='#DEDCD4',CO='#2A46D4',ALARM='#C9364B';
+function E(n,a,p){var e=document.createElementNS(NS,n),k;for(k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e;}
+function T(x,y,str,cls,anchor,fill,size){var e=E('text',{x:x,y:y,'text-anchor':anchor||'start','class':cls||'num'});if(fill)e.style.fill=fill;if(size)e.setAttribute('font-size',size);e.textContent=str;return e;}
+
+var X0=52,X1=1028,Y0=252,PXH=(X1-X0)/24,PXS=14.46;
+function X(h){return X0+h*PXH;}
+function Y(lat){return Y0-lat*PXS;}
+
+function mul(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+// furniture
+var g=E('g',{'class':'grid'});
+E('line',{x1:X0,y1:Y(5),x2:X1,y2:Y(5),'stroke-dasharray':'2 3'},g);
+E('line',{x1:X0,y1:Y(10),x2:X1,y2:Y(10),'stroke-dasharray':'2 3'},g);
+T(X0-8,Y(5)+3,'5 S','num','end');
+T(X0-8,Y(10)+3,'10 S','num','end');
+T(X0-8,Y0+3,'0','num','end');
+E('line',{x1:X0,y1:Y0+0.5,x2:X1,y2:Y0+0.5,'class':'axis'});
+var h;
+for(h=0;h<=24;h++){
+  E('line',{x1:X(h),y1:Y0+.5,x2:X(h),y2:Y0+(h%4===0?6.5:3.5),'class':'axis','stroke-opacity':h%4===0?1:.5});
+  if(h%4===0)T(X(h),270,(h<10?'0':'')+h+':00','num','middle');
+}
+T(X1,288,'LOCAL TIME','num','end',MUT);
+
+// deterministic request ticks
+var rnd=mul(4242),evts=[],tt=0.12;
+while(tt<24){
+  var gap=(tt<6?0.16+0.13*rnd():tt<9?0.10+0.06*rnd():0.085+0.075*rnd());
+  tt+=gap;if(tt>=24)break;
+  evts.push([tt,5.5+(rnd()-0.5)*0.9,0]);
+}
+var COLD=[[1.85,11.4],[5.9,11.9],[6.65,12.35],[7.35,11.7],[8.15,12.05],[9.02,11.5]];
+COLD.forEach(function(c){
+  var best=-1,bd=99,i;
+  for(i=0;i<evts.length;i++){var d=Math.abs(evts[i][0]-c[0]);if(d<bd&&evts[i][2]===0){bd=d;best=i;}}
+  if(best>=0){evts[best]=[c[0],c[1],1];}
+});
+var FIXH=9.75;
+
+// clipped tick group
+var defs=E('defs',{});
+var cp=E('clipPath',{id:'fig-coldstart-clip'},defs);
+var clipRect=E('rect',{x:X0,y:0,width:0,height:300},cp);
+var ticks=E('g',{'clip-path':'url(#fig-coldstart-clip)'});
+evts.forEach(function(ev){
+  E('line',{x1:X(ev[0]),y1:Y0,x2:X(ev[0]),y2:Y(ev[1]),
+    stroke:ev[2]?ALARM:INK,'stroke-width':ev[2]?1.8:1.3,'stroke-opacity':ev[2]?1:.75},ticks);
+});
+
+// cold-start bracket (5.9h .. 9.02h)
+var bx0=X(5.9),bx1=X(9.02);
+var brkt=E('g',{'class':'stamp'});
+E('line',{x1:bx0,y1:70,x2:bx1,y2:70,stroke:ALARM,'stroke-width':1},brkt);
+E('line',{x1:bx0,y1:70,x2:bx0,y2:76,stroke:ALARM,'stroke-width':1},brkt);
+E('line',{x1:bx1,y1:70,x2:bx1,y2:76,stroke:ALARM,'stroke-width':1},brkt);
+T((bx0+bx1)/2,61,'COLD START ≈ 12 S','alarm','middle',null,null);
+var brktLbl=svg.lastChild;brkt.appendChild(brktLbl);
+
+// fix marker
+var mk=E('g',{'class':'stamp'});
+E('line',{x1:X(FIXH),y1:48,x2:X(FIXH),y2:Y0,stroke:CO,'stroke-width':1.2},mk);
+E('rect',{x:X(FIXH)-2.5,y:45.5,width:5,height:5,fill:CO},mk);
+T(X(FIXH)+9,58,'min_machines_running = 1','code','start',null,null);mk.appendChild(svg.lastChild);
+T(X(FIXH)+9,74,'$3.19/MO · 10.6¢/DAY','ann','start',null,null);mk.appendChild(svg.lastChild);
+
+// steady annotation
+var steady=T(X(17.2),150,'STEADY ≈ 5.5 S','ann stamp','middle',MUT);
+
+// pen cursor
+var pen=E('line',{x1:X0,y1:48,x2:X0,y2:Y0,stroke:INK,'stroke-width':1,'stroke-opacity':0});
+
+function on(el){var c=el.getAttribute('class')||'';if(c.indexOf(' on')<0)el.setAttribute('class',c+' on');}
+function off(el){el.setAttribute('class',(el.getAttribute('class')||'').replace(/ ?\bon\b/g,''));}
+
+function reset(){
+  clipRect.setAttribute('width',0);
+  [brkt,mk,steady].forEach(off);
+  pen.setAttribute('stroke-opacity',0);
+  fig.classList.remove('done');
+}
+function finalState(){
+  reset();
+  clipRect.setAttribute('width',X1-X0+4);
+  [brkt,mk,steady].forEach(on);
+  fig.classList.add('done');
+}
+var TCK=(function(){try{return !!navigator.webdriver||/HeadlessChrome/.test(navigator.userAgent)||location.hash.indexOf('vtclk')>=0;}catch(e){return false;}})();
+var vclk=0,gen=0;
+function sched(cb){if(TCK)setTimeout(function(){vclk+=16.667;cb(vclk);},16);else requestAnimationFrame(cb);}
+function nowc(){return TCK?vclk:performance.now();}
+var t0=0,DUR=4200;
+function loop(ts){
+  var p=Math.min(1,(ts-t0)/DUR);
+  var eh=24*p,ex=X(eh);
+  clipRect.setAttribute('width',ex-X0);
+  if(eh>=9.4)on(brkt);
+  if(eh>=FIXH)on(mk);
+  if(eh>=18.5)on(steady);
+  if(p<1){
+    pen.setAttribute('stroke-opacity',.5);
+    pen.setAttribute('x1',ex);pen.setAttribute('x2',ex);
+    return true;
+  }
+  pen.setAttribute('stroke-opacity',0);
+  fig.classList.add('done');
+  return false;
+}
+function start(){
+  gen++;var g=gen;
+  reset();
+  if(RM){finalState();return;}
+  t0=nowc();
+  sched(function step(ts){if(g!==gen)return;if(loop(ts))sched(step);});
+}
+btn.addEventListener('click',start);
+var started=false;
+function kick(){if(!started){started=true;io.disconnect();start();}}
+var io=new IntersectionObserver(function(es){
+  for(var i=0;i<es.length;i++){if(es[i].isIntersecting)kick();}
+},{threshold:0.3});
+io.observe(fig);
+if(TCK)setTimeout(kick,30);
+})();
+</script>
+</figure></div><figcaption><span class="figno">Fig. 5</span> — Before and after min_machines_running = 1: the morning spikes disappear from the strip chart.</figcaption></figure></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Field note № 3 · war stories · git: lol python is weird</p><h2 class="rv">The always-on fix froze the randomness</h2><div class="codepair rv">
+    <pre><span style="color:#5C6066"># BEFORE · module scope, evaluated once per process</span>
+question = random.choice(OPENERS)
+PROMPT = f"...inspo: {question}..."</pre>
+    <pre><span style="color:#5C6066"># AFTER · a fresh roll per request</span>
+def build_prompt():
+    q = random.choice(OPENERS)
+    return instructions_with(q)</pre>
+  </div>
+  <div class="copy rv" style="margin-top:1.4rem;max-width:52em"><p style="font-size:16.5px;line-height:1.65">
+  Under scale-to-zero this was invisible: every cold start re-rolled the choice, so the bug behaved like the feature.
+  Once the machine stayed up for days, one process meant one roll — every user got the identical "random" opener until
+  beta testers noticed the opener never changed. Two changes, each correct alone, composed into a user-visible bug.
+  Process lifetime is part of the program's semantics — the same class of state that process recycling at scale exists to bound.</p></div></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Field note № 4 · war stories</p><h2 class="rv">The app answered its own voice, indefinitely</h2><div class="dtable rv"><table><thead><tr><th>Alternative</th><th>Property</th><th>Verdict</th></tr></thead><tbody>
+  <tr><td>Echo cancellation (DSP)</td><td>hands-free, probabilistic suppression</td><td class="dead">leaks "meditation words" into transcripts; hard to tune alone</td></tr>
+  <tr><td>Push-to-talk</td><td>deterministic</td><td class="dead">kills the eyes-closed, hands-free promise</td></tr>
+  <tr class="chose"><td><span class="tag">CHOSE →</span> Half-duplex invariant</td><td>mic and speaker never open together; interrupt = tap</td><td>deterministic, debuggable with print statements</td></tr>
+  </tbody></table></div>
+  <div class="copy rv" style="margin-top:1.3rem;max-width:54em"><p style="font-size:15.5px;line-height:1.65">
+  One more, found while preparing this talk: the rate limiter (30 sessions/user/day, refusals delivered as a pre-rendered
+  clip in the app's own voice) only skips enforcement when its credentials are missing — so if Firestore itself goes down, chat goes
+  down with it. Wrong default, one-line fix; Exemplar B in the appendix runs the full incident this would have caused.</p></div></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">04 · War stories · how it actually got built</p><h2 class="rv">One night in the commit log</h2><figure class="fig rv"><div class="fig-slot"><div class="listing">
+  <div class="cmd">$ git log --pretty='%h  %ad  %s' --date=format:'%l:%M %p'</div>
+  <div class="row"><span class="h">4e0108a</span><span class="t">1:24 AM</span><span class="m">fix bug with backwards compitablity</span></div>
+  <div class="row"><span class="h">76db080</span><span class="t">2:44 AM</span><span class="m">ask more quetions</span></div>
+  <div class="row"><span class="h">12efeed</span><span class="t">3:06 AM</span><span class="m">tts</span></div>
+  <div class="row"><span class="h">12bce14</span><span class="t">3:10 AM</span><span class="m">tts</span></div>
+  <div class="row"><span class="h">b35fc2c</span><span class="t">3:15 AM</span><span class="m">tts</span></div>
+  <div class="row"><span class="h">3185a6c</span><span class="t">3:48 AM</span><span class="m">prompts</span></div>
+  <div class="row"><span class="h">3d6d8ec</span><span class="t">4:29 AM</span><span class="m">prompts</span></div>
+  <div class="row"><span class="h">c04d607</span><span class="t">4:40 AM</span><span class="m">prompts</span></div>
+  <div class="row"><span class="h">4977535</span><span class="t">5:01 AM</span><span class="m">prompts</span></div>
+  <div class="row dim"><span class="h">c1966b9</span><span class="t">5:32 AM</span><span class="m">can transcribe ember</span></div>
+</div></div><figcaption><span class="figno">Listing 1</span> — 1:24 AM to 5:01 AM, followed at 5:32 by “can transcribe ember”. Note the commit-message quality collapse at 3:06.</figcaption></figure></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">05 · The data</p><h2 class="rv">Quality control for a nondeterministic product</h2><div class="two rv">
+    <div class="blk"><p class="bl">What ran · the human loop</p><p style="font-size:16px;line-height:1.65">Every prompt change hand-tested
+    against real conversations; in-app feedback written to Firestore beside the exact transcript that produced it; 150+ beta tests
+    feeding the same loop, led end to end. At this scale that was the right harness — and it is why the log says "prompts" four times in one night.</p></div>
+    <div class="blk"><p class="bl">What was designed · the rubric</p><p style="font-size:16px;line-height:1.65">A 30-case eval scoring tone,
+    length, phase obedience, and safety on every prompt change before deploy, with prosody-complaint rate as a first-class metric.
+    Never shipped. Past a few hundred users, judging tone by ear stops scaling and the rubric becomes the review process.</p></div>
+  </div>
+  <p class="price rv">PRICE PAID · REGRESSIONS REACHED USERS FIRST — "REMOVE CONDESENDING TONE" WAS FILED BY A USER THE RUBRIC WOULD HAVE CAUGHT · EVALS ARE CODE REVIEW FOR AI BEHAVIOR</p></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">05 · The data</p><h2 class="rv">The number that stopped the project</h2><figure class="fig rv"><div class="fig-slot"><figure class="fig" id="fig-retention">
+<style>
+#fig-retention{position:relative;margin:0;box-sizing:border-box;width:100%;background:#FCFCFA;border:1px solid #DEDCD4;padding:14px 16px 26px;color:#191B1E;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+#fig-retention .hd{display:flex;align-items:baseline;gap:16px;padding:0 2px 10px;margin-bottom:14px;border-bottom:1px solid #DEDCD4;font-size:11px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+#fig-retention .hd .no{color:#2A46D4;flex:none}
+#fig-retention .hd .ttl{color:#191B1E;overflow:hidden;text-overflow:ellipsis}
+#fig-retention .hd .mt{margin-left:auto;color:#5C6066;flex:none}
+@media (max-width:620px){#fig-retention .hd .mt{display:none}}
+#fig-retention svg{display:block;width:100%;height:auto}
+#fig-retention svg text{font-family:inherit}
+#fig-retention .grid{stroke:#DEDCD4}
+#fig-retention .axis{stroke:#191B1E;stroke-width:1}
+#fig-retention .num{fill:#5C6066;font-size:10px}
+#fig-retention .ann{fill:#5C6066;font-size:10.5px;letter-spacing:.08em}
+#fig-retention .curve{fill:none;stroke:#191B1E;stroke-width:1.6}
+#fig-retention .stamp{opacity:0;transition:opacity .4s}
+#fig-retention .stamp.on{opacity:1}
+#fig-retention.rm .stamp{transition:none}
+#fig-retention .replay{position:absolute;right:8px;bottom:4px;border:0;background:transparent;padding:2px 4px;font:11px/1.4 ui-monospace,"SF Mono",Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:#5C6066;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .5s}
+#fig-retention.done .replay{opacity:1;pointer-events:auto}
+#fig-retention .replay:hover{color:#2A46D4}
+</style>
+<div class="hd"><span class="no">Fig. 06</span><span class="ttl">The curve that ended it</span><span class="mt">% active · days 0–14</span></div>
+<svg viewBox="0 0 1060 326" role="img" aria-label="Retention curve decaying from 100 percent at day 0 to 10 percent at day 14, landing on the incumbent-app band"></svg>
+<button class="replay" type="button" aria-label="Replay animation">replay</button>
+<script>
+(function(){
+'use strict';
+var fig=document.getElementById('fig-retention');
+if(!fig)return;
+var svg=fig.querySelector('svg'),btn=fig.querySelector('.replay');
+var RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(RM)fig.classList.add('rm');
+var NS='http://www.w3.org/2000/svg';
+var INK='#191B1E',MUT='#5C6066',HAIR='#DEDCD4',CO='#2A46D4';
+function E(n,a,p){var e=document.createElementNS(NS,n),k;for(k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e;}
+function T(x,y,str,cls,anchor,fill,size){var e=E('text',{x:x,y:y,'text-anchor':anchor||'start','class':cls||'num'});if(fill)e.style.fill=fill;if(size)e.setAttribute('font-size',size);e.textContent=str;return e;}
+
+var X0=64,X1=1016,YT=60,YB=282;
+function X(d){return X0+(X1-X0)*d/15;}
+function Y(v){return YB-(YB-YT)*v/100;}
+
+var DAYS=[0,1,2,3,5,7,10,12,14],VALS=[100,42,27,19,15,12.5,11,10.4,10];
+
+// band 7..14%
+E('rect',{x:X0,y:Y(14),width:X1-X0,height:Y(7)-Y(14),fill:HAIR,opacity:.5});
+T(X0+10,Y(10.5)+3.5,'INCUMBENT APPS · ~10% BY DAY 20','num','start',MUT);
+
+// grid + axes
+var g=E('g',{'class':'grid'}),i,d;
+[25,50,75,100].forEach(function(v){E('line',{x1:X0,y1:Y(v),x2:X1,y2:Y(v),'stroke-opacity':.7},g);});
+for(d=0;d<=15;d++)E('line',{x1:X(d),y1:YT-4,x2:X(d),y2:YB,'stroke-opacity':.4},g);
+E('line',{x1:X0,y1:YB+.5,x2:X1,y2:YB+.5,'class':'axis'});
+E('line',{x1:X0-.5,y1:YT-8,x2:X0-.5,y2:YB,'class':'axis'});
+[0,25,50,75,100].forEach(function(v){T(X0-10,Y(v)+3.5,v===100?'100 %':String(v),'num','end');});
+for(d=0;d<=14;d+=2)T(X(d),300,String(d),'num','middle');
+E('line',{x1:X(14),y1:YB+.5,x2:X(14),y2:YB+5.5,'class':'axis'});
+T(X1,318,'DAYS SINCE INSTALL →','num','end',MUT);
+
+// monotone cubic (Fritsch–Carlson) through points
+function monoPath(xs,ys){
+  var n=xs.length,dx=[],dy=[],m=[],tang=[],i;
+  for(i=0;i<n-1;i++){dx.push(xs[i+1]-xs[i]);dy.push(ys[i+1]-ys[i]);m.push(dy[i]/dx[i]);}
+  tang.push(m[0]);
+  for(i=1;i<n-1;i++){
+    if(m[i-1]*m[i]<=0)tang.push(0);
+    else tang.push(3*(dx[i-1]+dx[i])/((2*dx[i]+dx[i-1])/m[i-1]+(dx[i]+2*dx[i-1])/m[i]));
+  }
+  tang.push(m[n-2]);
+  var p='M'+xs[0]+' '+ys[0];
+  for(i=0;i<n-1;i++){
+    var c1x=xs[i]+dx[i]/3,c1y=ys[i]+tang[i]*dx[i]/3;
+    var c2x=xs[i+1]-dx[i]/3,c2y=ys[i+1]-tang[i+1]*dx[i]/3;
+    p+=' C'+c1x.toFixed(2)+' '+c1y.toFixed(2)+' '+c2x.toFixed(2)+' '+c2y.toFixed(2)+' '+xs[i+1]+' '+ys[i+1];
+  }
+  return p;
+}
+var xs=DAYS.map(X),ys=VALS.map(Y);
+var path=E('path',{d:monoPath(xs,ys),'class':'curve'});
+var LEN=path.getTotalLength();
+path.setAttribute('stroke-dasharray',LEN);
+path.setAttribute('stroke-dashoffset',LEN);
+
+// length at each data point (for marker reveal)
+var ptLen=DAYS.map(function(dd,j){
+  if(j===0)return 0;
+  var lo=0,hi=LEN,k;
+  for(k=0;k<24;k++){var mid=(lo+hi)/2;if(path.getPointAtLength(mid).x<xs[j])lo=mid;else hi=mid;}
+  return hi;
+});
+
+// markers
+var marks=DAYS.map(function(dd,j){
+  var last=j===DAYS.length-1;
+  return E('rect',{x:xs[j]-(last?3:2.25),y:ys[j]-(last?3:2.25),width:last?6:4.5,height:last?6:4.5,fill:last?CO:INK,opacity:0});
+});
+// direct labels
+var lab1=T(xs[1]+9,ys[1]-4,'42% · DAY 1','num stamp','start',MUT);
+
+// terminal rule + stamp
+var rule=E('line',{x1:X(14),y1:44,x2:X(14),y2:YB,stroke:CO,'stroke-width':1.25});
+rule.setAttribute('stroke-dasharray',YB-44);
+rule.setAttribute('stroke-dashoffset',YB-44);
+var st1=T(X(14)-10,66,'DAY 14 · 10%','ann stamp','end',CO,12.5);
+var st2=T(X(14)-10,84,'PARITY, NOT PROOF — STOPPED HERE','ann stamp','end',MUT,10.5);
+
+function on(el){var c=el.getAttribute('class')||'';if(c.indexOf(' on')<0)el.setAttribute('class',c+' on');}
+function off(el){el.setAttribute('class',(el.getAttribute('class')||'').replace(/ ?\bon\b/g,''));}
+
+function reset(){
+  path.setAttribute('stroke-dashoffset',LEN);
+  rule.setAttribute('stroke-dashoffset',YB-44);
+  marks.forEach(function(m){m.setAttribute('opacity',0);});
+  [lab1,st1,st2].forEach(off);
+  fig.classList.remove('done');
+}
+function finalState(){
+  reset();
+  path.setAttribute('stroke-dashoffset',0);
+  rule.setAttribute('stroke-dashoffset',0);
+  marks.forEach(function(m){m.setAttribute('opacity',1);});
+  [lab1,st1,st2].forEach(on);
+  fig.classList.add('done');
+}
+var TCK=(function(){try{return !!navigator.webdriver||/HeadlessChrome/.test(navigator.userAgent)||location.hash.indexOf('vtclk')>=0;}catch(e){return false;}})();
+var vclk=0,gen=0;
+function sched(cb){if(TCK)setTimeout(function(){vclk+=16.667;cb(vclk);},16);else requestAnimationFrame(cb);}
+function nowc(){return TCK?vclk:performance.now();}
+var t0=0,CURVE=2200,PAUSE=250,RULE=380;
+function easeOut(t){return 1-Math.pow(1-t,2);}
+function loop(ts){
+  var t=ts-t0;
+  var p=Math.min(1,t/CURVE);
+  var rl=LEN*easeOut(p);
+  path.setAttribute('stroke-dashoffset',LEN-rl);
+  marks.forEach(function(m,j){if(rl>=ptLen[j])m.setAttribute('opacity',1);});
+  if(rl>=ptLen[1]+14)on(lab1);
+  if(t>CURVE+PAUSE){
+    var q=Math.min(1,(t-CURVE-PAUSE)/RULE);
+    rule.setAttribute('stroke-dashoffset',(YB-44)*(1-q));
+    if(q>=1){on(st1);on(st2);fig.classList.add('done');return false;}
+  }
+  return true;
+}
+function start(){
+  gen++;var g=gen;
+  reset();
+  if(RM){finalState();return;}
+  t0=nowc();
+  sched(function step(ts){if(g!==gen)return;if(loop(ts))sched(step);});
+}
+btn.addEventListener('click',start);
+var started=false;
+function kick(){if(!started){started=true;io.disconnect();start();}}
+var io=new IntersectionObserver(function(es){
+  for(var i=0;i<es.length;i++){if(es[i].isIntersecting)kick();}
+},{threshold:0.3});
+io.observe(fig);
+if(TCK)setTimeout(kick,30);
+})();
+</script>
+</figure></div><figcaption><span class="figno">Fig. 6</span> — Day-14 retention at 10% of the beta cohort — small-N, so read it as a parity band with the incumbents, not a point estimate. Parity meant months of memory and habit-loop work to test the thesis further; after Headspace shipped its own AI companion, that bet was no longer differentiated. Stopped on the data.</figcaption></figure></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">05 · The data · unit economics</p><h2 class="rv">A session costs 7¢. The voice is 93% of it.</h2><div class="shape rv">
+    <div class="row"><span class="k">Per session</span><span class="v">$0.07 TTS + $0.003 LLM — the language model is a rounding error</span></div>
+    <div class="row"><span class="k">At 10k daily</span><span class="v">$21k/month naive; the levers compound — 21k × 0.70 (cache) × ≈0.55 (batch tier) ≈ $8k</span></div>
+    <div class="row"><span class="k">Lever 1</span><span class="v">cache shared audio — intros and outros are ~30% of spoken time</span></div>
+    <div class="row"><span class="k">Lever 2</span><span class="v">pre-generate scheduled meditations overnight at the vendors’ half-price batch tier</span></div>
+    <div class="row"><span class="k">Lever 3</span><span class="v">ship audio as Opus-codec files behind signed URLs — half the bytes, no more base64-inflated JSON</span></div>
+    <div class="row"><span class="k">Lever 4</span><span class="v">keep the model tier matched to the phase</span></div>
+  </div></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">05 · The data · the scale plan</p><h2 class="rv">What breaks first — vendors before my code</h2><figure class="fig rv"><div class="table-slot"><table>
+<thead><tr><th>Breaks first</th><th class="num">At roughly</th><th>Remedy, in order</th></tr></thead>
+<tbody>
+<tr><td>Vendor TTS rate limits</td><td class="num alarm">50–100 concurrent</td><td>request queue + per-vendor token buckets; pre-generation flattens the burst</td></tr>
+<tr><td>Retry-free vendor dependency</td><td class="num">any incident</td><td>timeouts, bounded retry, circuit breaker; today it fails fast</td></tr>
+<tr><td>The single machine</td><td class="num">~200 concurrent</td><td>stateless tier → <code>fly scale count N</code></td></tr>
+<tr><td>Base64 payload tax</td><td class="num">day 1, cellular</td><td>Opus behind signed URLs + CDN</td></tr>
+<tr><td>Firestore counters</td><td class="num">~100 daily users</td><td>Redis for limits and cache; batch transcript writes</td></tr>
+</tbody></table></div><figcaption><span class="figno">Table 2</span> — Failure ordering at 10k daily users; thresholds estimated from vendor rate-limit tiers and the 512 MB single-machine profile. The $3.19 machine appears third on its own list. Build-out follows the same order: edge LB → stateless API ×N → Redis + queue with pre-generation → storage/CDN, vendors behind token buckets.</figcaption></figure></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">06 · Rebuild · git: e2e full medidation works</p><h2 class="rv">What a 2026 rebuild deletes, and what it keeps</h2><div class="two rv">
+    <div class="blk"><p class="bl">Deleted by realtime APIs</p><p style="font-size:16.5px;line-height:1.7">Turn-taking, barge-in, and speech
+    in both directions move inside one model: the endpointing rule, the stitch, the prosody seams, and the echo loop stop existing
+    as categories. Two of the four war stories in this talk — and the entire latency chapter — gone.</p></div>
+    <div class="blk"><p class="bl">Still mine — the session gateway</p><p style="font-size:16.5px;line-height:1.7">Identity, spend caps,
+    phase state, memory, safety hooks, cost metering. Vendors sell the voice; nobody sells knowing when a meditation must end at a
+    button, or how much a user may cost you today. And the remaining problem grows 10×: realtime pricing makes 93%-TTS look quaint.</p></div>
+  </div>
+  <p class="price rv">THE TRANSFERABLE METHOD · BUILD BOTH SIDES, MEASURE, DELETE THE LOSER — JUDGMENT LIVES IN THE DELETING</p></div></section>
+
+<section class="sl dark"><div class="sl-inner"><div class="qslide" style="text-align:center"><h2 class="rv">Questions?</h2><img class="rv" src="PandaHappy.png" alt="Ember" style="width:76px;margin:2.2rem auto 0;opacity:.92"><p class="note rv">Ember’s entire personality is versioned in a prompts file</p><p class="note rv" style="margin-top:2.2rem;color:#C9CDD2">Mine for you · how do you catch voice-personality regressions at scale? · who owns end-to-end latency when it spans model, serving, and client? · what does a new engineer’s first shipped change look like?</p></div></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Appendix</p><h2 class="rv">Three stories this project never earned — told the way they should be</h2><div class="copy rv" style="margin-top:1.2rem;max-width:54em"><p style="font-size:17px;line-height:1.7">
+  The strongest staff stories have shapes: a <strong>migration</strong> executed under constraints, an <strong>incident</strong>
+  run end to end, an <strong>experiment</strong> that settles an argument. Sage was too small to produce all three, so this
+  appendix shows what each would look like built to the same standard — figures, alternatives, price paid. Marked as
+  extrapolated throughout; these are templates for the next build, not claims about this one.</p></div>
+  <p class="price rv">EVERY STORY BELOW FOLLOWS ONE GRAMMAR · STAKES → EVIDENCE → ALTERNATIVES → DECISION → PRICE PAID → WHAT TRANSFERS</p></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Appendix · Exemplar A · the migration story · <span style="color:var(--alarm)">extrapolated — template, not history</span></p><h2 class="rv">Moving the progress clock server-side, under clients I can't update</h2><div class="copy rv" style="margin-top:.9rem;max-width:56em"><p style="font-size:15px;line-height:1.6">The stateless design let clients claim their own meditation progress — right for an MVP, wrong for money. The migration moves authority to server-issued session tokens without breaking a single old build: three phases, each gated on a measured threshold, with the old path coerced and capped until its traffic dies naturally.</p></div><figure class="fig rv" style="margin-top:1rem"><div class="fig-slot"><svg viewBox="0 0 1060 270" style="width:100%;display:block" xmlns="http://www.w3.org/2000/svg">
+<defs><pattern id="xh" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+<line x1="0" y1="0" x2="0" y2="7" stroke="#191B1E" stroke-opacity=".14" stroke-width="2"/></pattern>
+<marker id="xa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="#5C6066"/></marker></defs>
+<g font-family="ui-monospace,SF Mono,Menlo,monospace" font-size="11" letter-spacing=".08em">
+<text x="0" y="16" fill="#5C6066">PHASE</text>
+<text x="180" y="16" fill="#191B1E">P0 · DUAL-ACCEPT</text><text x="500" y="16" fill="#191B1E">P1 · ISSUE + VERIFY</text><text x="820" y="16" fill="#191B1E">P2 · ENFORCE</text>
+<line x1="170" y1="28" x2="170" y2="240" stroke="#DEDCD4"/><line x1="490" y1="28" x2="490" y2="240" stroke="#DEDCD4"/><line x1="810" y1="28" x2="810" y2="240" stroke="#DEDCD4"/>
+<text x="0" y="70" fill="#5C6066">SERVER</text>
+<rect x="180" y="50" width="300" height="30" fill="#E9EDF9" stroke="#2A46D4"/><text x="196" y="69" fill="#191B1E">accepts claimed progress + tokens</text>
+<rect x="500" y="50" width="300" height="30" fill="#E9EDF9" stroke="#2A46D4"/><text x="516" y="69" fill="#191B1E">issues tokens on every reply</text>
+<rect x="820" y="50" width="228" height="30" fill="#2A46D4"/><text x="836" y="69" fill="#FCFCFA">rejects claims without token</text>
+<text x="0" y="130" fill="#5C6066">NEW APP</text>
+<rect x="500" y="110" width="548" height="30" fill="none" stroke="#191B1E"/><text x="516" y="129" fill="#191B1E">sends token; progress = server-derived</text>
+<text x="0" y="190" fill="#5C6066">OLD APP</text>
+<rect x="180" y="170" width="628" height="30" fill="url(#xh)" stroke="#DEDCD4"/><text x="196" y="189" fill="#5C6066">claims percent_complete (never breaks — coerced + capped)</text>
+<line x1="808" y1="185" x2="880" y2="185" stroke="#5C6066" stroke-width="1.5" marker-end="url(#xa)"/>
+<text x="888" y="189" fill="#C9364B">sunset at &lt;2% traffic</text>
+<text x="180" y="235" fill="#5C6066">GATES · P0→P1 when 95% of turns carry tokens · P1→P2 when old-app traffic &lt;2% for 14 days</text>
+</g></svg></div><figcaption><span class="figno">Fig. 7</span> — Phased protocol migration: dual-accept, issue-and-verify, enforce. Old clients never break; they age out against a measured gate.</figcaption></figure><div class="dtable rv" style="margin-top:.9rem"><table><thead><tr><th>Alternative</th><th>Old clients</th><th>Risk</th><th>Verdict</th></tr></thead><tbody>
+  <tr><td>Big-bang cutover</td><td>break on day one</td><td>support burden, trust</td><td class="dead">rejected</td></tr>
+  <tr><td>Client-gated (force update)</td><td>locked out until update</td><td>churn exactly where retention hurts</td><td class="dead">rejected</td></tr>
+  <tr class="chose"><td><span class="tag">CHOSE →</span> Dual-accept with sunset gates</td><td>never break; age out</td><td>3 weeks of dual paths</td><td>the shape of every schema change I ship</td></tr>
+  </tbody></table></div><p class="price rv">WHY THIS STORY WORKS · the constraint is real (un-updatable clients) · every phase transition has a NUMBER as its gate · the price (3 weeks of dual code paths) is named out loud</p></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Appendix · Exemplar B · the incident story · <span style="color:var(--alarm)">extrapolated — template, not history</span></p><h2 class="rv">If Firestore had gone down: the outage this bug was waiting to cause</h2><div class="copy rv" style="margin-top:.9rem;max-width:56em"><p style="font-size:15px;line-height:1.6">The limiter's fail-open covers only missing credentials, so a vendor Firestore incident would have been our outage: enforcement accidentally coupling availability to a non-critical dependency. Simulated below at full fidelity: nineteen minutes of chat 5xx, one config-shaped deploy to mitigate, and a prevention list that outlives it.</p></div><figure class="fig rv" style="margin-top:1rem"><div class="fig-slot"><svg viewBox="0 0 1060 260" style="width:100%;display:block" xmlns="http://www.w3.org/2000/svg">
+<g font-family="ui-monospace,SF Mono,Menlo,monospace" font-size="11" letter-spacing=".06em">
+<rect x="252" y="40" width="266" height="80" fill="#C9364B" fill-opacity=".07" stroke="#C9364B" stroke-opacity=".4"/>
+<text x="252" y="32" fill="#C9364B">IMPACT · CHAT 5XX · 19 MIN</text>
+<text x="1030" y="32" text-anchor="end" fill="#C9364B" letter-spacing=".14em">SIMULATED — TEMPLATE, NOT HISTORY</text>
+<line x1="40" y1="120" x2="1030" y2="120" stroke="#191B1E"/>
+<g fill="#5C6066" text-anchor="middle">
+<line x1="120" y1="120" x2="120" y2="96" stroke="#5C6066"/><text x="120" y="88">1</text><text x="120" y="140">06:58</text>
+<line x1="252" y1="120" x2="252" y2="82" stroke="#191B1E"/><text x="252" y="74" fill="#191B1E">2</text><text x="252" y="140">07:12</text>
+<line x1="340" y1="120" x2="340" y2="96" stroke="#5C6066"/><text x="340" y="88">3</text><text x="340" y="140">07:16</text>
+<line x1="424" y1="120" x2="424" y2="82" stroke="#5C6066"/><text x="424" y="74">4</text><text x="424" y="140">07:24</text>
+<line x1="518" y1="120" x2="518" y2="88" stroke="#2A46D4" stroke-width="2"/><text x="518" y="80" fill="#2A46D4">5</text><text x="518" y="140" fill="#2A46D4">07:31</text>
+<line x1="850" y1="120" x2="850" y2="96" stroke="#5C6066"/><text x="850" y="88">6</text><text x="850" y="140">07:58</text>
+</g>
+<text x="40" y="172" fill="#5C6066"><tspan fill="#2A46D4">1</tspan> · vendor incident begins&#160;&#160;&#160;2 · alert: /chat 500s spike&#160;&#160;&#160;3 · triage: limiter raises on read</text>
+<text x="40" y="192" fill="#191B1E">4 · root cause: fail-open covers only db=None&#160;&#160;&#160;5 · mitigate: catch-and-allow deployed&#160;&#160;&#160;6 · vendor recovers, all clear</text>
+<text x="40" y="226" fill="#5C6066">PREVENTION · limiter degrades open on infra errors · circuit breaker on Firestore reads · alert on 5xx rate, not vendor status page</text>
+<text x="40" y="246" fill="#5C6066">COST OF THE BUG · availability coupled to a non-critical dependency — enforcement traded uptime by accident, not by decision</text>
+</g></svg></div><figcaption><span class="figno">Fig. 8</span> — Incident anatomy: detection by our own 5xx alert (not the vendor status page), root cause in the error path, mitigation as a one-line degrade-open.</figcaption></figure><div class="dtable rv" style="margin-top:.9rem"><table><thead><tr><th>Failure policy</th><th>When Firestore is down</th><th>Abuse exposure</th><th>Verdict</th></tr></thead><tbody>
+  <tr><td>Fail closed (accidental)</td><td>chat down with it</td><td>zero</td><td class="dead">what the code actually did</td></tr>
+  <tr class="chose"><td><span class="tag">CHOSE →</span> Degrade open on infra errors</td><td>chat stays up, limits pause</td><td>bounded: worst case 1 day unmetered</td><td>availability &gt; enforcement, now by decision</td></tr>
+  </tbody></table></div><p class="price rv">WHY THIS STORY WORKS · timeline with minutes, not vibes · root cause is a policy, not a typo · the fix is a decision made explicit — and the prevention list is what a panel remembers</p></div></section>
+
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Appendix · Exemplar C · the experiment story · <span style="color:var(--alarm)">extrapolated — template, not history</span></p><h2 class="rv">The retention experiment the shutdown decision deserved</h2><div class="copy rv" style="margin-top:.9rem;max-width:56em"><p style="font-size:15px;line-height:1.6">The project ended on one number. The stronger version ends on a controlled readout: one variable — the app opens by recalling your last session — two cohorts, a pre-registered gate. If memory can't move day-14 by three points, the thesis dies with evidence instead of suspicion; if it can, the roadmap writes itself.</p></div><figure class="fig rv" style="margin-top:1rem"><div class="fig-slot"><svg viewBox="0 0 1060 300" style="width:100%;display:block" xmlns="http://www.w3.org/2000/svg">
+<g font-family="ui-monospace,SF Mono,Menlo,monospace" font-size="11" letter-spacing=".06em">
+<line x1="60" y1="20" x2="60" y2="220" stroke="#DEDCD4"/><line x1="60" y1="220" x2="940" y2="220" stroke="#191B1E"/>
+<text x="30" y="26" fill="#5C6066">100%</text><text x="36" y="123" fill="#5C6066">50%</text><text x="46" y="224" fill="#5C6066">0</text>
+<g fill="#5C6066" text-anchor="middle">
+<line x1="60" y1="220" x2="60" y2="226" stroke="#5C6066"/><text x="60" y="242">0</text>
+<line x1="186" y1="220" x2="186" y2="226" stroke="#5C6066"/><text x="186" y="242">2</text>
+<line x1="311" y1="220" x2="311" y2="226" stroke="#5C6066"/><text x="311" y="242">4</text>
+<line x1="437" y1="220" x2="437" y2="226" stroke="#5C6066"/><text x="437" y="242">6</text>
+<line x1="563" y1="220" x2="563" y2="226" stroke="#5C6066"/><text x="563" y="242">8</text>
+<line x1="688" y1="220" x2="688" y2="226" stroke="#5C6066"/><text x="688" y="242">10</text>
+<line x1="814" y1="220" x2="814" y2="226" stroke="#5C6066"/><text x="814" y="242">12</text>
+<line x1="940" y1="220" x2="940" y2="226" stroke="#5C6066"/><text x="940" y="242">14</text>
+</g>
+<text x="500" y="266" text-anchor="middle" fill="#5C6066">DAYS SINCE INSTALL</text>
+<rect x="60" y="196" width="880" height="12" fill="#191B1E" fill-opacity=".06"/>
+<text x="70" y="206" fill="#5C6066" font-size="10">INCUMBENT BAND · ~10%</text>
+<path d="M60 20 L123 136 L186 166 L249 182 L374 190 L500 195 L688 198 L814 199.5 L940 200" fill="none" stroke="#191B1E" stroke-width="1.8"/>
+<path d="M60 20 L123 128 L186 152 L249 166 L374 176 L500 182 L688 186 L814 189 L940 192" fill="none" stroke="#2A46D4" stroke-width="1.8" stroke-dasharray="6 4"/>
+<circle cx="940" cy="200" r="3" fill="#191B1E"/><text x="928" y="216" text-anchor="end" fill="#191B1E">CONTROL · 10%</text>
+<circle cx="940" cy="192" r="3" fill="none" stroke="#2A46D4"/><text x="928" y="178" text-anchor="end" fill="#2A46D4">+MEMORY · 14% · HYPOTHETICAL</text>
+<line x1="940" y1="14" x2="940" y2="220" stroke="#2A46D4" stroke-dasharray="4 4"/>
+<text x="932" y="26" text-anchor="end" fill="#2A46D4">DECISION GATE · DAY 14 · SHIP IF Δ ≥ +3PP</text>
+<text x="60" y="292" fill="#5C6066">DESIGN · one variable (opener recalls last session) · ~1,700/arm from power calc for the +3pp gate · gate registered pre-readout</text>
+</g></svg></div><figcaption><span class="figno">Fig. 9</span> — One-variable cohort experiment with a pre-registered decision gate. The dashed readout is hypothetical; the design is the point.</figcaption></figure><p class="price rv">WHY THIS STORY WORKS · the hypothesis is falsifiable · the gate was chosen BEFORE the readout · either outcome produces a decision — the experiment cannot waste its own cost</p></div></section>
+</main>
+<div class="chrome bot"><span>Sage AI · a field report</span><span id="ctr">01 / 30</span></div>
+
+<script>
+document.documentElement.classList.add('js');
+(function(){
+  'use strict';
+  var slides = [].slice.call(document.querySelectorAll('.sl'));
+  var bar = document.getElementById('bar');
+  var ctr = document.getElementById('ctr');
+  var cur = -1;
+
+  slides.forEach(function(s){
+    var kids = [].slice.call(s.querySelectorAll('.sl-inner > *'));
+    kids.forEach(function(k, i){ k.classList.add('rv'); k.style.setProperty('--d', Math.min(i*70, 350) + 'ms'); });
+  });
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+  function go(n){
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    if(n === cur) return;
+    cur = n;
+    slides.forEach(function(s, i){ s.classList.toggle('on', i === n); });
+    bar.style.width = ((n + 1) / slides.length * 100) + '%';
+    ctr.textContent = pad(n + 1) + ' / ' + slides.length;
+    try{ history.replaceState(null, '', '#' + (n + 1)); }catch(e){}
+    requestAnimationFrame(function(){
+      window.dispatchEvent(new Event('resize'));
+      var f = slides[n].querySelector('figure.done .replay');
+      if(f) f.click();
+    });
+  }
+  function initial(){
+    var m = location.search.match(/slide=(\d+)/) || location.hash.match(/#(\d+)/);
+    return m ? parseInt(m[1], 10) - 1 : 0;
+  }
+  document.addEventListener('keydown', function(e){
+    if(e.altKey || e.ctrlKey || e.metaKey) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' && !e.shiftKey || e.key === 'ArrowDown'){ e.preventDefault(); go(cur + 1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === ' ' && e.shiftKey || e.key === 'ArrowUp'){ e.preventDefault(); go(cur - 1); }
+    else if(e.key === 'Home'){ e.preventDefault(); go(0); }
+    else if(e.key === 'End'){ e.preventDefault(); go(slides.length - 1); }
+  });
+  document.querySelector('.navzone.next').addEventListener('click', function(){ go(cur + 1); });
+  document.querySelector('.navzone.prev').addEventListener('click', function(){ go(cur - 1); });
+  window.addEventListener('hashchange', function(){ go(initial()); });
+  go(initial());
+})();
+</script>
+
+</body>
+</html>

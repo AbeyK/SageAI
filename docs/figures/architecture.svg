@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140 560" width="1140" height="560" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" role="img" aria-labelledby="t d">
+<title id="t">Sage AI system architecture</title>
+<desc id="d">An iPhone client with on-device speech recognition sends text to a stateless FastAPI service on a single Fly.io machine, which calls OpenAI for the language model and text-to-speech and Firebase for auth, rate limits and transcripts. The client carries all session state.</desc>
+
+<style>
+  .bg    { fill:#FCFCFA }
+  .hair  { stroke:#DEDCD4; stroke-width:1 }
+  .box   { fill:#fff; stroke:#191B1E; stroke-width:1.2 }
+  .boxq  { fill:#fff; stroke:#9DA3AB; stroke-width:1; stroke-dasharray:4 3 }
+  .zone  { fill:none; stroke:#DEDCD4; stroke-width:1; stroke-dasharray:2 4 }
+  .lbl   { font-size:12px; fill:#191B1E; letter-spacing:.03em }
+  .sub   { font-size:9.5px; fill:#5C6066; letter-spacing:.04em }
+  .zlbl  { font-size:10px; fill:#5C6066; letter-spacing:.14em }
+  .flow  { stroke:#191B1E; stroke-width:1.2; fill:none; marker-end:url(#a) }
+  .flowa { stroke:#2A46D4; stroke-width:1.4; fill:none; marker-end:url(#aa) }
+  .flowq { stroke:#9DA3AB; stroke-width:1; fill:none; stroke-dasharray:4 3; marker-end:url(#ag) }
+  .tag   { font-size:9.5px; fill:#5C6066; letter-spacing:.03em }
+  .tagA  { font-size:9px; fill:#2A46D4; letter-spacing:.03em }
+</style>
+
+<defs>
+  <marker id="a"  markerWidth="7" markerHeight="7" refX="6.4" refY="2.6" orient="auto"><path d="M0,0 L6.4,2.6 L0,5.2" fill="none" stroke="#191B1E" stroke-width="1.1"/></marker>
+  <marker id="aa" markerWidth="7" markerHeight="7" refX="6.4" refY="2.6" orient="auto"><path d="M0,0 L6.4,2.6 L0,5.2" fill="none" stroke="#2A46D4" stroke-width="1.2"/></marker>
+  <marker id="ag" markerWidth="7" markerHeight="7" refX="6.4" refY="2.6" orient="auto"><path d="M0,0 L6.4,2.6 L0,5.2" fill="none" stroke="#9DA3AB" stroke-width="1"/></marker>
+</defs>
+
+<rect class="bg" x="0" y="0" width="1140" height="560"/>
+<line class="hair" x1="0" y1="34" x2="1140" y2="34"/>
+<text class="zlbl" x="0" y="22" fill="#2A46D4">FIG. 00</text>
+<text class="zlbl" x="76" y="22">SYSTEM — ONE TURN, LEFT TO RIGHT</text>
+<text class="zlbl" x="1140" y="22" text-anchor="end">STATELESS · 512 MB · $3.19/MO</text>
+
+<!-- ══════════ zone 1 : device ══════════ -->
+<rect class="zone" x="6" y="58" width="300" height="300" rx="3"/>
+<text class="zlbl" x="20" y="78">IPHONE · SWIFT / UIKIT</text>
+
+<rect class="box" x="24" y="96" width="116" height="42" rx="2"/>
+<text class="lbl" x="82" y="117" text-anchor="middle">MIC</text>
+<text class="sub" x="82" y="130" text-anchor="middle">half-duplex</text>
+
+<rect class="box" x="158" y="96" width="118" height="42" rx="2"/>
+<text class="lbl" x="217" y="117" text-anchor="middle">SPEAKER</text>
+<text class="sub" x="217" y="130" text-anchor="middle">tap = barge-in</text>
+
+<rect class="box" x="24" y="180" width="252" height="46" rx="2"/>
+<text class="lbl" x="150" y="200" text-anchor="middle">ON-DEVICE ASR</text>
+<text class="sub" x="150" y="215" text-anchor="middle">SFSpeechRecognizer · ~0 ms · free</text>
+
+<rect class="box" x="24" y="262" width="252" height="60" rx="2"/>
+<text class="lbl" x="150" y="283" text-anchor="middle">ConversationManager</text>
+<text class="sub" x="150" y="298" text-anchor="middle">2.0 s silence = end of turn</text>
+<text class="sub" x="150" y="312" text-anchor="middle">carries history + percent_complete</text>
+
+<!-- mic down into ASR -->
+<path class="flow" d="M60,138 L60,180"/>
+<!-- ASR down into CM -->
+<path class="flow" d="M100,226 L100,262"/>
+<!-- audio returns in its own lane, clear of every box, into SPEAKER -->
+<path class="flowa" d="M276,292 L290,292 L290,117 L282,117"/>
+<text class="tagA" x="284" y="160" text-anchor="end">mp3</text>
+
+<!-- ══════════ zone 2 : edge ══════════ -->
+<rect class="zone" x="322" y="58" width="452" height="300" rx="3"/>
+<text class="zlbl" x="336" y="78">FLY.IO · ONE MACHINE · FASTAPI</text>
+
+<rect class="box" x="340" y="96" width="418" height="42" rx="2"/>
+<text class="lbl" x="549" y="115" text-anchor="middle">HTTPS · POST /api/v1/{chat,meditate}</text>
+<text class="sub" x="549" y="130" text-anchor="middle">stateless · curl-debuggable · any machine serves any request</text>
+
+<rect class="box" x="340" y="180" width="196" height="46" rx="2"/>
+<text class="lbl" x="438" y="200" text-anchor="middle">AUTH</text>
+<text class="sub" x="438" y="215" text-anchor="middle">Firebase ID token · ~20 ms</text>
+
+<rect class="box" x="562" y="180" width="196" height="46" rx="2"/>
+<text class="lbl" x="660" y="200" text-anchor="middle">RATE LIMIT</text>
+<text class="sub" x="660" y="215" text-anchor="middle">30 sessions / user / day</text>
+
+<rect class="box" x="340" y="262" width="196" height="60" rx="2"/>
+<text class="lbl" x="438" y="283" text-anchor="middle">PROMPT BUILDER</text>
+<text class="sub" x="438" y="298" text-anchor="middle">phase from percent_complete</text>
+<text class="sub" x="438" y="312" text-anchor="middle">0 → interview · 100 → close</text>
+
+<rect class="box" x="562" y="262" width="196" height="60" rx="2"/>
+<text class="lbl" x="660" y="283" text-anchor="middle">TTS ROUTER</text>
+<text class="sub" x="660" y="298" text-anchor="middle">chat → 3× parallel stitch</text>
+<text class="sub" x="660" y="312" text-anchor="middle">meditation → single call</text>
+
+<!-- device -> edge -->
+<path class="flow" d="M288,203 L340,203"/>
+<text class="tag" x="292" y="196">JSON</text>
+<!-- auth -> rate limit -->
+<path class="flow" d="M536,203 L562,203"/>
+<!-- auth -> prompt builder -->
+<path class="flow" d="M438,226 L438,262"/>
+<!-- rate limit -> tts router -->
+<path class="flow" d="M660,226 L660,262"/>
+<!-- prompt builder -> tts router -->
+<path class="flow" d="M536,292 L562,292"/>
+
+<!-- ══════════ zone 3 : vendors ══════════ -->
+<rect class="zone" x="790" y="58" width="344" height="300" rx="3"/>
+<text class="zlbl" x="804" y="78">VENDORS</text>
+
+<rect class="box" x="808" y="180" width="308" height="46" rx="2"/>
+<text class="lbl" x="962" y="200" text-anchor="middle">OpenAI · gpt-4o-mini</text>
+<text class="sub" x="962" y="215" text-anchor="middle">~1.1 s · $0.003 / session</text>
+
+<rect class="box" x="808" y="262" width="308" height="60" rx="2"/>
+<text class="lbl" x="962" y="283" text-anchor="middle">OpenAI · gpt-4o-mini-tts</text>
+<text class="sub" x="962" y="298" text-anchor="middle">~1.6 s stitched · $0.07 / session</text>
+<text class="sub" x="962" y="312" text-anchor="middle">93% of unit cost</text>
+
+<rect class="boxq" x="808" y="96" width="308" height="46" rx="2"/>
+<text class="lbl" x="962" y="116" text-anchor="middle" fill="#5C6066">Firebase · Auth + Firestore</text>
+<text class="sub" x="962" y="131" text-anchor="middle">transcript write is off the critical path</text>
+
+<!-- rate limit -> LLM -->
+<path class="flow"  d="M758,196 L808,196"/>
+<!-- tts router -> TTS -->
+<path class="flowa" d="M758,292 L808,292"/>
+<!-- auth/limits -> firebase, routed above the boxes so it crosses nothing -->
+<path class="flowq" d="M758,186 C778,160 786,140 808,126"/>
+
+<line class="hair" x1="0" y1="392" x2="1140" y2="392"/>
+<text class="tag" x="0" y="414">Σ 5.50 s per turn. 2.0 s of that is the silence rule — a product decision, not a cost.</text>
+<text class="tag" x="0" y="432">Only text leaves the phone. The client is the session store, so any machine can serve any request and a deploy loses nothing.</text>
+<text class="tag" x="0" y="450">Speed rules chat, continuity rules meditation: one service, two TTS delivery paths, routed per consumer.</text>
+<text class="tag" x="0" y="468">min_machines_running = 1 — the one-line fix for a 12 s first request every morning. $3.19/month.</text>
+<text class="tag" x="0" y="486">Known defect: the limiter fails open only when credentials are missing, so a Firestore outage would take chat down with it.</text>
+
+<line class="hair" x1="0" y1="508" x2="1140" y2="508"/>
+<text class="tag" x="0" y="530">Chosen over realtime voice-to-voice (~1 s first audio, ~10× cost, young APIs) and WebSocket streaming (~2 s, mobile reconnect pain).</text>
+<text class="tag" x="0" y="548">The deciding constraint was not latency. It was that one person had to operate it after midnight.</text>
+</svg>
