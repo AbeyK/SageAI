@@ -1,164 +1,176 @@
-# Sage AI — a voice meditation app, and the hypothesis it was built to test
+<p align="center">
+  <img src="SageiOS/Sage/Sage/Resources/PandaHappy.png" alt="Ember, ZenPal's red panda guide" width="150">
+</p>
 
-**A meditation generated from a conversation you just had should hold people better than a library of recordings. It didn't. This repo is the test, and the shutdown is part of the result.**
+<h1 align="center">ZenPal</h1>
 
-Two of us built this nights and weekends around day jobs at Instagram, April 28 – June 2 2025: 249 commits, an iOS app, a FastAPI backend on one 512 MB machine, 150+ beta tests, and a decision to stop that came from a retention curve rather than from losing interest.
+<p align="center">
+  <b>A voice-first AI meditation companion.</b><br>
+  Tell Ember, a red panda guide, how you're feeling, and she builds a meditation around what you said.
+</p>
 
-I owned the backend, the latency work, and the prompt and voice pipeline (84 of 85 backend commits). The iOS client was shared with [@hassanjkhan](https://github.com/hassanjkhan).
+<p align="center">
+  Made by <a href="https://github.com/hassanjkhan">Hassan Khan</a> + <a href="https://abeyk.com">Abey Koolipurackal</a>
+</p>
 
-- **[Read the engineering field report →](docs/field-report/index.html)** — 30 slides, the long version: every decision with the alternatives that lost, the four bugs, the unit economics. Open it in a browser.
-- **[Backend](Backend/)** · **[iOS client](SageiOS/)** · **[Marketing site](SageWeb/)**
+<p align="center">
+  <a href="docs/ZenPal-Engineering-Report.pdf"><b>Engineering report (PDF)</b></a> ·
+  <a href="https://abeyk.com/writing/talking-machines/"><b>Blog: Talking Machines</b></a>
+</p>
 
----
+<p align="center">
+  <img src="docs/showcase/app-flow.png" alt="A ZenPal session on iPhone: Ember asks how you are, listens, gets your meditation ready, then guides it" width="100%">
+</p>
 
-## 1. The hypothesis
+## Why we built it
 
-Meditation apps ship static, pre-recorded sessions. They can't be matched to the mood you actually walked in with, and the engagement data shows it — **fewer than 10% of users are still active by day 20**, an industry-wide number, and one that showed up in our own user interviews as a specific failure:
+One of us has meditated since childhood. The other went looking for help with stress and couldn't find an app that worked. We kept landing on the same gap: meditation apps are libraries of recordings, and a recording has no idea how your day went.
+
+The people we interviewed said the same thing:
 
 > "I'm having a panic attack and open Headspace to calm down, but I end up on a sleep meditation instead. I use it anyway because it's the best I could find at that moment."
->
-> — one of 20 user interviews
 
-So the bet, stated so it can lose:
+Most people drift away: fewer than one in ten meditation-app users are still active three weeks in. A good teacher starts by asking how you're doing. We wanted to put that teacher in everyone's pocket.
 
-> **If the meditation is generated from a conversation you just had — and the guide remembers you across sessions — then day-N retention should beat the static-library incumbents by enough to justify the cost of generating audio per user.**
+## A session with Ember
 
-Two things had to be true for that to be worth testing in 2025, and both had just become true: voice models had gotten good enough for live interaction, and meditation is unusually forgiving as a first voice use case — **latency is tolerable and you don't need highly expressive emotional range**, unlike therapy or companionship apps. A pause in a meditation is a feature. That is the whole reason this was the product and not a therapy bot.
+You open the app and Ember asks how you are. You answer out loud, eyes closed if you like.
 
-**The product:** you talk to Ember, a red panda guide. She interviews you for a few turns, then generates a five-minute meditation built from what you actually said.
+> **Ember:** If your mood was the weather, what's happening outside your mind's window?<br>
+> **You:** Fog, honestly. Work has been a lot this week.<br>
+> **Ember:** Where does that fog sit in your body right now?
 
-<p align="center">
-  <img src="docs/figures/fig-hero.gif" alt="Oscilloscope trace of one conversational turn: the user speaks, two seconds of silence end the turn, then Ember's reply" width="820">
-</p>
-
-## 2. What the answer turned out to be
+After a few questions she builds a five-minute meditation from what you told her and guides you through it, slower, with long pauses. There's nothing to browse.
 
 <p align="center">
-  <img src="docs/figures/fig-retention.gif" alt="Retention curve, days 0 to 14, settling at 10 percent by day 14 — parity with incumbent apps" width="820">
+  <img src="docs/figures/fig-hero.gif" alt="Trace of one conversational turn: the user speaks, two seconds of silence end the turn, then Ember replies" width="820">
 </p>
 
-**Day-14 retention landed at ~10% of the beta cohort — parity with the incumbents, not a win.** The cohort is small, so the honest reading is a parity *band*, not a point estimate. But parity was the problem: parity meant months more work on memory and habit loops just to keep testing the thesis, and midway through, Headspace shipped its own AI companion. The differentiation argument was gone.
+## Product calls
 
-We stopped. The number was the reason.
+**Voice first, because meditation forgives a pause.** In 2025 voice models had just become good enough for live conversation, but they were still slow and limited in emotional range. Therapy and companion apps need instant replies and a wide range of feeling. Meditation doesn't: a short pause before the guide speaks feels natural. We picked the use case that suited where the technology was.
 
-The stronger version of this ending is an experiment I didn't run — one variable (does the app open by recalling your last session?), two cohorts, and a decision gate written down *before* the readout. That design is in [the field report's appendix](docs/field-report/index.html), marked as extrapolated. It's the thing I'd do first next time: the project ended on one number when it deserved a controlled one.
+**Hands-free, eyes closed.** Push-to-talk would break the experience, and echo cancellation kept picking up Ember's own voice. So the mic and speaker are never open at the same time, two seconds of silence ends your turn, and a tap interrupts her.
 
-## 3. How it works
+**Ember has a personality.** She's a red panda: calm, warm and a little playful. Her prompt runs in three phases (interview, hand-off to the Start My Meditation button, meditation), and each phase has its own voice direction: quick and warm while chatting, slow and spacious while guiding.
+
+**Know what a session costs before growing.** A session costs about 7¢, almost all of it voice. That set the scaling plan: cache the intros and outros every session shares, and pre-generate scheduled meditations at batch prices, which together cut the cost by more than half.
+
+**Let usage make the call.** We shipped to TestFlight, interviewed 20 people and ran 150+ beta sessions. Day-14 retention came in around 10%, level with the established apps. Then Headspace launched its own AI companion. Pulling ahead would have meant months more on memory and habit loops, so we wound ZenPal down and took the lessons with us.
 
 <p align="center">
-  <img src="docs/figures/architecture.svg" alt="System architecture: iPhone client with on-device ASR, stateless FastAPI service on one Fly.io machine, OpenAI and Firebase as vendors" width="100%">
+  <img src="docs/figures/fig-retention.gif" alt="Retention curve, days 0 to 14, settling at about 10 percent by day 14" width="820">
 </p>
 
-Two endpoints, both stateless:
-
-| | `POST /api/v1/chat` | `POST /api/v1/meditate` |
-|---|---|---|
-| **Job** | interview the user | generate the next meditation phrase |
-| **Model** | `gpt-4o-mini` | `gpt-4o-mini` |
-| **TTS** | 3-way parallel stitch, ~1.6 s | single call, ~4.5 s |
-| **Optimised for** | speed | prosody continuity |
-
-The client sends the full conversation plus `percent_complete` on every request, and the server returns the matching phase — interview at 0, closing at 100. **No server-side session state at all**: any machine can serve any request, a deploy loses nothing, and there is no Redis to operate. The price is that a client can lie about its progress, which is bounded by auth and the 30-sessions/day cap, and that resending full history grows tokens per turn, which is bounded by session length. Before money changed hands that trade would flip to server-issued session tokens.
-
-## 4. The engineering: recovering 5.2 seconds
-
-A chat app hides a slow model behind a typing indicator. **In audio, silence reads as a crash.** The naive chain — speech-to-text → LLM → text-to-speech, run one after another — took 10.7 seconds per turn.
+## Design
 
 <p align="center">
-  <img src="docs/figures/fig-waterfall.gif" alt="Turn budget across three generations: 10.7 seconds naive, 5.5 seconds shipped, 1.2 seconds for the designed streaming variant" width="820">
+  <img src="docs/showcase/app-design.png" alt="ZenPal in light mode: login, home, Ember speaking during the check-in, the meditation, and the end-of-session rating" width="100%">
+  <img src="docs/showcase/app-design-dark.png" alt="The same five ZenPal screens in dark mode" width="100%">
 </p>
 
-The commit that started this is [`perf(backend): drop to gpt-4o-mini and log elapsed time at every await`](Backend/app/services/openai_service.py) — 4:07 AM, and the important half is the second clause. It put a timer in front of every stage, and from then on every turn reported what each stage cost. No APM vendor: when every slow part is a network call, wall-clock deltas are enough.
+The whole screen belongs to Ember. She greets you happy, settles into a meditating pose while she listens and thinks, and switches to talking when she answers, with a soft cross-fade and a small label for each state. The app follows light and dark mode, and the only controls are a progress bar that turns into the Start My Meditation button, a five-minute timer during the meditation, and a tap to interrupt.
+
+## Engineering
+
+The voice AI stack was changing month to month, so we didn't try to pick winners on paper. We built the alternatives, measured them on real sessions, and kept what won. The [engineering report](docs/ZenPal-Engineering-Report.pdf) walks through every decision.
+
+| | Tried | Shipped | Why |
+|---|---|---|---|
+| **Transport** | Realtime voice-to-voice | REST + async fan-out | Realtime gave ~1 s turns at ~10× the cost on brand-new APIs |
+| **Speech-to-text** | Whisper on the server | Apple on-device | Instant, free, and audio never leaves the phone |
+| **LLM** | `gpt-4o` | `gpt-4o-mini` | Same quality for two-sentence replies at a fraction of the price |
+| **Text-to-speech** | `tts-1-hd`, `tts-1` | `gpt-4o-mini-tts` | Fast, and its tone can be directed per request |
+| **Cold starts** | Cron pinger, Redis warm state | One always-on machine | Ended the morning wait for $3.19/month |
+
+### The iOS app
+
+Hassan led the iOS app: everything you see and hear during a session.
+
+- **A session that runs itself.** `ConversationManager` moves each session from check-in to meditation and back, and through Ember's states in every turn: listening, thinking, talking. It owns the timing, so the mic and speaker never overlap and the conversation needs no buttons.
+- **Knowing when you've finished talking.** `SpeechManager` watches on-device recognition and ends your turn after two seconds of silence, which is what makes the app hands-free.
+- **Ember on screen.** `RedPandaView` cross-fades her between poses as the conversation state changes, in light and dark mode.
+- **Progress you can see.** A progress bar fills as you talk with Ember and turns into the Start My Meditation button when she's ready. During the meditation a five-minute timer counts down. A tap interrupts Ember, the screen stays awake while you're eyes-closed, and a short feedback screen at the end saves how each session felt to Firestore.
+- **Accounts.** Sign-up and login with Firebase Auth.
+
+### The voice backend: making the wait feel natural
+
+Abey led the backend and the voice pipeline. In a voice app, a long silence feels like the app froze. Chaining speech-to-text, the LLM and text-to-speech one after another took 10.7 seconds per turn, and we got it to 5.5.
+
+<p align="center">
+  <img src="docs/figures/fig-waterfall.gif" alt="Turn time across three versions: 10.7 seconds at first, 5.5 seconds shipped, 1.2 seconds for the streaming design" width="820">
+</p>
+
+- **Timers on every step.** Every `await` in the backend logs its elapsed time, so each turn reports where its time went. The model calls dominated, so that's where the work went.
+- **Speech recognition on the phone.** Only text goes to the server.
+- **Nothing extra in the way.** Saving the transcript runs alongside the reply instead of before it.
+- **Parallel voice.** Ember's reply is split into chunks, voiced at the same time and joined back together ([`tts_parallel_stitch`](Backend/app/services/openai_service.py)), which took synthesis from 4.5 s to 1.6 s.
+
+<p align="center">
+  <img src="docs/showcase/one-turn.png" alt="One turn through the pipeline: mic, on-device speech recognition, HTTPS, auth, LLM, three parallel voice calls, join, speaker; 5.5 seconds including the 2-second end-of-turn pause" width="820">
+</p>
+
+Testers then told us a meditation's mood sometimes shifted halfway through, because each chunk picks its own tone. So conversation uses the fast parallel path, and meditations are voiced in one continuous take.
+
+### Prompts as production code
+
+Ember's personality changed almost daily while testers already had the app. The backend accepts older message formats and only ever adds fields, so prompt updates went out like any other deploy and never broke a session in progress.
+
+### Problems we chased down
+
+- **The first user each morning waited 12 seconds.** The single server shut down overnight to save money. A cron pinger and a Redis warm-state experiment didn't fix it. Logs showed the spikes were machine starts rather than vendor latency, and keeping one machine running solved it for $3.19/month.
+- **Every user got the same "random" opener.** Ember's first question was chosen once when the server process started. While machines restarted often, it looked random. Once the server stayed up, it stopped changing, until a tester noticed. ([fix](Backend/app/routers/chat.py))
+- **The app heard "Ember" as "amber".** Fixed with custom vocabulary hints and a word-boundary pass over the transcript. ([fix](SageiOS/Sage/Sage/SpeechManagement/SpeechRecognizer.swift))
+
+<p align="center">
+  <img src="docs/figures/fig-coldstart.gif" alt="24-hour chart of request latency before and after: the morning spikes disappear" width="800">
+</p>
+
+### How it fits together
+
+<p align="center">
+  <img src="docs/figures/architecture.svg" alt="System architecture: iPhone client with on-device speech recognition, a stateless FastAPI service on one Fly.io machine, OpenAI and Firebase" width="100%">
+</p>
+
+The iOS app sends the conversation so far and how far into the session you are. The backend answers with the right phase: interview at the start, closing at the end. It keeps no session state, so any machine can serve any request and a deploy never drops a session.
+
+**Stack:** Swift / UIKit · Python / FastAPI · OpenAI `gpt-4o-mini` and `gpt-4o-mini-tts` · Apple on-device speech recognition · Firebase Auth and Firestore · Fly.io
+
+### Where we'd take it next
+
+Realtime voice-to-voice models have matured since we built ZenPal. They'd take over turn-taking, interruptions and voicing in one model, bringing a turn close to a second. What would stay ours: who you are, what Ember should remember about you, the shape of a session, safety, and what each session costs.
+
+## Repo map
 
 ```
-[0.000s] chat processing start
-[0.048s] auth ok
-[1.310s] LLM reply received
-[TTS]    3 chunks · gather wall 1.62s
-[FS]     audit write (concurrent)
-[3.05s]  total server time
+Backend/              FastAPI service
+  app/routers/          chat.py · meditation_router.py   (endpoints and Ember's prompts)
+  app/services/         openai_service.py                (LLM and voice, incl. tts_parallel_stitch)
+                        rate_limiter.py · firebase_client.py
+  fly.toml              one always-on 512 MB machine
+SageiOS/Sage/Sage/    iOS app (Swift / UIKit)
+  ConversationManager/  session phases, turn timing
+  SpeechManagement/     on-device speech recognition, end-of-turn detection
+  RedPandaView/         Ember and her poses
+SageWeb/              landing page
+docs/                 engineering report (PDF and HTML), figures, screenshots
 ```
 
-The logs made the argument simple: model calls dominate, everything else is noise, and anything optimised without a timer in front of it is decoration.
-
-**Where the time went.** Speech recognition moved on-device (Apple's `SFSpeechRecognizer`) — instant, free, and only text ever leaves the phone. The transcript write moved off the critical path with `asyncio.gather`. And TTS got split into chunks synthesised in parallel and byte-concatenated:
-
-<p align="center">
-  <img src="docs/figures/fig-stitch.gif" alt="Serial versus parallel text-to-speech: three chunks serially take 4.5 seconds, in parallel 1.6 seconds" width="820">
-</p>
-
-Wall time collapses from the sum of the chunks to the slowest one. MP3 frames carry their own sync headers, so decoders forgive the seams — you can concatenate the bytes and play the result. That is [`tts_parallel_stitch`](Backend/app/services/openai_service.py).
-
-**What that cost.** Each TTS request renders emotional tone from scratch, so chunk two came back in a different mood than chunk one — and the chunk boundaries kept landing exactly on the scripted pauses. Testers reported the voice changing mood mid-meditation. The benchmark measured seconds; the users were hearing mood. **The fix was routing, not code**: chat keeps the stitch, meditation gets one unbroken call. Both paths ship, chosen per consumer.
-
-## 5. Four bugs worth keeping
-
-**The always-on fix froze the randomness.** Ember's opening question was chosen with `random.choice` at module scope. Under scale-to-zero this was invisible — every cold start re-rolled it, so the bug behaved like the feature. Once the machine stayed up for days, one process meant one roll, and every user got the identical "random" opener until a beta tester noticed. Two changes, each correct alone, composed into a user-visible bug. **Process lifetime is part of the program's semantics.** ([fix](Backend/app/routers/chat.py))
-
-**The first user each morning waited 12 seconds.**
-
-<p align="center">
-  <img src="docs/figures/fig-coldstart.gif" alt="24-hour strip chart of request latency, before and after: morning cold-start spikes disappear" width="800">
-</p>
-
-Scale-to-zero stopped the only machine when idle, so the first turn of the day paid boot plus imports plus client init before saying a word. A cron pinger turned warmth into a coin flip against the idle timer. A Redis warm-state spike solved the wrong half of a problem that was mostly process start. The fix was `min_machines_running = 0 → 1` — one line, $3.19/month, and one evening of evidence to prove the outliers were machine starts and not vendor latency.
-
-**It heard "Ember" as "amber" for weeks.** On-device recognition is free and instant, and the price is that its vocabulary is not yours. Fixed with `contextualStrings` plus a word-boundary pass over the final transcript. ([fix](SageiOS/Sage/Sage/SpeechManagement/SpeechRecognizer.swift))
-
-**The app answered its own voice, indefinitely.** Echo cancellation is probabilistic and leaks meditation words into transcripts; push-to-talk kills the eyes-closed promise. Shipped instead as a **half-duplex invariant** — mic and speaker never open together, interruption is a tap. Deterministic, and debuggable with print statements.
-
-**And one found while writing this up:** the rate limiter fails open only when its *credentials* are missing. If Firestore itself went down, `doc_ref.get()` would raise and chat would go down with it — availability accidentally coupled to a non-critical dependency. Wrong default, one-line fix. It's still in [`rate_limiter.py`](Backend/app/services/rate_limiter.py) as written; the field report runs the full incident it was waiting to cause.
-
-## 6. What it cost
-
-**A session costs 7¢, and the voice is 93% of it** — $0.07 TTS against $0.003 for the language model. The LLM is a rounding error, which inverts the usual intuition about where genAI spend goes.
-
-At 10k daily sessions that's ~$21k/month naive. The levers compound rather than add: caching shared intros and outros (~30% of spoken time) × the vendors' half-price batch tier for pre-generated scheduled meditations ≈ $8k. Shipping Opus behind signed URLs instead of base64-inflated JSON halves the bytes on the wire.
-
-Worth naming: **the vendors break before my code does.** TTS rate limits bite at 50–100 concurrent; the single machine isn't the constraint until ~200. The $3.19 machine is third on its own failure list.
-
-## 7. What a 2026 rebuild deletes
-
-Realtime voice-to-voice APIs absorb turn-taking, barge-in, and speech in both directions into one model. The endpointing rule, the parallel stitch, the prosody seams, and the echo loop **stop existing as categories** — two of the four bugs above and the entire latency chapter go with them.
-
-What doesn't move: identity, spend caps, phase state, memory, safety hooks, cost metering. Vendors sell the voice; nobody sells knowing that a meditation must end at a button, or how much a given user is allowed to cost you today. And that problem grows — realtime pricing makes 93%-on-TTS look cheap.
-
-The transferable part isn't the stack. It's that everything here was built twice and measured before one was deleted: realtime *and* REST, Whisper *and* on-device, `gpt-4o` *and* `gpt-4o-mini`, serial *and* parallel TTS. AI-assisted prototyping made building both sides nearly free, which moves the engineering judgment to **choosing what to delete**.
-
-## 8. Repo map
-
-```
-Backend/          FastAPI service — the part I'd show first
-  app/routers/      chat.py · meditation_router.py   (endpoints + the prompts, which are production code)
-  app/services/     openai_service.py                (LLM + TTS, incl. tts_parallel_stitch)
-                    rate_limiter.py · firebase_client.py
-  fly.toml          512 MB, one always-on machine
-SageiOS/Sage/     iOS client (Swift/UIKit)
-  ConversationManager/   phase state machine, turn timing
-  SpeechManagement/      on-device ASR + the 2.0 s silence rule
-SageWeb/          marketing site
-docs/field-report/     the 30-slide engineering writeup
-docs/figures/          the figures above
-```
-
-## 9. Running the backend
+## Running the backend
 
 ```bash
 cd Backend
 python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-printf 'OPENAI_API_KEY=sk-...\n' > .env      # optional: boots without it, /chat and /meditate will 503
+printf 'OPENAI_API_KEY=sk-...\n' > .env      # optional: boots without it; /chat and /meditate return 503
 uvicorn main:app --reload --port 8000
 ```
 
-Interactive API docs at http://localhost:8000/docs — `/health` responds without any credentials configured.
-
-## 10. A note on the commit history
-
-The messages in this log are not the ones I typed at 3 AM. The originals were `prompts`, `tts`, `idk`, and — eight times in one night — `prompts` again. They've been rewritten to say what each commit actually changed, with the diffs re-read one by one; authorship, timestamps and file contents are untouched.
-
-Two were not just vague but wrong, which is the argument for doing it: `get rid of rate limits` actually *added* an admin whitelist, and `design assets` actually changed the speech end-of-turn timer. The original log is preserved verbatim in [the field report](docs/field-report/index.html), where the 1:24 AM → 5:32 AM run is reproduced in full — including the moment the message quality collapses at 3:06.
+API docs at http://localhost:8000/docs. `/health` works without any credentials.
 
 ---
 
-*Built as Sage AI, shipped to TestFlight as ZenPal. The guide is Ember.*
+<p align="center">
+  Built in 2025 by <a href="https://github.com/hassanjkhan">Hassan Khan</a> (iOS) and <a href="https://abeyk.com">Abey Koolipurackal</a> (backend and voice).<br>
+  <sub>ZenPal's working name was Sage, which is why the code folders are named Sage.</sub>
+</p>

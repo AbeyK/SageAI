@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sage AI — a field report (slides)</title>
+<title>ZenPal — engineering report</title>
 <style>
 /* ------------------------------------------------------------------ tokens */
 :root{
@@ -450,7 +450,7 @@ html.js .sl.on .rv{opacity:1;transform:none;transition:opacity .5s cubic-bezier(
 <div class="navzone prev" aria-hidden="true"></div>
 <div class="navzone next" aria-hidden="true"></div>
 <main class="deck">
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Sage AI · 2025 · A field report · Abey Koolipurackal</p><h1 class="rv" style="font-size:clamp(44px,6vw,78px);line-height:1.05;margin-top:1.6rem">Real-time voice AI,<br>end to end</h1><p class="lede rv">A voice meditation app built solo around a day job: on-device speech recognition, an LLM + TTS pipeline cut from 10.7 s to 5.5 s per turn, 150+ beta tests, and a shutdown decided by the retention curve. Field report follows, commit messages left in.</p><figure class="fig rv" style="margin-top:2.2rem"><div class="fig-slot"><figure class="fig" id="fig-hero">
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">ZenPal · 2025 · Engineering report · Hassan Khan + Abey Koolipurackal</p><h1 class="rv" style="font-size:clamp(44px,6vw,78px);line-height:1.05;margin-top:1.6rem">Real-time voice AI,<br>end to end</h1><p class="lede rv">A voice-first AI meditation app, built by two Instagram engineers alongside their day jobs: on-device speech recognition, an LLM + TTS pipeline cut from 10.7 s to 5.5 s per turn, 150+ beta tests, and a shutdown decided by the retention curve.</p><figure class="fig rv" style="margin-top:2.2rem"><div class="fig-slot"><figure class="fig" id="fig-hero">
 <style>
 #fig-hero{position:relative;margin:0;box-sizing:border-box;width:100%;background:#FCFCFA;border:1px solid #DEDCD4;padding:14px 16px 26px;color:#191B1E;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
 #fig-hero .hd{display:flex;align-items:baseline;gap:16px;padding:0 2px 10px;margin-bottom:12px;border-bottom:1px solid #DEDCD4;font-size:11px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
@@ -630,13 +630,13 @@ if(TCK)setTimeout(kick,30);
 </script>
 </figure></div></figure></div></section>
 
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Contents</p><h2 class="rv">Six chapters, one real commit each</h2><nav class="agenda rv" style="margin-top:1.8rem">
-  <a><span class="no">01</span><span class="t">Context</span><span class="d">The product, and why voice is the hard version · ≈4 min</span><span class="commit">make Sage's face cuter</span></a>
-  <a><span class="no">02</span><span class="t">Decisions</span><span class="d">Transport, speech-to-text, state, delivery — alternatives included · ≈10 min</span><span class="commit">attemp 1 to move it all over to REST backend</span></a>
-  <a><span class="no">03</span><span class="t">Latency</span><span class="d">Recovering 5.2 seconds, with instruments · ≈7 min</span><span class="commit">worse models, faster response</span></a>
-  <a><span class="no">04</span><span class="t">War stories</span><span class="d">Four bugs, four commit messages · ≈9 min</span><span class="commit">lol python is weird</span></a>
-  <a><span class="no">05</span><span class="t">The data</span><span class="d">Evals, unit economics, and the number that stopped it · ≈8 min</span><span class="commit">get rid of rate limits</span></a>
-  <a><span class="no">06</span><span class="t">Rebuild</span><span class="d">What 2026 deletes, what transfers · ≈4 min</span><span class="commit">e2e full medidation works</span></a>
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Contents</p><h2 class="rv">Six chapters</h2><nav class="agenda rv" style="margin-top:1.8rem">
+  <a><span class="no">01</span><span class="t">Context</span><span class="d">The product, and why voice is the hard version</span></a>
+  <a><span class="no">02</span><span class="t">Decisions</span><span class="d">Transport, speech-to-text, state, delivery — alternatives included</span></a>
+  <a><span class="no">03</span><span class="t">Latency</span><span class="d">Recovering 5.2 seconds, with instruments</span></a>
+  <a><span class="no">04</span><span class="t">War stories</span><span class="d">Four bugs</span></a>
+  <a><span class="no">05</span><span class="t">The data</span><span class="d">Evals, unit economics, and the number that stopped it</span></a>
+  <a><span class="no">06</span><span class="t">Rebuild</span><span class="d">What 2026 deletes, what transfers</span></a>
   </nav></div></section>
 
 <section class="sl "><div class="sl-inner"><p class="eyebrow rv">01 · Context</p><h2 class="rv">A meditation built from your day</h2><div class="two rv">
@@ -659,18 +659,18 @@ if(TCK)setTimeout(kick,30);
       <div class="shape" style="margin-top:2rem">
         <div class="row"><span class="k">Industry</span><span class="v">&lt; 10% of users still active by day 20</span></div>
         <div class="row"><span class="k">The bet</span><span class="v">you talk with Ember, the app’s voice guide; the meditation is generated from that talk</span></div>
-        <div class="row"><span class="k">The build</span><span class="v">solo, nights and weekends, one small always-on VM</span></div>
+        <div class="row"><span class="k">The build</span><span class="v">two engineers, nights and weekends, one small always-on VM</span></div>
       </div>
     </div>
   </div></div></section>
 
 <section class="sl "><div class="sl-inner"><p class="eyebrow rv">01 · Context</p><h2 class="rv">A voice loop has nowhere to hide</h2><div class="three rv">
     <div class="blk"><p class="bl">Dead air</p><p>A chat app hides a slow model behind a typing indicator. In audio, silence reads as a crash. The naive chain — speech-to-text (ASR) → LLM → text-to-speech (TTS), run one after another — took 10.7 seconds.</p></div>
-    <div class="blk"><p class="bl">One tired operator</p><p>Whatever shipped had to be debuggable by one person after midnight, on a 512MB machine, for single-digit dollars.</p></div>
+    <div class="blk"><p class="bl">A tiny team</p><p>Whatever shipped had to be debuggable by two people after midnight, on a 512MB machine, for single-digit dollars.</p></div>
     <div class="blk"><p class="bl">Users re-ranked the problem</p><p>Interviews were clear: a pause is tolerable, a robotic voice is not. Chat got a latency budget; meditation got a continuity budget.</p></div>
   </div></div></section>
 
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Decision № 1 · Transport</p><h2 class="rv">How should audio move between phone and model?</h2><div class="dtable rv"><table><thead><tr><th>Alternative</th><th>First audio</th><th>Cost</th><th>Ops for one person</th><th>Verdict</th></tr></thead><tbody><tr><td>Realtime voice-to-voice</td><td>~1 s</td><td>~10× per minute</td><td>WebRTC, reconnects, young APIs</td><td><span class="dead">prototyped · killed on cost + maturity</span></td></tr><tr><td>WebSocket streaming</td><td>~2 s</td><td>same models</td><td>stateful conns, mobile reconnect pain</td><td><span class="dead">designed · never left the whiteboard</span></td></tr><tr><td>SSE sentence streaming</td><td>~2.5 s</td><td>same models</td><td>retry semantics</td><td><span class="dead">considered · the one I regret skipping</span></td></tr><tr class="chose"><td><span class="tag">CHOSE →</span> REST + async fan-out</td><td>5.5 s = full turn, no early audio</td><td>cheapest tier</td><td>stateless, curl-debuggable</td><td>shipped</td></tr></tbody></table></div><p class="price rv">PRICE PAID · ~5 s turns, no streaming — acceptable because users ranked voice quality over speed. REVISIT TRIGGER · first paid launch. BASIS · realtime measured on the prototype; WS/SSE estimated from vendor docs.</p></div></section>
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Decision № 1 · Transport</p><h2 class="rv">How should audio move between phone and model?</h2><div class="dtable rv"><table><thead><tr><th>Alternative</th><th>First audio</th><th>Cost</th><th>Ops for a small team</th><th>Verdict</th></tr></thead><tbody><tr><td>Realtime voice-to-voice</td><td>~1 s</td><td>~10× per minute</td><td>WebRTC, reconnects, young APIs</td><td><span class="dead">prototyped · killed on cost + maturity</span></td></tr><tr><td>WebSocket streaming</td><td>~2 s</td><td>same models</td><td>stateful conns, mobile reconnect pain</td><td><span class="dead">designed · never left the whiteboard</span></td></tr><tr><td>SSE sentence streaming</td><td>~2.5 s</td><td>same models</td><td>retry semantics</td><td><span class="dead">considered · the next step</span></td></tr><tr class="chose"><td><span class="tag">CHOSE →</span> REST + async fan-out</td><td>5.5 s = full turn, no early audio</td><td>cheapest tier</td><td>stateless, curl-debuggable</td><td>shipped</td></tr></tbody></table></div><p class="price rv">PRICE PAID · ~5 s turns, no streaming — acceptable because users ranked voice quality over speed. REVISIT TRIGGER · first paid launch. BASIS · realtime measured on the prototype; WS/SSE estimated from vendor docs.</p></div></section>
 
 <section class="sl "><div class="sl-inner"><p class="eyebrow rv">Decision № 2 · Speech-to-text</p><h2 class="rv">Where should transcription happen?</h2><div class="dtable rv"><table><thead><tr><th>Alternative</th><th>Added latency</th><th>Cost</th><th>Privacy</th><th>Verdict</th></tr></thead><tbody><tr><td>Whisper, server-side</td><td>+1–3 s upload + decode</td><td>$0.006/min</td><td>raw audio leaves the phone</td><td><span class="dead">prototyped · killed on latency + privacy</span></td></tr><tr class="chose"><td><span class="tag">CHOSE →</span> Apple on-device</td><td>≈ 0 (streaming partials)</td><td>free</td><td>only text leaves the device</td><td>shipped</td></tr></tbody></table></div><p class="price rv">PRICE PAID · it heard "Ember" as "amber" for weeks (contextualStrings + a regex; commit "can transcribe ember", 5:32 AM) · endpointing — deciding when the user has finished speaking — became mine to own: 2.0 s of unchanged transcript ends the turn · iOS lock-in. REVISIT · an Android build or first non-English locale.</p></div></section>
 
@@ -872,19 +872,19 @@ if(TCK)setTimeout(kick,30);
 </script>
 </figure></div><figcaption><span class="figno">Fig. 2</span> — Anatomy of one turn. Stage boxes sum to 3.5 s of processing; the remaining 2.0 s is the silence rule itself — a product decision, with everything below it as consequences.</figcaption></figure></div></section>
 
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Decision № 3 · Session state</p><h2 class="rv">Who remembers the conversation?</h2><div class="dtable rv"><table><thead><tr><th>Alternative</th><th>Scale-out</th><th>Failure modes</th><th>Ops</th><th>Verdict</th></tr></thead><tbody><tr><td>Server session store</td><td>sticky routing or shared store</td><td>session recovery on deploy/crash</td><td>Redis/DB to run</td><td><span class="dead">rejected · infra for a problem I didn't have</span></td></tr><tr class="chose"><td><span class="tag">CHOSE →</span> Client carries everything</td><td>any machine, any request</td><td>nothing to lose on deploy</td><td>zero</td><td>shipped</td></tr></tbody></table></div><p class="price rv">MECHANISM · every request carries the full conversation plus percent_complete — how far through the meditation the user is; under 70 s left the app pins it to 100 so the closing always lands before the bell. PRICE PAID · a client can lie about progress (bounded by auth + 30/day caps) · full-history resends grow tokens per turn (bounded by session length). REVISIT TRIGGER · server-issued session tokens before money changes hands.</p></div></section>
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Decision № 3 · Session state</p><h2 class="rv">Who remembers the conversation?</h2><div class="dtable rv"><table><thead><tr><th>Alternative</th><th>Scale-out</th><th>Failure modes</th><th>Ops</th><th>Verdict</th></tr></thead><tbody><tr><td>Server session store</td><td>sticky routing or shared store</td><td>session recovery on deploy/crash</td><td>Redis/DB to run</td><td><span class="dead">rejected · infra for a problem we didn't have</span></td></tr><tr class="chose"><td><span class="tag">CHOSE →</span> Client carries everything</td><td>any machine, any request</td><td>nothing to lose on deploy</td><td>zero</td><td>shipped</td></tr></tbody></table></div><p class="price rv">MECHANISM · every request carries the full conversation plus percent_complete — how far through the meditation the user is; under 70 s left the app pins it to 100 so the closing always lands before the bell. PRICE PAID · a client can lie about progress (bounded by auth + 30/day caps) · full-history resends grow tokens per turn (bounded by session length). REVISIT TRIGGER · server-issued session tokens before money changes hands.</p></div></section>
 
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">02 · Decisions · git: remove condesending tone</p><h2 class="rv">Prompts are production code</h2><div class="three rv">
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">02 · Decisions</p><h2 class="rv">Prompts are production code</h2><div class="three rv">
     <div class="blk"><p class="bl">Persona = state machine</p><p>The prompt encodes three phases: an interview, a hand-off that must end at the app’s begin button (it forbids asking "are you ready?"), and a meditation parameterized 0→100%.</p></div>
     <div class="blk"><p class="bl">Voice direction per request</p><p>Each endpoint ships its own TTS style block: quick and warm for chat, slow with long pauses for meditation. Emotional register is a request parameter.</p></div>
-    <div class="blk"><p class="bl">Prompts outrun clients</p><p>Persona iterated daily against app builds I couldn't update: unknown roles coerced server-side, message schema append-only. No session ever broke.</p></div>
+    <div class="blk"><p class="bl">Prompts outrun clients</p><p>Persona iterated daily against app builds already in testers' hands: unknown roles coerced server-side, message schema append-only. No session ever broke.</p></div>
   </div>
-  <p class="price rv">PROMPT CHANGES SHIPPED DAILY, REVIEWED AND PHASED LIKE ANY OTHER DEPLOY · THE COMMIT IN THE HEADER IS A USER-FILED BUGFIX</p></div></section>
+  <p class="price rv">PROMPT CHANGES SHIPPED DAILY, REVIEWED AND PHASED LIKE ANY OTHER DEPLOY</p></div></section>
 
 <section class="sl "><div class="sl-inner"><p class="eyebrow rv">02 · Decisions · the method</p><h2 class="rv">Everything built twice, and what survived</h2><p class="lede rv">AI-assisted prototyping priced the alternatives near zero. The engineering judgment moved to choosing what to delete.</p><figure class="fig rv"><div class="table-slot"><table>
 <thead><tr><th>Layer</th><th>Also built — measured, cut</th><th>Verdict</th><th>Kept</th></tr></thead>
 <tbody>
-<tr><td>Transport</td><td>Realtime voice-to-voice prototype</td><td>~1 s turns at ~10× the cost on young APIs; REST is slower and boring, and one person can operate it</td><td><strong>REST + async fan-out</strong></td></tr>
+<tr><td>Transport</td><td>Realtime voice-to-voice prototype</td><td>~1 s turns at ~10× the cost on young APIs; REST is slower and boring, and a small team can operate it</td><td><strong>REST + async fan-out</strong></td></tr>
 <tr><td>Speech-to-text</td><td>Whisper, server-side</td><td>+1–3 s and $0.006/min, raw audio leaves the phone; on-device is instant, free, private — and hears “amber”</td><td><strong>Apple on-device</strong></td></tr>
 <tr><td>LLM</td><td>gpt-4o</td><td>indistinguishable for two-sentence replies at ~15× the price</td><td><strong>gpt-4o-mini</strong></td></tr>
 <tr><td>Text-to-speech</td><td>tts-1-hd · tts-1</td><td>hd: lovely, twice too slow; tts-1: fast, robotic; the third is fast and steerable per endpoint</td><td><strong>gpt-4o-mini-tts</strong></td></tr>
@@ -892,8 +892,8 @@ if(TCK)setTimeout(kick,30);
 <tr><td>Cold starts</td><td>Cron pinger · Redis warm-state spike</td><td>a coin flip and the wrong half of the problem, respectively</td><td><strong>min_machines_running = 1</strong></td></tr>
 </tbody></table></div><figcaption><span class="figno">Table 1</span> — Each row is an alternative that was prototyped, measured, and deleted, which was cheaper than being right in advance.</figcaption></figure></div></section>
 
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">03 · Latency · git: worse models, faster response — 4:07 AM</p><h2 class="rv">Timers first, opinions second</h2><div class="two rv">
-    <div class="copy"><p style="font-size:17px;line-height:1.7">The commit that downgraded the models also added elapsed-time
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">03 · Latency</p><h2 class="rv">Timers first, opinions second</h2><div class="two rv">
+    <div class="copy"><p style="font-size:17px;line-height:1.7">When we downgraded the models we also added elapsed-time
     logging at every await boundary. From then on, every stage of every turn reported its cost. No APM vendor: a system whose
     slow parts are all network calls needs nothing finer than wall-clock deltas.</p>
     <p style="font-size:17px;line-height:1.7;margin-top:1rem">The logs made the argument simple — model calls dominated the
@@ -1277,7 +1277,7 @@ if(TCK)setTimeout(kick,30);
   <tr><td>Live with it</td><td class="dead">testers read the stall as a broken app</td></tr>
   <tr><td>Cron pinger on /health</td><td class="dead">warmth became a coin flip against the idle timer</td></tr>
   <tr><td>Redis warm-state spike</td><td class="dead">rehydrated state — the wrong half of a problem that was mostly process start</td></tr>
-  <tr class="chose"><td><span class="tag">CHOSE →</span> min_machines_running = 0 → 1</td><td>always on, $3.19/month · commit "no more cold start"</td></tr>
+  <tr class="chose"><td><span class="tag">CHOSE →</span> min_machines_running = 0 → 1</td><td>always on, $3.19/month</td></tr>
   </tbody></table></div>
   <p class="price rv">ONE LINE OF CONFIG · ONE EVENING OF EVIDENCE TO PROVE THE OUTLIERS WERE MACHINE STARTS, NOT VENDOR LATENCY</p></div></section>
 
@@ -1443,7 +1443,7 @@ if(TCK)setTimeout(kick,30);
 </script>
 </figure></div><figcaption><span class="figno">Fig. 5</span> — Before and after min_machines_running = 1: the morning spikes disappear from the strip chart.</figcaption></figure></div></section>
 
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Field note № 3 · war stories · git: lol python is weird</p><h2 class="rv">The always-on fix froze the randomness</h2><div class="codepair rv">
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Field note № 3 · war stories</p><h2 class="rv">The always-on fix froze the randomness</h2><div class="codepair rv">
     <pre><span style="color:#5C6066"># BEFORE · module scope, evaluated once per process</span>
 question = random.choice(OPENERS)
 PROMPT = f"...inspo: {question}..."</pre>
@@ -1462,25 +1462,7 @@ def build_prompt():
   <tr><td>Echo cancellation (DSP)</td><td>hands-free, probabilistic suppression</td><td class="dead">leaks "meditation words" into transcripts; hard to tune alone</td></tr>
   <tr><td>Push-to-talk</td><td>deterministic</td><td class="dead">kills the eyes-closed, hands-free promise</td></tr>
   <tr class="chose"><td><span class="tag">CHOSE →</span> Half-duplex invariant</td><td>mic and speaker never open together; interrupt = tap</td><td>deterministic, debuggable with print statements</td></tr>
-  </tbody></table></div>
-  <div class="copy rv" style="margin-top:1.3rem;max-width:54em"><p style="font-size:15.5px;line-height:1.65">
-  One more, found while preparing this talk: the rate limiter (30 sessions/user/day, refusals delivered as a pre-rendered
-  clip in the app's own voice) only skips enforcement when its credentials are missing — so if Firestore itself goes down, chat goes
-  down with it. Wrong default, one-line fix; Exemplar B in the appendix runs the full incident this would have caused.</p></div></div></section>
-
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">04 · War stories · how it actually got built</p><h2 class="rv">One night in the commit log</h2><figure class="fig rv"><div class="fig-slot"><div class="listing">
-  <div class="cmd">$ git log --pretty='%h  %ad  %s' --date=format:'%l:%M %p'</div>
-  <div class="row"><span class="h">4e0108a</span><span class="t">1:24 AM</span><span class="m">fix bug with backwards compitablity</span></div>
-  <div class="row"><span class="h">76db080</span><span class="t">2:44 AM</span><span class="m">ask more quetions</span></div>
-  <div class="row"><span class="h">12efeed</span><span class="t">3:06 AM</span><span class="m">tts</span></div>
-  <div class="row"><span class="h">12bce14</span><span class="t">3:10 AM</span><span class="m">tts</span></div>
-  <div class="row"><span class="h">b35fc2c</span><span class="t">3:15 AM</span><span class="m">tts</span></div>
-  <div class="row"><span class="h">3185a6c</span><span class="t">3:48 AM</span><span class="m">prompts</span></div>
-  <div class="row"><span class="h">3d6d8ec</span><span class="t">4:29 AM</span><span class="m">prompts</span></div>
-  <div class="row"><span class="h">c04d607</span><span class="t">4:40 AM</span><span class="m">prompts</span></div>
-  <div class="row"><span class="h">4977535</span><span class="t">5:01 AM</span><span class="m">prompts</span></div>
-  <div class="row dim"><span class="h">c1966b9</span><span class="t">5:32 AM</span><span class="m">can transcribe ember</span></div>
-</div></div><figcaption><span class="figno">Listing 1</span> — 1:24 AM to 5:01 AM, followed at 5:32 by “can transcribe ember”. Note the commit-message quality collapse at 3:06.</figcaption></figure></div></section>
+  </tbody></table></div></div></section>
 
 <section class="sl "><div class="sl-inner"><p class="eyebrow rv">05 · The data</p><h2 class="rv">Quality control for a nondeterministic product</h2><div class="two rv">
     <div class="blk"><p class="bl">What ran · the human loop</p><p style="font-size:16px;line-height:1.65">Every prompt change hand-tested
@@ -1664,7 +1646,7 @@ if(TCK)setTimeout(kick,30);
     <div class="row"><span class="k">Lever 4</span><span class="v">keep the model tier matched to the phase</span></div>
   </div></div></section>
 
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">05 · The data · the scale plan</p><h2 class="rv">What breaks first — vendors before my code</h2><figure class="fig rv"><div class="table-slot"><table>
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">05 · The data · the scale plan</p><h2 class="rv">What breaks first — vendors before our code</h2><figure class="fig rv"><div class="table-slot"><table>
 <thead><tr><th>Breaks first</th><th class="num">At roughly</th><th>Remedy, in order</th></tr></thead>
 <tbody>
 <tr><td>Vendor TTS rate limits</td><td class="num alarm">50–100 concurrent</td><td>request queue + per-vendor token buckets; pre-generation flattens the burst</td></tr>
@@ -1674,100 +1656,18 @@ if(TCK)setTimeout(kick,30);
 <tr><td>Firestore counters</td><td class="num">~100 daily users</td><td>Redis for limits and cache; batch transcript writes</td></tr>
 </tbody></table></div><figcaption><span class="figno">Table 2</span> — Failure ordering at 10k daily users; thresholds estimated from vendor rate-limit tiers and the 512 MB single-machine profile. The $3.19 machine appears third on its own list. Build-out follows the same order: edge LB → stateless API ×N → Redis + queue with pre-generation → storage/CDN, vendors behind token buckets.</figcaption></figure></div></section>
 
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">06 · Rebuild · git: e2e full medidation works</p><h2 class="rv">What a 2026 rebuild deletes, and what it keeps</h2><div class="two rv">
+<section class="sl "><div class="sl-inner"><p class="eyebrow rv">06 · Rebuild</p><h2 class="rv">What a 2026 rebuild deletes, and what it keeps</h2><div class="two rv">
     <div class="blk"><p class="bl">Deleted by realtime APIs</p><p style="font-size:16.5px;line-height:1.7">Turn-taking, barge-in, and speech
     in both directions move inside one model: the endpointing rule, the stitch, the prosody seams, and the echo loop stop existing
-    as categories. Two of the four war stories in this talk — and the entire latency chapter — gone.</p></div>
+    as categories. Two of the four war stories and the entire latency chapter go away.</p></div>
     <div class="blk"><p class="bl">Still mine — the session gateway</p><p style="font-size:16.5px;line-height:1.7">Identity, spend caps,
     phase state, memory, safety hooks, cost metering. Vendors sell the voice; nobody sells knowing when a meditation must end at a
     button, or how much a user may cost you today. And the remaining problem grows 10×: realtime pricing makes 93%-TTS look quaint.</p></div>
   </div>
   <p class="price rv">THE TRANSFERABLE METHOD · BUILD BOTH SIDES, MEASURE, DELETE THE LOSER — JUDGMENT LIVES IN THE DELETING</p></div></section>
 
-<section class="sl dark"><div class="sl-inner"><div class="qslide" style="text-align:center"><h2 class="rv">Questions?</h2><img class="rv" src="PandaHappy.png" alt="Ember" style="width:76px;margin:2.2rem auto 0;opacity:.92"><p class="note rv">Ember’s entire personality is versioned in a prompts file</p><p class="note rv" style="margin-top:2.2rem;color:#C9CDD2">Mine for you · how do you catch voice-personality regressions at scale? · who owns end-to-end latency when it spans model, serving, and client? · what does a new engineer’s first shipped change look like?</p></div></div></section>
-
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Appendix</p><h2 class="rv">Three stories this project never earned — told the way they should be</h2><div class="copy rv" style="margin-top:1.2rem;max-width:54em"><p style="font-size:17px;line-height:1.7">
-  The strongest staff stories have shapes: a <strong>migration</strong> executed under constraints, an <strong>incident</strong>
-  run end to end, an <strong>experiment</strong> that settles an argument. Sage was too small to produce all three, so this
-  appendix shows what each would look like built to the same standard — figures, alternatives, price paid. Marked as
-  extrapolated throughout; these are templates for the next build, not claims about this one.</p></div>
-  <p class="price rv">EVERY STORY BELOW FOLLOWS ONE GRAMMAR · STAKES → EVIDENCE → ALTERNATIVES → DECISION → PRICE PAID → WHAT TRANSFERS</p></div></section>
-
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Appendix · Exemplar A · the migration story · <span style="color:var(--alarm)">extrapolated — template, not history</span></p><h2 class="rv">Moving the progress clock server-side, under clients I can't update</h2><div class="copy rv" style="margin-top:.9rem;max-width:56em"><p style="font-size:15px;line-height:1.6">The stateless design let clients claim their own meditation progress — right for an MVP, wrong for money. The migration moves authority to server-issued session tokens without breaking a single old build: three phases, each gated on a measured threshold, with the old path coerced and capped until its traffic dies naturally.</p></div><figure class="fig rv" style="margin-top:1rem"><div class="fig-slot"><svg viewBox="0 0 1060 270" style="width:100%;display:block" xmlns="http://www.w3.org/2000/svg">
-<defs><pattern id="xh" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-<line x1="0" y1="0" x2="0" y2="7" stroke="#191B1E" stroke-opacity=".14" stroke-width="2"/></pattern>
-<marker id="xa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="#5C6066"/></marker></defs>
-<g font-family="ui-monospace,SF Mono,Menlo,monospace" font-size="11" letter-spacing=".08em">
-<text x="0" y="16" fill="#5C6066">PHASE</text>
-<text x="180" y="16" fill="#191B1E">P0 · DUAL-ACCEPT</text><text x="500" y="16" fill="#191B1E">P1 · ISSUE + VERIFY</text><text x="820" y="16" fill="#191B1E">P2 · ENFORCE</text>
-<line x1="170" y1="28" x2="170" y2="240" stroke="#DEDCD4"/><line x1="490" y1="28" x2="490" y2="240" stroke="#DEDCD4"/><line x1="810" y1="28" x2="810" y2="240" stroke="#DEDCD4"/>
-<text x="0" y="70" fill="#5C6066">SERVER</text>
-<rect x="180" y="50" width="300" height="30" fill="#E9EDF9" stroke="#2A46D4"/><text x="196" y="69" fill="#191B1E">accepts claimed progress + tokens</text>
-<rect x="500" y="50" width="300" height="30" fill="#E9EDF9" stroke="#2A46D4"/><text x="516" y="69" fill="#191B1E">issues tokens on every reply</text>
-<rect x="820" y="50" width="228" height="30" fill="#2A46D4"/><text x="836" y="69" fill="#FCFCFA">rejects claims without token</text>
-<text x="0" y="130" fill="#5C6066">NEW APP</text>
-<rect x="500" y="110" width="548" height="30" fill="none" stroke="#191B1E"/><text x="516" y="129" fill="#191B1E">sends token; progress = server-derived</text>
-<text x="0" y="190" fill="#5C6066">OLD APP</text>
-<rect x="180" y="170" width="628" height="30" fill="url(#xh)" stroke="#DEDCD4"/><text x="196" y="189" fill="#5C6066">claims percent_complete (never breaks — coerced + capped)</text>
-<line x1="808" y1="185" x2="880" y2="185" stroke="#5C6066" stroke-width="1.5" marker-end="url(#xa)"/>
-<text x="888" y="189" fill="#C9364B">sunset at &lt;2% traffic</text>
-<text x="180" y="235" fill="#5C6066">GATES · P0→P1 when 95% of turns carry tokens · P1→P2 when old-app traffic &lt;2% for 14 days</text>
-</g></svg></div><figcaption><span class="figno">Fig. 7</span> — Phased protocol migration: dual-accept, issue-and-verify, enforce. Old clients never break; they age out against a measured gate.</figcaption></figure><div class="dtable rv" style="margin-top:.9rem"><table><thead><tr><th>Alternative</th><th>Old clients</th><th>Risk</th><th>Verdict</th></tr></thead><tbody>
-  <tr><td>Big-bang cutover</td><td>break on day one</td><td>support burden, trust</td><td class="dead">rejected</td></tr>
-  <tr><td>Client-gated (force update)</td><td>locked out until update</td><td>churn exactly where retention hurts</td><td class="dead">rejected</td></tr>
-  <tr class="chose"><td><span class="tag">CHOSE →</span> Dual-accept with sunset gates</td><td>never break; age out</td><td>3 weeks of dual paths</td><td>the shape of every schema change I ship</td></tr>
-  </tbody></table></div><p class="price rv">WHY THIS STORY WORKS · the constraint is real (un-updatable clients) · every phase transition has a NUMBER as its gate · the price (3 weeks of dual code paths) is named out loud</p></div></section>
-
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Appendix · Exemplar B · the incident story · <span style="color:var(--alarm)">extrapolated — template, not history</span></p><h2 class="rv">If Firestore had gone down: the outage this bug was waiting to cause</h2><div class="copy rv" style="margin-top:.9rem;max-width:56em"><p style="font-size:15px;line-height:1.6">The limiter's fail-open covers only missing credentials, so a vendor Firestore incident would have been our outage: enforcement accidentally coupling availability to a non-critical dependency. Simulated below at full fidelity: nineteen minutes of chat 5xx, one config-shaped deploy to mitigate, and a prevention list that outlives it.</p></div><figure class="fig rv" style="margin-top:1rem"><div class="fig-slot"><svg viewBox="0 0 1060 260" style="width:100%;display:block" xmlns="http://www.w3.org/2000/svg">
-<g font-family="ui-monospace,SF Mono,Menlo,monospace" font-size="11" letter-spacing=".06em">
-<rect x="252" y="40" width="266" height="80" fill="#C9364B" fill-opacity=".07" stroke="#C9364B" stroke-opacity=".4"/>
-<text x="252" y="32" fill="#C9364B">IMPACT · CHAT 5XX · 19 MIN</text>
-<text x="1030" y="32" text-anchor="end" fill="#C9364B" letter-spacing=".14em">SIMULATED — TEMPLATE, NOT HISTORY</text>
-<line x1="40" y1="120" x2="1030" y2="120" stroke="#191B1E"/>
-<g fill="#5C6066" text-anchor="middle">
-<line x1="120" y1="120" x2="120" y2="96" stroke="#5C6066"/><text x="120" y="88">1</text><text x="120" y="140">06:58</text>
-<line x1="252" y1="120" x2="252" y2="82" stroke="#191B1E"/><text x="252" y="74" fill="#191B1E">2</text><text x="252" y="140">07:12</text>
-<line x1="340" y1="120" x2="340" y2="96" stroke="#5C6066"/><text x="340" y="88">3</text><text x="340" y="140">07:16</text>
-<line x1="424" y1="120" x2="424" y2="82" stroke="#5C6066"/><text x="424" y="74">4</text><text x="424" y="140">07:24</text>
-<line x1="518" y1="120" x2="518" y2="88" stroke="#2A46D4" stroke-width="2"/><text x="518" y="80" fill="#2A46D4">5</text><text x="518" y="140" fill="#2A46D4">07:31</text>
-<line x1="850" y1="120" x2="850" y2="96" stroke="#5C6066"/><text x="850" y="88">6</text><text x="850" y="140">07:58</text>
-</g>
-<text x="40" y="172" fill="#5C6066"><tspan fill="#2A46D4">1</tspan> · vendor incident begins&#160;&#160;&#160;2 · alert: /chat 500s spike&#160;&#160;&#160;3 · triage: limiter raises on read</text>
-<text x="40" y="192" fill="#191B1E">4 · root cause: fail-open covers only db=None&#160;&#160;&#160;5 · mitigate: catch-and-allow deployed&#160;&#160;&#160;6 · vendor recovers, all clear</text>
-<text x="40" y="226" fill="#5C6066">PREVENTION · limiter degrades open on infra errors · circuit breaker on Firestore reads · alert on 5xx rate, not vendor status page</text>
-<text x="40" y="246" fill="#5C6066">COST OF THE BUG · availability coupled to a non-critical dependency — enforcement traded uptime by accident, not by decision</text>
-</g></svg></div><figcaption><span class="figno">Fig. 8</span> — Incident anatomy: detection by our own 5xx alert (not the vendor status page), root cause in the error path, mitigation as a one-line degrade-open.</figcaption></figure><div class="dtable rv" style="margin-top:.9rem"><table><thead><tr><th>Failure policy</th><th>When Firestore is down</th><th>Abuse exposure</th><th>Verdict</th></tr></thead><tbody>
-  <tr><td>Fail closed (accidental)</td><td>chat down with it</td><td>zero</td><td class="dead">what the code actually did</td></tr>
-  <tr class="chose"><td><span class="tag">CHOSE →</span> Degrade open on infra errors</td><td>chat stays up, limits pause</td><td>bounded: worst case 1 day unmetered</td><td>availability &gt; enforcement, now by decision</td></tr>
-  </tbody></table></div><p class="price rv">WHY THIS STORY WORKS · timeline with minutes, not vibes · root cause is a policy, not a typo · the fix is a decision made explicit — and the prevention list is what a panel remembers</p></div></section>
-
-<section class="sl "><div class="sl-inner"><p class="eyebrow rv">Appendix · Exemplar C · the experiment story · <span style="color:var(--alarm)">extrapolated — template, not history</span></p><h2 class="rv">The retention experiment the shutdown decision deserved</h2><div class="copy rv" style="margin-top:.9rem;max-width:56em"><p style="font-size:15px;line-height:1.6">The project ended on one number. The stronger version ends on a controlled readout: one variable — the app opens by recalling your last session — two cohorts, a pre-registered gate. If memory can't move day-14 by three points, the thesis dies with evidence instead of suspicion; if it can, the roadmap writes itself.</p></div><figure class="fig rv" style="margin-top:1rem"><div class="fig-slot"><svg viewBox="0 0 1060 300" style="width:100%;display:block" xmlns="http://www.w3.org/2000/svg">
-<g font-family="ui-monospace,SF Mono,Menlo,monospace" font-size="11" letter-spacing=".06em">
-<line x1="60" y1="20" x2="60" y2="220" stroke="#DEDCD4"/><line x1="60" y1="220" x2="940" y2="220" stroke="#191B1E"/>
-<text x="30" y="26" fill="#5C6066">100%</text><text x="36" y="123" fill="#5C6066">50%</text><text x="46" y="224" fill="#5C6066">0</text>
-<g fill="#5C6066" text-anchor="middle">
-<line x1="60" y1="220" x2="60" y2="226" stroke="#5C6066"/><text x="60" y="242">0</text>
-<line x1="186" y1="220" x2="186" y2="226" stroke="#5C6066"/><text x="186" y="242">2</text>
-<line x1="311" y1="220" x2="311" y2="226" stroke="#5C6066"/><text x="311" y="242">4</text>
-<line x1="437" y1="220" x2="437" y2="226" stroke="#5C6066"/><text x="437" y="242">6</text>
-<line x1="563" y1="220" x2="563" y2="226" stroke="#5C6066"/><text x="563" y="242">8</text>
-<line x1="688" y1="220" x2="688" y2="226" stroke="#5C6066"/><text x="688" y="242">10</text>
-<line x1="814" y1="220" x2="814" y2="226" stroke="#5C6066"/><text x="814" y="242">12</text>
-<line x1="940" y1="220" x2="940" y2="226" stroke="#5C6066"/><text x="940" y="242">14</text>
-</g>
-<text x="500" y="266" text-anchor="middle" fill="#5C6066">DAYS SINCE INSTALL</text>
-<rect x="60" y="196" width="880" height="12" fill="#191B1E" fill-opacity=".06"/>
-<text x="70" y="206" fill="#5C6066" font-size="10">INCUMBENT BAND · ~10%</text>
-<path d="M60 20 L123 136 L186 166 L249 182 L374 190 L500 195 L688 198 L814 199.5 L940 200" fill="none" stroke="#191B1E" stroke-width="1.8"/>
-<path d="M60 20 L123 128 L186 152 L249 166 L374 176 L500 182 L688 186 L814 189 L940 192" fill="none" stroke="#2A46D4" stroke-width="1.8" stroke-dasharray="6 4"/>
-<circle cx="940" cy="200" r="3" fill="#191B1E"/><text x="928" y="216" text-anchor="end" fill="#191B1E">CONTROL · 10%</text>
-<circle cx="940" cy="192" r="3" fill="none" stroke="#2A46D4"/><text x="928" y="178" text-anchor="end" fill="#2A46D4">+MEMORY · 14% · HYPOTHETICAL</text>
-<line x1="940" y1="14" x2="940" y2="220" stroke="#2A46D4" stroke-dasharray="4 4"/>
-<text x="932" y="26" text-anchor="end" fill="#2A46D4">DECISION GATE · DAY 14 · SHIP IF Δ ≥ +3PP</text>
-<text x="60" y="292" fill="#5C6066">DESIGN · one variable (opener recalls last session) · ~1,700/arm from power calc for the +3pp gate · gate registered pre-readout</text>
-</g></svg></div><figcaption><span class="figno">Fig. 9</span> — One-variable cohort experiment with a pre-registered decision gate. The dashed readout is hypothetical; the design is the point.</figcaption></figure><p class="price rv">WHY THIS STORY WORKS · the hypothesis is falsifiable · the gate was chosen BEFORE the readout · either outcome produces a decision — the experiment cannot waste its own cost</p></div></section>
 </main>
-<div class="chrome bot"><span>Sage AI · a field report</span><span id="ctr">01 / 30</span></div>
+<div class="chrome bot"><span>ZenPal · engineering report</span><span id="ctr">01 / 30</span></div>
 
 <script>
 document.documentElement.classList.add('js');
